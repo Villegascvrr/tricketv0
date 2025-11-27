@@ -4,6 +4,7 @@ import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AIBadgePopover from "./AIBadgePopover";
 import { useQuery } from "@tanstack/react-query";
+import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
 import {
@@ -49,6 +50,7 @@ interface ProviderStats {
   ocupacion: string;
   restantes: string;
   ingresos: number;
+  trend: number[];
 }
 
 const CHART_COLORS = [
@@ -154,6 +156,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setKpis({ totalSold, occupancyRate, grossRevenue });
 
+      // Get last 7 days for trends
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return date.toISOString().split("T")[0];
+      });
+
       // Sales over time
       const salesByDay: { [key: string]: number } = {};
       tickets?.forEach((ticket) => {
@@ -173,17 +182,19 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setSalesOverTime(salesTimeData);
 
-      // Sales by CHANNEL (internal channel)
+      // Sales by CHANNEL (internal channel) with trends
       const channelStats: {
-        [key: string]: { count: number; revenue: number };
+        [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
       } = {};
       tickets?.forEach((ticket) => {
         const channel = ticket.channel || "Sin canal";
+        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
         if (!channelStats[channel]) {
-          channelStats[channel] = { count: 0, revenue: 0 };
+          channelStats[channel] = { count: 0, revenue: 0, dailySales: {} };
         }
         channelStats[channel].count += 1;
         channelStats[channel].revenue += Number(ticket.price);
+        channelStats[channel].dailySales[day] = (channelStats[channel].dailySales[day] || 0) + 1;
       });
 
       const channelDataArray = Object.entries(channelStats).map(
@@ -192,12 +203,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           entradas: stats.count,
           ingresos: Math.round(stats.revenue),
           porcentaje: ((stats.count / totalSold) * 100).toFixed(1),
+          trend: last7Days.map(day => stats.dailySales[day] || 0),
         })
       );
 
       setChannelData(channelDataArray);
 
-      // Sales by PROVIDER (ticketing platform)
+      // Sales by PROVIDER (ticketing platform) with trends
       // Fetch allocations
       const { data: allocations } = await supabase
         .from("ticket_provider_allocations")
@@ -210,15 +222,17 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       });
 
       const providerStats: {
-        [key: string]: { count: number; revenue: number };
+        [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
       } = {};
       tickets?.forEach((ticket) => {
         const provider = ticket.provider_name || "Sin ticketera";
+        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
         if (!providerStats[provider]) {
-          providerStats[provider] = { count: 0, revenue: 0 };
+          providerStats[provider] = { count: 0, revenue: 0, dailySales: {} };
         }
         providerStats[provider].count += 1;
         providerStats[provider].revenue += Number(ticket.price);
+        providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
       });
 
       const providerDataArray: ProviderStats[] = Object.entries(
@@ -239,21 +253,24 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           restantes:
             remaining !== null ? remaining.toLocaleString() : "N/D",
           ingresos: Math.round(stats.revenue),
+          trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });
 
       setProviderData(providerDataArray);
 
-      // Sales by zone
-      const zoneStats: { [key: string]: { count: number; revenue: number } } =
+      // Sales by zone with trends
+      const zoneStats: { [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } } } =
         {};
       tickets?.forEach((ticket) => {
         const zone = ticket.zone_name || "Sin zona";
+        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
         if (!zoneStats[zone]) {
-          zoneStats[zone] = { count: 0, revenue: 0 };
+          zoneStats[zone] = { count: 0, revenue: 0, dailySales: {} };
         }
         zoneStats[zone].count += 1;
         zoneStats[zone].revenue += Number(ticket.price);
+        zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
       });
 
       // Get zone capacities
@@ -273,6 +290,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           aforo: capacity,
           ocupacion: occupancy ? occupancy.toFixed(1) : "N/D",
           ingresos: Math.round(stats.revenue),
+          trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });
 
@@ -488,6 +506,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <tr className="border-b">
                 <th className="text-left py-2">Ticketera</th>
                 <th className="text-left py-2 min-w-[180px]">Progreso</th>
+                <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
                 <th className="text-right py-2">Capacidad</th>
                 <th className="text-right py-2">Vendidas</th>
                 <th className="text-right py-2">% Ocupación</th>
@@ -535,6 +554,9 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       ) : (
                         <span className="text-muted-foreground text-xs">N/D</span>
                       )}
+                    </td>
+                    <td className="py-3">
+                      <Sparkline data={row.trend} className="w-24" />
                     </td>
                     <td className="text-right">
                       {row.capacidad?.toLocaleString() || "N/D"}
@@ -608,6 +630,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-2">Canal</th>
+                  <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
                   <th className="text-right py-2">Entradas</th>
                   <th className="text-right py-2">%</th>
                   <th className="text-right py-2">Ingresos</th>
@@ -638,6 +661,9 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                             onOpenDrawer={() => onOpenDrawer?.()}
                           />
                         )}
+                      </td>
+                      <td className="py-2">
+                        <Sparkline data={row.trend} className="w-24" />
                       </td>
                       <td className="text-right">{row.entradas}</td>
                       <td className={cn(
@@ -681,6 +707,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <tr className="border-b">
                 <th className="text-left py-2">Zona</th>
                 <th className="text-left py-2 min-w-[200px]">Progreso</th>
+                <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
                 <th className="text-right py-2">Aforo</th>
                 <th className="text-right py-2">Vendidas</th>
                 <th className="text-right py-2">% Ocupación</th>
@@ -727,6 +754,9 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       ) : (
                         <span className="text-muted-foreground text-xs">N/D</span>
                       )}
+                    </td>
+                    <td className="py-3">
+                      <Sparkline data={row.trend} className="w-24" />
                     </td>
                     <td className="text-right">
                       {row.aforo?.toLocaleString() || "N/D"}
