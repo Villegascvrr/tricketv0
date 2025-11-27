@@ -115,7 +115,7 @@ const AIBadgePopover = ({
           />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start" side="bottom">
+      <PopoverContent className="w-80 animate-fade-in" align="start" side="bottom">
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-start gap-2">

@@ -143,9 +143,10 @@ const AIRecommendationsDrawer = ({
                     <Card 
                       key={index} 
                       className={cn(
-                        "border-2 hover:shadow-md transition-shadow",
+                        "border-2 hover:shadow-md transition-shadow animate-fade-in",
                         "border-danger/30 bg-danger/5"
                       )}
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
@@ -163,10 +164,10 @@ const AIRecommendationsDrawer = ({
                             </div>
                           </div>
                           <div className="flex gap-1.5">
-                            <Badge variant="outline" className="text-xs bg-muted">
+                            <Badge variant="outline" className="text-xs bg-muted animate-scale-in" style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
                               {getCategoryLabel(rec.category)}
                             </Badge>
-                            <Badge variant="outline" className={getPriorityColor(rec.priority)}>
+                            <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "animate-scale-in")} style={{ animationDelay: `${index * 0.1 + 0.15}s` }}>
                               Alta
                             </Badge>
                           </div>
@@ -192,7 +193,8 @@ const AIRecommendationsDrawer = ({
                   {groupedRecommendations.medium.map((rec, index) => (
                     <Card 
                       key={index} 
-                      className="border hover:shadow-md transition-shadow"
+                      className="border hover:shadow-md transition-shadow animate-fade-in"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
@@ -239,7 +241,8 @@ const AIRecommendationsDrawer = ({
                   {groupedRecommendations.low.map((rec, index) => (
                     <Card 
                       key={index} 
-                      className="border hover:shadow-md transition-shadow"
+                      className="border hover:shadow-md transition-shadow animate-fade-in"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
