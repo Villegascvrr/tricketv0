@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import AIBadge from "./AIBadge";
+import { useQuery } from "@tanstack/react-query";
 import {
   LineChart,
   Line,
@@ -21,6 +23,15 @@ import {
 interface EventSummaryProps {
   eventId: string;
   totalCapacity: number | null;
+}
+
+interface AIRecommendation {
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  category: "marketing" | "pricing" | "alert";
+  scope: "global" | "provider" | "channel" | "zone" | "ageSegment" | "city";
+  targetKey?: string;
 }
 
 interface ProviderAllocation {
@@ -56,6 +67,32 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
   const [providerData, setProviderData] = useState<ProviderStats[]>([]);
   const [zoneData, setZoneData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch AI recommendations
+  const { data: aiData } = useQuery({
+    queryKey: ['event-recommendations', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('event-recommendations', {
+        body: { eventId }
+      });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const recommendations: AIRecommendation[] = aiData?.recommendations || [];
+
+  const getRecommendationsForScope = (scope: string, targetKey?: string) => {
+    return recommendations.filter(r => {
+      if (r.scope !== scope) return false;
+      if (targetKey && r.targetKey !== targetKey) return false;
+      return true;
+    });
+  };
+
+  const getCriticalCount = (recs: AIRecommendation[]) => {
+    return recs.filter(r => r.priority === "high").length;
+  };
 
   useEffect(() => {
     fetchData();
@@ -218,47 +255,57 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
+      {/* KPIs - Enhanced with hierarchy */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
+        <Card className="p-8 border-2 hover:border-primary/50 transition-colors">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
                 Entradas Vendidas
               </p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-4xl font-bold text-foreground mb-1">
                 {kpis.totalSold.toLocaleString()}
               </p>
+              {totalCapacity && (
+                <p className="text-sm text-muted-foreground">
+                  Objetivo: {totalCapacity.toLocaleString()} entradas
+                </p>
+              )}
             </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <Users className="h-6 w-6 text-primary" />
+            <div className="bg-primary/10 p-4 rounded-xl">
+              <Users className="h-7 w-7 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                % Aforo Ocupado
+        <Card className="p-8 border-2 hover:border-success/50 transition-colors">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
+                Ocupación del Aforo
               </p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-4xl font-bold text-foreground mb-1">
                 {totalCapacity ? `${kpis.occupancyRate.toFixed(1)}%` : "N/D"}
               </p>
+              {totalCapacity && (
+                <p className="text-sm text-muted-foreground">
+                  {kpis.totalSold.toLocaleString()} / {totalCapacity.toLocaleString()}
+                </p>
+              )}
             </div>
-            <div className="bg-success/10 p-3 rounded-lg">
-              <Target className="h-6 w-6 text-success" />
+            <div className="bg-success/10 p-4 rounded-xl">
+              <Target className="h-7 w-7 text-success" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
+        <Card className="p-8 border-2 hover:border-warning/50 transition-colors">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
                 Ingresos Brutos
               </p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-4xl font-bold text-foreground mb-1">
                 {kpis.grossRevenue.toLocaleString("es-ES", {
                   style: "currency",
                   currency: "EUR",
@@ -266,9 +313,17 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                   maximumFractionDigits: 0,
                 })}
               </p>
+              <p className="text-sm text-muted-foreground">
+                Precio promedio: {kpis.totalSold > 0 ? 
+                  (kpis.grossRevenue / kpis.totalSold).toLocaleString("es-ES", {
+                    style: "currency",
+                    currency: "EUR",
+                    minimumFractionDigits: 2,
+                  }) : "N/D"}
+              </p>
             </div>
-            <div className="bg-warning/10 p-3 rounded-lg">
-              <DollarSign className="h-6 w-6 text-warning" />
+            <div className="bg-warning/10 p-4 rounded-xl">
+              <DollarSign className="h-7 w-7 text-warning" />
             </div>
           </div>
         </Card>
@@ -296,12 +351,20 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
 
       {/* Sales by PROVIDER (ticketing platform) */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          Ventas por Ticketera / Proveedor
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Plataformas de venta externas (Ticketmaster, Entradas.com, etc.)
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              Ventas por Ticketera / Proveedor
+              <AIBadge 
+                count={getRecommendationsForScope("provider").length}
+                criticalCount={getCriticalCount(getRecommendationsForScope("provider"))}
+              />
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Plataformas de venta externas (Ticketmaster, Entradas.com, etc.)
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <ResponsiveContainer width="100%" height={250}>
@@ -353,24 +416,36 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               </tr>
             </thead>
             <tbody>
-              {providerData.map((row) => (
-                <tr key={row.ticketera} className="border-b">
-                  <td className="py-2 font-medium">{row.ticketera}</td>
-                  <td className="text-right">
-                    {row.capacidad?.toLocaleString() || "N/D"}
-                  </td>
-                  <td className="text-right">{row.vendidas.toLocaleString()}</td>
-                  <td className="text-right">{row.ocupacion}</td>
-                  <td className="text-right">{row.restantes}</td>
-                  <td className="text-right">
-                    {row.ingresos.toLocaleString("es-ES", {
-                      style: "currency",
-                      currency: "EUR",
-                      minimumFractionDigits: 0,
-                    })}
-                  </td>
-                </tr>
-              ))}
+              {providerData.map((row) => {
+                const providerRecs = getRecommendationsForScope("provider", row.ticketera);
+                const hasCritical = getCriticalCount(providerRecs) > 0;
+                return (
+                  <tr key={row.ticketera} className="border-b">
+                    <td className="py-2 font-medium flex items-center gap-2">
+                      {row.ticketera}
+                      {providerRecs.length > 0 && (
+                        <AIBadge 
+                          count={providerRecs.length}
+                          criticalCount={getCriticalCount(providerRecs)}
+                        />
+                      )}
+                    </td>
+                    <td className="text-right">
+                      {row.capacidad?.toLocaleString() || "N/D"}
+                    </td>
+                    <td className="text-right">{row.vendidas.toLocaleString()}</td>
+                    <td className="text-right">{row.ocupacion}</td>
+                    <td className="text-right">{row.restantes}</td>
+                    <td className="text-right">
+                      {row.ingresos.toLocaleString("es-ES", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                      })}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -378,12 +453,20 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
 
       {/* Sales by CHANNEL (internal) */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          Ventas por Canal Interno
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Canales de venta internos (App móvil, RRPP, Taquilla, Online, etc.)
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              Ventas por Canal Interno
+              <AIBadge 
+                count={getRecommendationsForScope("channel").length}
+                criticalCount={getCriticalCount(getRecommendationsForScope("channel"))}
+              />
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Canales de venta internos (App móvil, RRPP, Taquilla, Online, etc.)
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ResponsiveContainer width="100%" height={250}>
@@ -407,20 +490,31 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                 </tr>
               </thead>
               <tbody>
-                {channelData.map((row) => (
-                  <tr key={row.canal} className="border-b">
-                    <td className="py-2">{row.canal}</td>
-                    <td className="text-right">{row.entradas}</td>
-                    <td className="text-right">{row.porcentaje}%</td>
-                    <td className="text-right">
-                      {row.ingresos.toLocaleString("es-ES", {
-                        style: "currency",
-                        currency: "EUR",
-                        minimumFractionDigits: 0,
-                      })}
-                    </td>
-                  </tr>
-                ))}
+                {channelData.map((row) => {
+                  const channelRecs = getRecommendationsForScope("channel", row.canal);
+                  return (
+                    <tr key={row.canal} className="border-b">
+                      <td className="py-2 flex items-center gap-2">
+                        {row.canal}
+                        {channelRecs.length > 0 && (
+                          <AIBadge 
+                            count={channelRecs.length}
+                            criticalCount={getCriticalCount(channelRecs)}
+                          />
+                        )}
+                      </td>
+                      <td className="text-right">{row.entradas}</td>
+                      <td className="text-right">{row.porcentaje}%</td>
+                      <td className="text-right">
+                        {row.ingresos.toLocaleString("es-ES", {
+                          style: "currency",
+                          currency: "EUR",
+                          minimumFractionDigits: 0,
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -429,7 +523,13 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
 
       {/* Zone data */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Zonas y aforos</h3>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          Zonas y aforos
+          <AIBadge 
+            count={getRecommendationsForScope("zone").length}
+            criticalCount={getCriticalCount(getRecommendationsForScope("zone"))}
+          />
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -442,23 +542,34 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               </tr>
             </thead>
             <tbody>
-              {zoneData.map((row) => (
-                <tr key={row.zona} className="border-b">
-                  <td className="py-2">{row.zona}</td>
-                  <td className="text-right">
-                    {row.aforo?.toLocaleString() || "N/D"}
-                  </td>
-                  <td className="text-right">{row.vendidas}</td>
-                  <td className="text-right">{row.ocupacion}%</td>
-                  <td className="text-right">
-                    {row.ingresos.toLocaleString("es-ES", {
-                      style: "currency",
-                      currency: "EUR",
-                      minimumFractionDigits: 0,
-                    })}
-                  </td>
-                </tr>
-              ))}
+              {zoneData.map((row) => {
+                const zoneRecs = getRecommendationsForScope("zone", row.zona);
+                return (
+                  <tr key={row.zona} className="border-b">
+                    <td className="py-2 flex items-center gap-2">
+                      {row.zona}
+                      {zoneRecs.length > 0 && (
+                        <AIBadge 
+                          count={zoneRecs.length}
+                          criticalCount={getCriticalCount(zoneRecs)}
+                        />
+                      )}
+                    </td>
+                    <td className="text-right">
+                      {row.aforo?.toLocaleString() || "N/D"}
+                    </td>
+                    <td className="text-right">{row.vendidas}</td>
+                    <td className="text-right">{row.ocupacion}%</td>
+                    <td className="text-right">
+                      {row.ingresos.toLocaleString("es-ES", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                      })}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

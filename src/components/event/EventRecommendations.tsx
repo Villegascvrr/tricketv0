@@ -17,6 +17,8 @@ interface Recommendation {
   description: string;
   priority: "high" | "medium" | "low";
   category: "marketing" | "pricing" | "alert";
+  scope: "global" | "provider" | "channel" | "zone" | "ageSegment" | "city";
+  targetKey?: string;
 }
 
 const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {

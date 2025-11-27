@@ -168,20 +168,35 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `Eres un experto analista de eventos y marketing digital. 
-Tu tarea es analizar datos de ventas de entradas y proporcionar recomendaciones estratégicas accionables.
-Genera exactamente 6 recomendaciones categorizadas así:
-- 2 recomendaciones de MARKETING (category: "marketing")
-- 2 recomendaciones de PRICING (category: "pricing")  
-- 2 ALERTAS/OPORTUNIDADES (category: "alert")
+    const systemPrompt = `Eres un experto analista de eventos y marketing de entretenimiento.
 
+Analiza los datos del evento y genera recomendaciones accionables.
+
+ESTRUCTURA DE RESPUESTA:
 Cada recomendación debe tener:
-- title: título conciso (máximo 60 caracteres)
-- description: descripción detallada con datos específicos (100-150 palabras)
-- priority: "high", "medium", o "low"
-- category: "marketing", "pricing", o "alert"
+- title: título corto y directo
+- description: máximo 2-3 líneas con dato clave + acción concreta
+- priority: "high" (crítica), "medium" (importante) o "low" (sugerencia)
+- category: "marketing", "pricing" o "alert"
+- scope: indica qué elemento del dashboard está relacionado
+  * "provider" para ticketeras específicas (Ticketmaster, Entradas.com, etc.)
+  * "channel" para canales internos (App móvil, RRPP, Taquilla, etc.)
+  * "zone" para zonas del evento (VIP, Pista, Grada, etc.)
+  * "ageSegment" para grupos de edad (18-24, 25-34, 45+, etc.)
+  * "city" para ciudades específicas (Madrid, Barcelona, etc.)
+  * "global" para recomendaciones generales
+- targetKey: nombre exacto del elemento (ej: "Ticketmaster", "RRPP", "VIP", "45+", "Barcelona")
+  * Solo incluir si scope no es "global"
+  * Usar los nombres exactos que aparecen en los datos
 
-Basa las recomendaciones en los datos reales proporcionados. Sé específico con números y porcentajes.`;
+PRIORIDADES:
+- high: problemas críticos, oportunidades urgentes, riesgos inmediatos
+- medium: optimizaciones importantes, tendencias relevantes
+- low: sugerencias menores, mejoras graduales
+
+Genera exactamente 6 recomendaciones: 2 de marketing, 2 de pricing y 2 de alertas/oportunidades.
+
+IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que las recomendaciones aparezcan en los bloques correctos del dashboard.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -216,8 +231,10 @@ Basa las recomendaciones en los datos reales proporcionados. Sé específico con
                         description: { type: 'string' },
                         priority: { type: 'string', enum: ['high', 'medium', 'low'] },
                         category: { type: 'string', enum: ['marketing', 'pricing', 'alert'] },
+                        scope: { type: 'string', enum: ['global', 'provider', 'channel', 'zone', 'ageSegment', 'city'] },
+                        targetKey: { type: 'string' },
                       },
-                      required: ['title', 'description', 'priority', 'category'],
+                      required: ['title', 'description', 'priority', 'category', 'scope'],
                       additionalProperties: false,
                     },
                   },
