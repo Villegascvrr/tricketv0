@@ -210,7 +210,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       setChannelData(channelDataArray);
 
       // Sales by PROVIDER (ticketing platform) with trends
-      // Fetch allocations
+      // Fetch allocations FIRST
       const { data: allocations } = await supabase
         .from("ticket_provider_allocations")
         .select("provider_name, allocated_capacity")
@@ -221,6 +221,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         allocationMap[a.provider_name] = a.allocated_capacity;
       });
 
+      // Calculate sales stats for providers that have sales
       const providerStats: {
         [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
       } = {};
@@ -235,23 +236,19 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
       });
 
-      const providerDataArray: ProviderStats[] = Object.entries(
-        providerStats
-      ).map(([provider, stats]) => {
-        const allocated = allocationMap[provider] || null;
-        const occupancy =
-          allocated !== null ? (stats.count / allocated) * 100 : null;
-        const remaining =
-          allocated !== null ? allocated - stats.count : null;
+      // Create provider data array - INCLUDE ALL ALLOCATED PROVIDERS
+      const providerDataArray: ProviderStats[] = Object.keys(allocationMap).map((provider) => {
+        const stats = providerStats[provider] || { count: 0, revenue: 0, dailySales: {} };
+        const allocated = allocationMap[provider];
+        const occupancy = (stats.count / allocated) * 100;
+        const remaining = allocated - stats.count;
 
         return {
           ticketera: provider,
           capacidad: allocated,
           vendidas: stats.count,
-          ocupacion:
-            occupancy !== null ? `${occupancy.toFixed(1)}%` : "N/D",
-          restantes:
-            remaining !== null ? remaining.toLocaleString() : "N/D",
+          ocupacion: `${occupancy.toFixed(1)}%`,
+          restantes: remaining.toLocaleString(),
           ingresos: Math.round(stats.revenue),
           trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
