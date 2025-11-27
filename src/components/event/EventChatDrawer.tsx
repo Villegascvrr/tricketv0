@@ -37,11 +37,31 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
     }
   }, [messages]);
 
+  // Command shortcuts mapping
+  const commands: Record<string, string> = {
+    '/ventas': '¿Cuál es el análisis completo de ventas? Incluye: total de ingresos, tickets vendidos, precio promedio, comparativa por canal y ticketera, y proyección para el final del evento.',
+    '/demografia': 'Proporciona un análisis demográfico detallado: distribución por edades, provincias más representadas, ciudades principales, y perfil del comprador típico.',
+    '/proyecciones': 'Genera proyecciones de ingresos hasta el final del evento basándote en la tendencia actual de ventas. Incluye escenarios optimista, realista y pesimista.',
+    '/canales': 'Analiza el rendimiento de cada canal de venta: cuál funciona mejor, cuál tiene mayor ticket promedio, y recomendaciones de optimización.',
+    '/ticketeras': 'Compara el rendimiento de todas las ticketeras: ocupación vs capacidad asignada, ingresos generados, y recomendaciones de redistribución.',
+    '/zonas': '¿Qué zonas tienen mejor y peor ocupación? Analiza precio vs demanda por zona y sugiere ajustes de precio o estrategias.',
+    '/audiencia': 'Describe la audiencia del evento: de dónde vienen, qué edad tienen, cuántos tienen consentimiento de marketing, y cómo segmentarlos.',
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = input.trim();
+    let userMessage = input.trim();
+    
+    // Check if it's a command and expand it
+    if (userMessage.startsWith('/')) {
+      const expandedCommand = commands[userMessage.toLowerCase()];
+      if (expandedCommand) {
+        userMessage = expandedCommand;
+      }
+    }
+    
     setInput("");
     
     // Add user message
@@ -141,12 +161,13 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
     }
   };
 
-  const suggestedQuestions = [
-    "¿Cuál es el rendimiento de cada ticketera?",
-    "¿Qué canal de venta funciona mejor?",
-    "¿Cuál es la proyección de ingresos?",
-    "Analiza la distribución demográfica",
-    "¿Qué zonas necesitan más atención?"
+  const quickCommands = [
+    { cmd: '/ventas', desc: 'Análisis completo de ventas' },
+    { cmd: '/demografia', desc: 'Distribución demográfica' },
+    { cmd: '/proyecciones', desc: 'Proyecciones de ingresos' },
+    { cmd: '/canales', desc: 'Rendimiento por canal' },
+    { cmd: '/ticketeras', desc: 'Comparativa de ticketeras' },
+    { cmd: '/zonas', desc: 'Ocupación por zonas' },
   ];
 
   return (
@@ -203,22 +224,29 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
           </div>
 
           {messages.length === 1 && (
-            <div className="mt-6 space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
-                Preguntas sugeridas:
-              </p>
-              {suggestedQuestions.map((question, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start text-left h-auto py-2 px-3 text-xs"
-                  onClick={() => setInput(question)}
-                  disabled={isLoading}
-                >
-                  {question}
-                </Button>
-              ))}
+            <div className="mt-6 space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-2">
+                  Comandos rápidos:
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickCommands.map((cmd, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      className="justify-start text-left h-auto py-2 px-3"
+                      onClick={() => setInput(cmd.cmd)}
+                      disabled={isLoading}
+                    >
+                      <div className="flex flex-col items-start">
+                        <code className="text-xs font-mono text-primary">{cmd.cmd}</code>
+                        <span className="text-[10px] text-muted-foreground">{cmd.desc}</span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </ScrollArea>
@@ -228,7 +256,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Pregunta sobre el evento..."
+              placeholder="Escribe tu pregunta o usa /comandos..."
               disabled={isLoading}
               className="flex-1"
             />
@@ -246,7 +274,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
             </Button>
           </form>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            Los análisis se basan en datos en tiempo real del evento
+            Usa comandos como <code className="text-primary">/ventas</code> o <code className="text-primary">/demografia</code> para análisis rápidos
           </p>
         </div>
       </SheetContent>
