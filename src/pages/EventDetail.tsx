@@ -166,22 +166,14 @@ const EventDetail = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-8">
-        <Tabs defaultValue="executive" className="space-y-6">
+        <Tabs defaultValue="summary" className="space-y-6">
           <TabsList className="bg-card">
-            <TabsTrigger value="executive">Ejecutivo</TabsTrigger>
             <TabsTrigger value="summary">Resumen</TabsTrigger>
+            <TabsTrigger value="executive">Ejecutivo</TabsTrigger>
             <TabsTrigger value="audience">Audiencia</TabsTrigger>
-            <TabsTrigger value="export">Exportar</TabsTrigger>
             <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
+            <TabsTrigger value="export">Exportar</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="executive">
-            <ExecutiveDashboard
-              eventId={event.id}
-              totalCapacity={event.total_capacity}
-              eventStartDate={event.start_date}
-            />
-          </TabsContent>
 
           <TabsContent value="summary">
             <EventSummary 
@@ -191,16 +183,24 @@ const EventDetail = () => {
             />
           </TabsContent>
 
+          <TabsContent value="executive">
+            <ExecutiveDashboard
+              eventId={event.id}
+              totalCapacity={event.total_capacity}
+              eventStartDate={event.start_date}
+            />
+          </TabsContent>
+
           <TabsContent value="audience">
             <EventAudience eventId={event.id} />
           </TabsContent>
 
-          <TabsContent value="export">
-            <EventExport eventId={event.id} eventName={event.name} />
-          </TabsContent>
-
           <TabsContent value="recommendations">
             <EventRecommendations eventId={event.id} />
+          </TabsContent>
+
+          <TabsContent value="export">
+            <EventExport eventId={event.id} eventName={event.name} />
           </TabsContent>
         </Tabs>
       </div>
