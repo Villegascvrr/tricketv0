@@ -174,7 +174,11 @@ const EventDetail = () => {
           </TabsList>
 
           <TabsContent value="summary">
-            <EventSummary eventId={event.id} totalCapacity={event.total_capacity} />
+            <EventSummary 
+              eventId={event.id} 
+              totalCapacity={event.total_capacity}
+              onOpenDrawer={() => setDrawerOpen(true)}
+            />
           </TabsContent>
 
           <TabsContent value="audience">
