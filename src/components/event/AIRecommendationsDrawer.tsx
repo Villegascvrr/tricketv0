@@ -1,10 +1,12 @@
-import { Brain, AlertCircle, TrendingUp, DollarSign, X } from "lucide-react";
+import { useState } from "react";
+import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 interface Recommendation {
@@ -29,6 +31,8 @@ const AIRecommendationsDrawer = ({
   recommendations,
   isLoading 
 }: AIRecommendationsDrawerProps) => {
+  const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -73,10 +77,23 @@ const AIRecommendationsDrawer = ({
     return targetKey || scope;
   };
 
+  // Apply filters
+  const filteredRecommendations = recommendations.filter(r => {
+    if (priorityFilter && r.priority !== priorityFilter) return false;
+    if (categoryFilter && r.category !== categoryFilter) return false;
+    return true;
+  });
+
   const groupedRecommendations = {
-    high: recommendations.filter(r => r.priority === 'high'),
-    medium: recommendations.filter(r => r.priority === 'medium'),
-    low: recommendations.filter(r => r.priority === 'low'),
+    high: filteredRecommendations.filter(r => r.priority === 'high'),
+    medium: filteredRecommendations.filter(r => r.priority === 'medium'),
+    low: filteredRecommendations.filter(r => r.priority === 'low'),
+  };
+
+  const hasActiveFilters = priorityFilter !== null || categoryFilter !== null;
+  const clearFilters = () => {
+    setPriorityFilter(null);
+    setCategoryFilter(null);
   };
 
   return (
@@ -96,26 +113,127 @@ const AIRecommendationsDrawer = ({
           </div>
           {!isLoading && (
             <div className="flex gap-2 pt-2">
-              {groupedRecommendations.high.length > 0 && (
+              {recommendations.filter(r => r.priority === 'high').length > 0 && (
                 <Badge variant="outline" className="bg-danger/10 text-danger border-danger/20">
-                  {groupedRecommendations.high.length} críticas
+                  {recommendations.filter(r => r.priority === 'high').length} críticas
                 </Badge>
               )}
-              {groupedRecommendations.medium.length > 0 && (
+              {recommendations.filter(r => r.priority === 'medium').length > 0 && (
                 <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-                  {groupedRecommendations.medium.length} importantes
+                  {recommendations.filter(r => r.priority === 'medium').length} importantes
                 </Badge>
               )}
-              {groupedRecommendations.low.length > 0 && (
+              {recommendations.filter(r => r.priority === 'low').length > 0 && (
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                  {groupedRecommendations.low.length} sugerencias
+                  {recommendations.filter(r => r.priority === 'low').length} sugerencias
                 </Badge>
               )}
             </div>
           )}
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+        {/* Filters Section */}
+        {!isLoading && recommendations.length > 0 && (
+          <div className="px-6 pt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Filter className="h-4 w-4" />
+                <span>Filtros</span>
+              </div>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-7 text-xs"
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
+
+            {/* Priority Filters */}
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Prioridad</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={priorityFilter === "high" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPriorityFilter(priorityFilter === "high" ? null : "high")}
+                  className={cn(
+                    "h-8 text-xs",
+                    priorityFilter === "high" && "bg-danger hover:bg-danger/90 text-white border-danger"
+                  )}
+                >
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Alta
+                </Button>
+                <Button
+                  variant={priorityFilter === "medium" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPriorityFilter(priorityFilter === "medium" ? null : "medium")}
+                  className={cn(
+                    "h-8 text-xs",
+                    priorityFilter === "medium" && "bg-warning hover:bg-warning/90 text-white border-warning"
+                  )}
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Media
+                </Button>
+                <Button
+                  variant={priorityFilter === "low" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPriorityFilter(priorityFilter === "low" ? null : "low")}
+                  className={cn(
+                    "h-8 text-xs",
+                    priorityFilter === "low" && "bg-primary hover:bg-primary/90 text-white"
+                  )}
+                >
+                  <Brain className="h-3 w-3 mr-1" />
+                  Baja
+                </Button>
+              </div>
+            </div>
+
+            {/* Category Filters */}
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Categoría</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={categoryFilter === "marketing" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCategoryFilter(categoryFilter === "marketing" ? null : "marketing")}
+                  className="h-8 text-xs"
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Marketing
+                </Button>
+                <Button
+                  variant={categoryFilter === "pricing" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCategoryFilter(categoryFilter === "pricing" ? null : "pricing")}
+                  className="h-8 text-xs"
+                >
+                  <DollarSign className="h-3 w-3 mr-1" />
+                  Pricing
+                </Button>
+                <Button
+                  variant={categoryFilter === "alert" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCategoryFilter(categoryFilter === "alert" ? null : "alert")}
+                  className="h-8 text-xs"
+                >
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Alerta
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+          </div>
+        )}
+
+        <ScrollArea className="h-[calc(100vh-8rem)]">
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -279,12 +397,26 @@ const AIRecommendationsDrawer = ({
                 </div>
               )}
 
-              {recommendations.length === 0 && !isLoading && (
+              {filteredRecommendations.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Brain className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    No hay recomendaciones disponibles
-                  </p>
+                  {hasActiveFilters ? (
+                    <>
+                      <Filter className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground mb-2">
+                        No hay recomendaciones con los filtros seleccionados
+                      </p>
+                      <Button variant="link" onClick={clearFilters} className="text-xs">
+                        Limpiar filtros
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        No hay recomendaciones disponibles
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
