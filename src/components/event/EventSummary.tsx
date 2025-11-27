@@ -4,6 +4,7 @@ import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AIBadge from "./AIBadge";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -55,6 +56,38 @@ const CHART_COLORS = [
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
 ];
+
+// Semantic color helpers
+const getOccupancyColor = (occupancy: number) => {
+  if (occupancy >= 70) return "hsl(var(--success))"; // Green - good
+  if (occupancy >= 30) return "hsl(var(--warning))"; // Orange - attention
+  return "hsl(var(--danger))"; // Red - critical
+};
+
+const getOccupancyBgClass = (occupancy: number) => {
+  if (occupancy >= 70) return "bg-success/10 border-success/20 text-success";
+  if (occupancy >= 30) return "bg-warning/10 border-warning/20 text-warning";
+  return "bg-danger/10 border-danger/20 text-danger";
+};
+
+const getOccupancyTextClass = (occupancy: number) => {
+  if (occupancy >= 70) return "text-success font-semibold";
+  if (occupancy >= 30) return "text-warning font-semibold";
+  return "text-danger font-semibold";
+};
+
+const getPerformanceColor = (percentage: number, isGood: boolean = true) => {
+  // For metrics where high is good (sales, revenue)
+  if (isGood) {
+    if (percentage >= 15) return "hsl(var(--success))";
+    if (percentage >= 5) return "hsl(var(--warning))";
+    return "hsl(var(--danger))";
+  }
+  // For metrics where low might be concerning
+  if (percentage < 5) return "hsl(var(--danger))";
+  if (percentage < 15) return "hsl(var(--warning))";
+  return "hsl(var(--success))";
+};
 
 const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
   const [kpis, setKpis] = useState({
@@ -255,15 +288,22 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
 
   return (
     <div className="space-y-6">
-      {/* KPIs - Enhanced with hierarchy */}
+      {/* KPIs - Enhanced with hierarchy and semantic colors */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-8 border-2 hover:border-primary/50 transition-colors">
+        <Card className={cn(
+          "p-8 border-2 hover:border-primary/50 transition-colors",
+          kpis.occupancyRate >= 50 ? "border-success/30" : "border-warning/30"
+        )}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 Entradas Vendidas
               </p>
-              <p className="text-4xl font-bold text-foreground mb-1">
+              <p className={cn(
+                "text-4xl font-bold mb-1",
+                kpis.occupancyRate >= 70 ? "text-success" :
+                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+              )}>
                 {kpis.totalSold.toLocaleString()}
               </p>
               {totalCapacity && (
@@ -272,19 +312,34 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                 </p>
               )}
             </div>
-            <div className="bg-primary/10 p-4 rounded-xl">
-              <Users className="h-7 w-7 text-primary" />
+            <div className={cn(
+              "p-4 rounded-xl",
+              kpis.occupancyRate >= 70 ? "bg-success/10" :
+              kpis.occupancyRate >= 30 ? "bg-warning/10" : "bg-danger/10"
+            )}>
+              <Users className={cn(
+                "h-7 w-7",
+                kpis.occupancyRate >= 70 ? "text-success" :
+                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+              )} />
             </div>
           </div>
         </Card>
 
-        <Card className="p-8 border-2 hover:border-success/50 transition-colors">
+        <Card className={cn(
+          "p-8 border-2 hover:border-success/50 transition-colors",
+          getOccupancyBgClass(kpis.occupancyRate).includes("success") ? "border-success/30" :
+          getOccupancyBgClass(kpis.occupancyRate).includes("warning") ? "border-warning/30" : "border-danger/30"
+        )}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 Ocupación del Aforo
               </p>
-              <p className="text-4xl font-bold text-foreground mb-1">
+              <p className={cn(
+                "text-4xl font-bold mb-1",
+                getOccupancyTextClass(kpis.occupancyRate).split(" ")[0]
+              )}>
                 {totalCapacity ? `${kpis.occupancyRate.toFixed(1)}%` : "N/D"}
               </p>
               {totalCapacity && (
@@ -293,19 +348,26 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                 </p>
               )}
             </div>
-            <div className="bg-success/10 p-4 rounded-xl">
-              <Target className="h-7 w-7 text-success" />
+            <div className={cn(
+              "p-4 rounded-xl",
+              getOccupancyBgClass(kpis.occupancyRate)
+            )}>
+              <Target className={cn(
+                "h-7 w-7",
+                kpis.occupancyRate >= 70 ? "text-success" :
+                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+              )} />
             </div>
           </div>
         </Card>
 
-        <Card className="p-8 border-2 hover:border-warning/50 transition-colors">
+        <Card className="p-8 border-2 hover:border-primary/50 transition-colors border-primary/30">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 Ingresos Brutos
               </p>
-              <p className="text-4xl font-bold text-foreground mb-1">
+              <p className="text-4xl font-bold text-primary mb-1">
                 {kpis.grossRevenue.toLocaleString("es-ES", {
                   style: "currency",
                   currency: "EUR",
@@ -322,8 +384,8 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                   }) : "N/D"}
               </p>
             </div>
-            <div className="bg-warning/10 p-4 rounded-xl">
-              <DollarSign className="h-7 w-7 text-warning" />
+            <div className="bg-primary/10 p-4 rounded-xl">
+              <DollarSign className="h-7 w-7 text-primary" />
             </div>
           </div>
         </Card>
@@ -398,7 +460,19 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               <XAxis dataKey="ticketera" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="vendidas" fill="hsl(var(--chart-1))" />
+              <Bar dataKey="vendidas">
+                {providerData.map((entry, index) => {
+                  const occupancy = entry.capacidad 
+                    ? (entry.vendidas / entry.capacidad) * 100 
+                    : 50;
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={getOccupancyColor(occupancy)} 
+                    />
+                  );
+                })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -419,8 +493,18 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               {providerData.map((row) => {
                 const providerRecs = getRecommendationsForScope("provider", row.ticketera);
                 const hasCritical = getCriticalCount(providerRecs) > 0;
+                const occupancyNum = row.capacidad 
+                  ? (row.vendidas / row.capacidad) * 100 
+                  : 0;
                 return (
-                  <tr key={row.ticketera} className="border-b">
+                  <tr 
+                    key={row.ticketera} 
+                    className={cn(
+                      "border-b transition-colors",
+                      hasCritical && "bg-danger/5 border-danger/20",
+                      !hasCritical && providerRecs.length > 0 && "bg-warning/5 border-warning/20"
+                    )}
+                  >
                     <td className="py-2 font-medium flex items-center gap-2">
                       {row.ticketera}
                       {providerRecs.length > 0 && (
@@ -434,7 +518,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       {row.capacidad?.toLocaleString() || "N/D"}
                     </td>
                     <td className="text-right">{row.vendidas.toLocaleString()}</td>
-                    <td className="text-right">{row.ocupacion}</td>
+                    <td className={cn(
+                      "text-right font-semibold",
+                      row.capacidad && getOccupancyTextClass(occupancyNum)
+                    )}>
+                      {row.ocupacion}
+                    </td>
                     <td className="text-right">{row.restantes}</td>
                     <td className="text-right">
                       {row.ingresos.toLocaleString("es-ES", {
@@ -475,7 +564,17 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               <XAxis dataKey="canal" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="entradas" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="entradas">
+                {channelData.map((entry, index) => {
+                  const percentage = parseFloat(entry.porcentaje);
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={getPerformanceColor(percentage)} 
+                    />
+                  );
+                })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
 
@@ -492,8 +591,17 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
               <tbody>
                 {channelData.map((row) => {
                   const channelRecs = getRecommendationsForScope("channel", row.canal);
+                  const hasCritical = getCriticalCount(channelRecs) > 0;
+                  const percentage = parseFloat(row.porcentaje);
                   return (
-                    <tr key={row.canal} className="border-b">
+                    <tr 
+                      key={row.canal} 
+                      className={cn(
+                        "border-b transition-colors",
+                        hasCritical && "bg-danger/5 border-danger/20",
+                        !hasCritical && channelRecs.length > 0 && "bg-warning/5 border-warning/20"
+                      )}
+                    >
                       <td className="py-2 flex items-center gap-2">
                         {row.canal}
                         {channelRecs.length > 0 && (
@@ -504,7 +612,13 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                         )}
                       </td>
                       <td className="text-right">{row.entradas}</td>
-                      <td className="text-right">{row.porcentaje}%</td>
+                      <td className={cn(
+                        "text-right font-semibold",
+                        percentage >= 15 ? "text-success" :
+                        percentage >= 5 ? "text-warning" : "text-danger"
+                      )}>
+                        {row.porcentaje}%
+                      </td>
                       <td className="text-right">
                         {row.ingresos.toLocaleString("es-ES", {
                           style: "currency",
@@ -544,8 +658,19 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
             <tbody>
               {zoneData.map((row) => {
                 const zoneRecs = getRecommendationsForScope("zone", row.zona);
+                const hasCritical = getCriticalCount(zoneRecs) > 0;
+                const occupancyNum = row.ocupacion !== "N/D" 
+                  ? parseFloat(row.ocupacion) 
+                  : 0;
                 return (
-                  <tr key={row.zona} className="border-b">
+                  <tr 
+                    key={row.zona} 
+                    className={cn(
+                      "border-b transition-colors",
+                      hasCritical && "bg-danger/5 border-danger/20",
+                      !hasCritical && zoneRecs.length > 0 && "bg-warning/5 border-warning/20"
+                    )}
+                  >
                     <td className="py-2 flex items-center gap-2">
                       {row.zona}
                       {zoneRecs.length > 0 && (
@@ -559,7 +684,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       {row.aforo?.toLocaleString() || "N/D"}
                     </td>
                     <td className="text-right">{row.vendidas}</td>
-                    <td className="text-right">{row.ocupacion}%</td>
+                    <td className={cn(
+                      "text-right font-semibold",
+                      row.ocupacion !== "N/D" && getOccupancyTextClass(occupancyNum)
+                    )}>
+                      {row.ocupacion}%
+                    </td>
                     <td className="text-right">
                       {row.ingresos.toLocaleString("es-ES", {
                         style: "currency",
