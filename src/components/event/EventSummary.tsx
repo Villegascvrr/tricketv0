@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import AIBadge from "./AIBadge";
+import AIBadgePopover from "./AIBadgePopover";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
@@ -25,6 +25,7 @@ import {
 interface EventSummaryProps {
   eventId: string;
   totalCapacity: number | null;
+  onOpenDrawer?: () => void;
 }
 
 interface AIRecommendation {
@@ -90,7 +91,7 @@ const getPerformanceColor = (percentage: number, isGood: boolean = true) => {
   return "hsl(var(--success))";
 };
 
-const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
+const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProps) => {
   const [kpis, setKpis] = useState({
     totalSold: 0,
     occupancyRate: 0,
@@ -418,9 +419,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
           <div>
             <h3 className="text-lg font-semibold flex items-center gap-2">
               Ventas por Ticketera / Proveedor
-              <AIBadge 
+              <AIBadgePopover
                 count={getRecommendationsForScope("provider").length}
                 criticalCount={getCriticalCount(getRecommendationsForScope("provider"))}
+                recommendations={getRecommendationsForScope("provider")}
+                eventId={eventId}
+                onOpenDrawer={() => onOpenDrawer?.()}
               />
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -511,9 +515,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       <div className="flex items-center gap-2">
                         {row.ticketera}
                         {providerRecs.length > 0 && (
-                          <AIBadge 
+                          <AIBadgePopover
                             count={providerRecs.length}
                             criticalCount={getCriticalCount(providerRecs)}
+                            recommendations={providerRecs}
+                            eventId={eventId}
+                            onOpenDrawer={() => onOpenDrawer?.()}
                           />
                         )}
                       </div>
@@ -561,9 +568,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
           <div>
             <h3 className="text-lg font-semibold flex items-center gap-2">
               Ventas por Canal Interno
-              <AIBadge 
+              <AIBadgePopover
                 count={getRecommendationsForScope("channel").length}
                 criticalCount={getCriticalCount(getRecommendationsForScope("channel"))}
+                recommendations={getRecommendationsForScope("channel")}
+                eventId={eventId}
+                onOpenDrawer={() => onOpenDrawer?.()}
               />
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -620,9 +630,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       <td className="py-2 flex items-center gap-2">
                         {row.canal}
                         {channelRecs.length > 0 && (
-                          <AIBadge 
+                          <AIBadgePopover
                             count={channelRecs.length}
                             criticalCount={getCriticalCount(channelRecs)}
+                            recommendations={channelRecs}
+                            eventId={eventId}
+                            onOpenDrawer={() => onOpenDrawer?.()}
                           />
                         )}
                       </td>
@@ -654,9 +667,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           Zonas y aforos
-          <AIBadge 
+          <AIBadgePopover
             count={getRecommendationsForScope("zone").length}
             criticalCount={getCriticalCount(getRecommendationsForScope("zone"))}
+            recommendations={getRecommendationsForScope("zone")}
+            eventId={eventId}
+            onOpenDrawer={() => onOpenDrawer?.()}
           />
         </h3>
         <div className="overflow-x-auto">
@@ -691,9 +707,12 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       <div className="flex items-center gap-2">
                         {row.zona}
                         {zoneRecs.length > 0 && (
-                          <AIBadge 
+                          <AIBadgePopover
                             count={zoneRecs.length}
                             criticalCount={getCriticalCount(zoneRecs)}
+                            recommendations={zoneRecs}
+                            eventId={eventId}
+                            onOpenDrawer={() => onOpenDrawer?.()}
                           />
                         )}
                       </div>
