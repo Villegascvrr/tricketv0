@@ -525,10 +525,17 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
       </Card>
 
       {/* Export Segment */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Filter className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Exportar Segmento</h3>
+      <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <Filter className="h-5 w-5 text-primary" />
+              Segmentación y Exportación
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Selecciona filtros y descarga un CSV con este segmento para usarlo en campañas de email, anuncios en redes sociales o acciones de marketing directo.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

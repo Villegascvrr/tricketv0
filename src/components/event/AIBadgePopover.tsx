@@ -124,19 +124,28 @@ const AIBadgePopover = ({
               <h4 className="font-semibold text-sm leading-tight mb-1">
                 {topRecommendation?.title}
               </h4>
-              <span className={cn(
-                "text-xs font-medium",
-                getPriorityColor(topRecommendation?.priority || "low")
-              )}>
-                {getPriorityLabel(topRecommendation?.priority || "low")}
-              </span>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={cn(
+                  "text-xs font-semibold px-2 py-0.5 rounded-full",
+                  topRecommendation?.priority === "high" ? "bg-danger/20 text-danger" :
+                  topRecommendation?.priority === "medium" ? "bg-warning/20 text-warning" :
+                  "bg-primary/20 text-primary"
+                )}>
+                  {getPriorityLabel(topRecommendation?.priority || "low")}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Summary */}
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {summary}
-          </p>
+          {/* Key Data - Highlighted */}
+          <div className="rounded-lg bg-accent/5 border border-accent/20 p-3">
+            <p className="text-sm leading-relaxed">
+              <span className="font-bold text-foreground">{summary.split('.')[0]}.</span>
+              {summary.split('.').length > 1 && (
+                <span className="text-muted-foreground"> {summary.split('.').slice(1).join('.')}</span>
+              )}
+            </p>
+          </div>
 
           <Separator />
 

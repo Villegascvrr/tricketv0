@@ -16,16 +16,17 @@ const AIBadge = ({ count, criticalCount = 0, onClick, className }: AIBadgeProps)
     <Badge
       variant="outline"
       className={cn(
-        "gap-1.5 cursor-pointer hover:bg-primary/10 transition-colors",
-        criticalCount > 0 && "border-danger text-danger animate-fade-in",
+        "gap-1.5 cursor-pointer hover:bg-primary/10 hover:scale-105 transition-all",
+        criticalCount > 0 && "border-danger/50 bg-danger/10 text-danger animate-fade-in hover:bg-danger/15",
+        criticalCount === 0 && "border-primary/30 text-primary",
         className
       )}
       onClick={onClick}
     >
       <Brain className="h-3.5 w-3.5" />
-      <span className="font-medium">{count}</span>
+      <span className="font-semibold text-xs">{count}</span>
       {criticalCount > 0 && (
-        <span className="text-xs animate-scale-in">({criticalCount} críticas)</span>
+        <span className="text-xs font-semibold animate-scale-in">· {criticalCount} crítica{criticalCount > 1 ? 's' : ''}</span>
       )}
     </Badge>
   );

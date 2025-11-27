@@ -167,11 +167,11 @@ const EventDetail = () => {
 
       <div className="max-w-7xl mx-auto p-8">
         <Tabs defaultValue="summary" className="space-y-6">
-          <TabsList className="bg-card">
+          <TabsList className="bg-card border border-border">
             <TabsTrigger value="summary">Resumen</TabsTrigger>
-            <TabsTrigger value="executive">Ejecutivo</TabsTrigger>
+            <TabsTrigger value="executive">Panel Ejecutivo</TabsTrigger>
             <TabsTrigger value="audience">Audiencia</TabsTrigger>
-            <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
+            <TabsTrigger value="recommendations">Recomendaciones IA</TabsTrigger>
             <TabsTrigger value="export">Exportar</TabsTrigger>
           </TabsList>
 
