@@ -452,10 +452,12 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={providerData.map((p) => ({
-                  name: p.ticketera,
-                  value: p.vendidas,
-                }))}
+                data={providerData
+                  .filter((p) => p.vendidas > 0)
+                  .map((p) => ({
+                    name: p.ticketera,
+                    value: p.vendidas,
+                  }))}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -463,7 +465,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 outerRadius={80}
                 label={(entry) => entry.name}
               >
-                {providerData.map((entry, index) => (
+                {providerData.filter((p) => p.vendidas > 0).map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={CHART_COLORS[index % CHART_COLORS.length]}
@@ -475,13 +477,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           </ResponsiveContainer>
 
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={providerData}>
+            <BarChart data={providerData.filter((p) => p.vendidas > 0)}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ticketera" />
               <YAxis />
               <Tooltip />
               <Bar dataKey="vendidas">
-                {providerData.map((entry, index) => {
+                {providerData.filter((p) => p.vendidas > 0).map((entry, index) => {
                   const occupancy = entry.capacidad 
                     ? (entry.vendidas / entry.capacidad) * 100 
                     : 50;
