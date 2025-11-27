@@ -224,10 +224,10 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: Executiv
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary" />
-            Resumen Ejecutivo
+            Panel Ejecutivo
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Vista consolidada de métricas clave y pronósticos
+            Foto rápida de métricas clave, tendencias y predicciones para toma de decisiones
           </p>
         </div>
         {daysUntilEvent > 0 && (
