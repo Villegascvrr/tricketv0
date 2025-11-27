@@ -31,13 +31,16 @@ serve(async (req) => {
 
     if (eventError) throw eventError;
 
-    // Fetch tickets data
+    // Fetch tickets data (confirmed status only)
     const { data: tickets, error: ticketsError } = await supabase
       .from('tickets')
       .select('*')
-      .eq('event_id', eventId);
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
 
     if (ticketsError) throw ticketsError;
+    
+    console.log(`Fetched ${tickets.length} confirmed tickets for event ${eventId}`);
 
     // Fetch provider allocations
     const { data: allocations, error: allocationsError } = await supabase
@@ -51,6 +54,8 @@ serve(async (req) => {
     const totalTicketsSold = tickets.length;
     const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
     const avgPrice = totalRevenue / (totalTicketsSold || 1);
+    
+    console.log(`Total tickets sold: ${totalTicketsSold}, Total revenue: ${totalRevenue}, Avg price: ${avgPrice}`);
 
     // Sales by channel
     const channelStats = tickets.reduce((acc, ticket) => {
@@ -170,7 +175,14 @@ serve(async (req) => {
 
     const systemPrompt = `Eres un experto analista de eventos y marketing de entretenimiento.
 
-Analiza los datos del evento y genera recomendaciones accionables.
+Analiza los datos del evento y genera recomendaciones accionables basadas en la ocupación real y el rendimiento actual.
+
+CONTEXTO IMPORTANTE:
+- Analiza la ocupación real de cada proveedor y zona
+- Identifica proveedores con baja ocupación vs alta ocupación
+- Detecta canales y zonas que necesitan optimización
+- Reconoce los segmentos demográficos más activos
+- Evalúa la distribución geográfica de ventas
 
 ESTRUCTURA DE RESPUESTA:
 Cada recomendación debe tener:
@@ -179,22 +191,28 @@ Cada recomendación debe tener:
 - priority: "high" (crítica), "medium" (importante) o "low" (sugerencia)
 - category: "marketing", "pricing" o "alert"
 - scope: indica qué elemento del dashboard está relacionado
-  * "provider" para ticketeras específicas (Ticketmaster, Entradas.com, etc.)
-  * "channel" para canales internos (App móvil, RRPP, Taquilla, etc.)
+  * "provider" para ticketeras específicas (Ticketmaster, Entradas.com, Bclever, Forvenues)
+  * "channel" para canales internos (App móvil, RRPP, Taquilla, Online)
   * "zone" para zonas del evento (VIP, Pista, Grada, etc.)
-  * "ageSegment" para grupos de edad (18-24, 25-34, 45+, etc.)
-  * "city" para ciudades específicas (Madrid, Barcelona, etc.)
+  * "ageSegment" para grupos de edad (18-24, 25-34, 35-44, 45+)
+  * "city" para ciudades específicas (Madrid, Barcelona, Valencia, etc.)
   * "global" para recomendaciones generales
 - targetKey: nombre exacto del elemento (ej: "Ticketmaster", "RRPP", "VIP", "45+", "Barcelona")
   * Solo incluir si scope no es "global"
   * Usar los nombres exactos que aparecen en los datos
 
 PRIORIDADES:
-- high: problemas críticos, oportunidades urgentes, riesgos inmediatos
-- medium: optimizaciones importantes, tendencias relevantes
-- low: sugerencias menores, mejoras graduales
+- high: problemas críticos (ocupación <40%), oportunidades urgentes, riesgos inmediatos
+- medium: optimizaciones importantes (ocupación 40-70%), tendencias relevantes
+- low: sugerencias menores (ocupación >70%), mejoras graduales
+
+CATEGORÍAS:
+- marketing: campañas, segmentación, canales de promoción
+- pricing: estrategias de precios, paquetes, descuentos
+- alert: problemas urgentes, oportunidades críticas, desequilibrios
 
 Genera exactamente 6 recomendaciones: 2 de marketing, 2 de pricing y 2 de alertas/oportunidades.
+Enfócate en los proveedores y zonas con BAJA ocupación (<50%) y en capitalizar los de ALTA ocupación (>70%).
 
 IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que las recomendaciones aparezcan en los bloques correctos del dashboard.`;
 

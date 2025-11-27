@@ -48,6 +48,8 @@ const EventDetail = () => {
       return data;
     },
     enabled: !!id,
+    staleTime: 0, // Always refetch to get latest recommendations
+    refetchOnMount: true,
   });
 
   const recommendations = aiData?.recommendations || [];
