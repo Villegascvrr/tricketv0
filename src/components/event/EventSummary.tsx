@@ -507,7 +507,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                     key={row.ticketera} 
                     className={cn(
                       "border-b transition-colors",
-                      hasCritical && "bg-danger/5 border-danger/20",
+                      hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
                       !hasCritical && providerRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
@@ -623,7 +623,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       key={row.canal} 
                       className={cn(
                         "border-b transition-colors",
-                        hasCritical && "bg-danger/5 border-danger/20",
+                        hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
                         !hasCritical && channelRecs.length > 0 && "bg-warning/5 border-warning/20"
                       )}
                     >
@@ -699,7 +699,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                     key={row.zona} 
                     className={cn(
                       "border-b transition-colors",
-                      hasCritical && "bg-danger/5 border-danger/20",
+                      hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
                       !hasCritical && zoneRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
