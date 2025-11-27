@@ -138,47 +138,53 @@ const EventDetail = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* AI Chat Button - Primary */}
-              <Button 
-                onClick={() => setChatOpen(true)}
-                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span>Chat con IA</span>
-              </Button>
+            <div className="flex flex-col gap-3">
+              {/* First row - AI Buttons */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* AI Chat Button - Primary */}
+                <Button 
+                  onClick={() => setChatOpen(true)}
+                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Chat con IA</span>
+                </Button>
 
-              {/* AI Recommendations with Critical Badge - Primary */}
-              <Button 
-                onClick={() => setDrawerOpen(true)}
-                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors relative"
-              >
-                <Brain className="h-4 w-4" />
-                <span>IA: {recommendations.length} recomendaciones</span>
-                {criticalCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="h-6 px-2 text-xs font-semibold rounded-full"
-                  >
-                    {criticalCount} críticas
-                  </Badge>
-                )}
-              </Button>
+                {/* AI Recommendations with Critical Badge - Primary */}
+                <Button 
+                  onClick={() => setDrawerOpen(true)}
+                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors relative"
+                >
+                  <Brain className="h-4 w-4" />
+                  <span>IA: {recommendations.length} recomendaciones</span>
+                  {criticalCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="h-6 px-2 text-xs font-semibold rounded-full"
+                    >
+                      {criticalCount} críticas
+                    </Badge>
+                  )}
+                </Button>
+              </div>
 
-              {/* Ticket Provider Manager - Secondary */}
-              <TicketProviderManager
-                eventId={event.id}
-                totalCapacity={event.total_capacity}
-              />
+              {/* Second row - Management Buttons */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Ticket Provider Manager - Secondary */}
+                <TicketProviderManager
+                  eventId={event.id}
+                  totalCapacity={event.total_capacity}
+                />
 
-              {/* Import Data - Secondary */}
-              <Button 
-                variant="outline"
-                className="h-10 px-4 gap-2 rounded-full text-sm font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <Upload className="h-4 w-4" />
-                Importar Datos
-              </Button>
+                {/* Import Data - Secondary */}
+                <Button 
+                  variant="outline"
+                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  <Upload className="h-4 w-4" />
+                  Importar Datos
+                </Button>
+              </div>
             </div>
           </div>
         </div>
