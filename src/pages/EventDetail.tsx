@@ -15,6 +15,7 @@ import EventExport from "@/components/event/EventExport";
 import EventRecommendations from "@/components/event/EventRecommendations";
 import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
+import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 
 interface Event {
   id: string;
@@ -165,13 +166,22 @@ const EventDetail = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-8">
-        <Tabs defaultValue="summary" className="space-y-6">
+        <Tabs defaultValue="executive" className="space-y-6">
           <TabsList className="bg-card">
+            <TabsTrigger value="executive">Ejecutivo</TabsTrigger>
             <TabsTrigger value="summary">Resumen</TabsTrigger>
             <TabsTrigger value="audience">Audiencia</TabsTrigger>
             <TabsTrigger value="export">Exportar</TabsTrigger>
             <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="executive">
+            <ExecutiveDashboard
+              eventId={event.id}
+              totalCapacity={event.total_capacity}
+              eventStartDate={event.start_date}
+            />
+          </TabsContent>
 
           <TabsContent value="summary">
             <EventSummary 
