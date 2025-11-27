@@ -11,6 +11,7 @@ import EventSummary from "@/components/event/EventSummary";
 import EventAudience from "@/components/event/EventAudience";
 import EventExport from "@/components/event/EventExport";
 import EventRecommendations from "@/components/event/EventRecommendations";
+import TicketProviderManager from "@/components/event/TicketProviderManager";
 
 interface Event {
   id: string;
@@ -113,10 +114,16 @@ const EventDetail = () => {
               </div>
             </div>
 
-            <Button className="gap-2">
-              <Upload className="h-4 w-4" />
-              Importar Datos
-            </Button>
+            <div className="flex gap-2">
+              <TicketProviderManager
+                eventId={event.id}
+                totalCapacity={event.total_capacity}
+              />
+              <Button className="gap-2">
+                <Upload className="h-4 w-4" />
+                Importar Datos
+              </Button>
+            </div>
           </div>
         </div>
       </div>

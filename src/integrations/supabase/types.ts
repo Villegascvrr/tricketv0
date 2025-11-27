@@ -91,6 +91,44 @@ export type Database = {
           },
         ]
       }
+      ticket_provider_allocations: {
+        Row: {
+          allocated_capacity: number
+          created_at: string
+          event_id: string
+          id: string
+          notes: string | null
+          provider_name: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_capacity: number
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          provider_name: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_capacity?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          provider_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_provider_allocations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_templates: {
         Row: {
           created_at: string
