@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import AIBadge from "./AIBadge";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import ProgressBar from "@/components/ui/progress-bar";
 import {
   LineChart,
   Line,
@@ -482,6 +483,7 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2">Ticketera</th>
+                <th className="text-left py-2 min-w-[180px]">Progreso</th>
                 <th className="text-right py-2">Capacidad</th>
                 <th className="text-right py-2">Vendidas</th>
                 <th className="text-right py-2">% Ocupación</th>
@@ -505,19 +507,32 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       !hasCritical && providerRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
-                    <td className="py-2 font-medium flex items-center gap-2">
-                      {row.ticketera}
-                      {providerRecs.length > 0 && (
-                        <AIBadge 
-                          count={providerRecs.length}
-                          criticalCount={getCriticalCount(providerRecs)}
+                    <td className="py-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        {row.ticketera}
+                        {providerRecs.length > 0 && (
+                          <AIBadge 
+                            count={providerRecs.length}
+                            criticalCount={getCriticalCount(providerRecs)}
+                          />
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3">
+                      {row.capacidad ? (
+                        <ProgressBar 
+                          value={row.vendidas} 
+                          max={row.capacidad}
+                          showLabel={false}
                         />
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/D</span>
                       )}
                     </td>
                     <td className="text-right">
                       {row.capacidad?.toLocaleString() || "N/D"}
                     </td>
-                    <td className="text-right">{row.vendidas.toLocaleString()}</td>
+                    <td className="text-right font-medium">{row.vendidas.toLocaleString()}</td>
                     <td className={cn(
                       "text-right font-semibold",
                       row.capacidad && getOccupancyTextClass(occupancyNum)
@@ -649,6 +664,7 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2">Zona</th>
+                <th className="text-left py-2 min-w-[200px]">Progreso</th>
                 <th className="text-right py-2">Aforo</th>
                 <th className="text-right py-2">Vendidas</th>
                 <th className="text-right py-2">% Ocupación</th>
@@ -671,19 +687,32 @@ const EventSummary = ({ eventId, totalCapacity }: EventSummaryProps) => {
                       !hasCritical && zoneRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
-                    <td className="py-2 flex items-center gap-2">
-                      {row.zona}
-                      {zoneRecs.length > 0 && (
-                        <AIBadge 
-                          count={zoneRecs.length}
-                          criticalCount={getCriticalCount(zoneRecs)}
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        {row.zona}
+                        {zoneRecs.length > 0 && (
+                          <AIBadge 
+                            count={zoneRecs.length}
+                            criticalCount={getCriticalCount(zoneRecs)}
+                          />
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3">
+                      {row.aforo ? (
+                        <ProgressBar 
+                          value={row.vendidas} 
+                          max={row.aforo}
+                          showLabel={false}
                         />
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/D</span>
                       )}
                     </td>
                     <td className="text-right">
                       {row.aforo?.toLocaleString() || "N/D"}
                     </td>
-                    <td className="text-right">{row.vendidas}</td>
+                    <td className="text-right font-medium">{row.vendidas}</td>
                     <td className={cn(
                       "text-right font-semibold",
                       row.ocupacion !== "N/D" && getOccupancyTextClass(occupancyNum)
