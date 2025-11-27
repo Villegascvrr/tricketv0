@@ -201,6 +201,8 @@ const EventDetail = () => {
         onOpenChange={setDrawerOpen}
         recommendations={recommendations}
         isLoading={aiLoading}
+        eventName={event.name}
+        eventDate={format(new Date(event.start_date), "d 'de' MMMM 'de' yyyy", { locale: es })}
       />
     </div>
   );
