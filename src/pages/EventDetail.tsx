@@ -139,21 +139,19 @@ const EventDetail = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              {/* AI Chat Button */}
+              {/* AI Chat Button - Primary */}
               <Button 
-                variant="outline"
                 onClick={() => setChatOpen(true)}
-                className="h-10 px-4 gap-2 rounded-full border-border hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span>Chat con IA</span>
               </Button>
 
-              {/* AI Recommendations with Critical Badge */}
+              {/* AI Recommendations with Critical Badge - Primary */}
               <Button 
-                variant="outline"
                 onClick={() => setDrawerOpen(true)}
-                className="h-10 px-4 gap-2 rounded-full border-border hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium relative"
+                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors relative"
               >
                 <Brain className="h-4 w-4" />
                 <span>IA: {recommendations.length} recomendaciones</span>
@@ -167,15 +165,16 @@ const EventDetail = () => {
                 )}
               </Button>
 
-              {/* Ticket Provider Manager */}
+              {/* Ticket Provider Manager - Secondary */}
               <TicketProviderManager
                 eventId={event.id}
                 totalCapacity={event.total_capacity}
               />
 
-              {/* Import Data - Primary Action */}
+              {/* Import Data - Secondary */}
               <Button 
-                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
+                variant="outline"
+                className="h-10 px-4 gap-2 rounded-full text-sm font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 <Upload className="h-4 w-4" />
                 Importar Datos
