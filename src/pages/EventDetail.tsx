@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Brain } from "lucide-react";
+import { ArrowLeft, Upload, Brain, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import EventRecommendations from "@/components/event/EventRecommendations";
 import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
+import EventChatDrawer from "@/components/event/EventChatDrawer";
 
 interface Event {
   id: string;
@@ -33,6 +34,7 @@ const EventDetail = () => {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch AI recommendations
   const { data: aiData, isLoading: aiLoading } = useQuery({
@@ -137,6 +139,16 @@ const EventDetail = () => {
             </div>
 
             <div className="flex gap-2">
+              {/* AI Chat */}
+              <Button 
+                variant="outline"
+                onClick={() => setChatOpen(true)}
+                className="gap-2 border-primary/20 hover:bg-primary/10"
+              >
+                <MessageCircle className="h-4 w-4 text-primary" />
+                <span className="font-medium">Chat con IA</span>
+              </Button>
+
               {/* AI Alerts Center */}
               <Button 
                 variant="outline"
@@ -213,6 +225,14 @@ const EventDetail = () => {
         isLoading={aiLoading}
         eventName={event.name}
         eventDate={format(new Date(event.start_date), "d 'de' MMMM 'de' yyyy", { locale: es })}
+      />
+
+      {/* AI Chat Drawer */}
+      <EventChatDrawer
+        eventId={event.id}
+        eventName={event.name}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
       />
     </div>
   );
