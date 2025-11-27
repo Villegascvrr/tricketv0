@@ -138,37 +138,45 @@ const EventDetail = () => {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              {/* AI Chat */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* AI Chat Button */}
               <Button 
                 variant="outline"
                 onClick={() => setChatOpen(true)}
-                className="gap-2 border-primary/20 hover:bg-primary/10"
+                className="h-10 px-4 gap-2 rounded-full border-border hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
               >
-                <MessageCircle className="h-4 w-4 text-primary" />
-                <span className="font-medium">Chat con IA</span>
+                <MessageCircle className="h-4 w-4" />
+                <span>Chat con IA</span>
               </Button>
 
-              {/* AI Alerts Center */}
+              {/* AI Recommendations with Critical Badge */}
               <Button 
                 variant="outline"
                 onClick={() => setDrawerOpen(true)}
-                className="gap-2 border-primary/20 hover:bg-primary/10"
+                className="h-10 px-4 gap-2 rounded-full border-border hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium relative"
               >
-                <Brain className="h-4 w-4 text-primary" />
-                <span className="font-medium">IA: {recommendations.length} recomendaciones</span>
+                <Brain className="h-4 w-4" />
+                <span>IA: {recommendations.length} recomendaciones</span>
                 {criticalCount > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5">
+                  <Badge 
+                    variant="destructive" 
+                    className="h-6 px-2 text-xs font-semibold rounded-full"
+                  >
                     {criticalCount} críticas
                   </Badge>
                 )}
               </Button>
 
+              {/* Ticket Provider Manager */}
               <TicketProviderManager
                 eventId={event.id}
                 totalCapacity={event.total_capacity}
               />
-              <Button className="gap-2">
+
+              {/* Import Data - Primary Action */}
+              <Button 
+                className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
+              >
                 <Upload className="h-4 w-4" />
                 Importar Datos
               </Button>

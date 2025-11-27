@@ -159,7 +159,10 @@ const TicketProviderManager = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline"
+          className="h-10 px-4 rounded-full border-border hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+        >
           Gestionar Ticketeras
         </Button>
       </DialogTrigger>
