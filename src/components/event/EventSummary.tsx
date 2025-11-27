@@ -209,47 +209,60 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setChannelData(channelDataArray);
 
-      // Sales by PROVIDER (ticketing platform) with trends
-      // Fetch allocations FIRST
-      const { data: allocations } = await supabase
-        .from("ticket_provider_allocations")
-        .select("provider_name, allocated_capacity")
-        .eq("event_id", eventId);
+      // Sales by PROVIDER (ticketing platform) - HARDCODED DATA
+      const ticketingProviders = [
+        {
+          nombre: 'Ticketmaster',
+          capacidad: 30000,
+          vendidas: 23800,
+          ingresos: 2973592
+        },
+        {
+          nombre: 'Entradas.com',
+          capacidad: 12000,
+          vendidas: 4900,
+          ingresos: 367054
+        },
+        {
+          nombre: 'Bclever',
+          capacidad: 10000,
+          vendidas: 8800,
+          ingresos: 633226
+        },
+        {
+          nombre: 'Forvenues',
+          capacidad: 5000,
+          vendidas: 1850,
+          ingresos: 125220
+        }
+      ];
 
-      const allocationMap: { [key: string]: number } = {};
-      allocations?.forEach((a: ProviderAllocation) => {
-        allocationMap[a.provider_name] = a.allocated_capacity;
-      });
-
-      // Calculate sales stats for providers that have sales
+      // Calculate trends for each provider
       const providerStats: {
-        [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
+        [key: string]: { dailySales: { [day: string]: number } };
       } = {};
       tickets?.forEach((ticket) => {
         const provider = ticket.provider_name || "Sin ticketera";
         const day = new Date(ticket.sale_date).toISOString().split("T")[0];
         if (!providerStats[provider]) {
-          providerStats[provider] = { count: 0, revenue: 0, dailySales: {} };
+          providerStats[provider] = { dailySales: {} };
         }
-        providerStats[provider].count += 1;
-        providerStats[provider].revenue += Number(ticket.price);
         providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
       });
 
-      // Create provider data array - INCLUDE ALL ALLOCATED PROVIDERS
-      const providerDataArray: ProviderStats[] = Object.keys(allocationMap).map((provider) => {
-        const stats = providerStats[provider] || { count: 0, revenue: 0, dailySales: {} };
-        const allocated = allocationMap[provider];
-        const occupancy = (stats.count / allocated) * 100;
-        const remaining = allocated - stats.count;
+      // Map to ProviderStats format with calculated values
+      const providerDataArray: ProviderStats[] = ticketingProviders.map((provider) => {
+        const stats = providerStats[provider.nombre] || { dailySales: {} };
+        const occupancy = (provider.vendidas / provider.capacidad) * 100;
+        const remaining = provider.capacidad - provider.vendidas;
 
         return {
-          ticketera: provider,
-          capacidad: allocated,
-          vendidas: stats.count,
+          ticketera: provider.nombre,
+          capacidad: provider.capacidad,
+          vendidas: provider.vendidas,
           ocupacion: `${occupancy.toFixed(1)}%`,
           restantes: remaining.toLocaleString(),
-          ingresos: Math.round(stats.revenue),
+          ingresos: provider.ingresos,
           trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });
@@ -452,12 +465,10 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={providerData
-                  .filter((p) => p.vendidas > 0)
-                  .map((p) => ({
-                    name: p.ticketera,
-                    value: p.vendidas,
-                  }))}
+                data={providerData.map((p) => ({
+                  name: p.ticketera,
+                  value: p.vendidas,
+                }))}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -465,7 +476,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 outerRadius={80}
                 label={(entry) => entry.name}
               >
-                {providerData.filter((p) => p.vendidas > 0).map((entry, index) => (
+                {providerData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={CHART_COLORS[index % CHART_COLORS.length]}
@@ -477,13 +488,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           </ResponsiveContainer>
 
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={providerData.filter((p) => p.vendidas > 0)}>
+            <BarChart data={providerData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ticketera" />
               <YAxis />
               <Tooltip />
               <Bar dataKey="vendidas">
-                {providerData.filter((p) => p.vendidas > 0).map((entry, index) => {
+                {providerData.map((entry, index) => {
                   const occupancy = entry.capacidad 
                     ? (entry.vendidas / entry.capacidad) * 100 
                     : 50;
