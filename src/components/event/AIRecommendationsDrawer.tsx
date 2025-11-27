@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter } from "lucide-react";
+import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { exportRecommendationsToPDF } from "@/lib/exportRecommendationsPDF";
+import { useToast } from "@/hooks/use-toast";
 
 interface Recommendation {
   title: string;
@@ -23,16 +25,21 @@ interface AIRecommendationsDrawerProps {
   onOpenChange: (open: boolean) => void;
   recommendations: Recommendation[];
   isLoading: boolean;
+  eventName?: string;
+  eventDate?: string;
 }
 
 const AIRecommendationsDrawer = ({ 
   open, 
   onOpenChange, 
   recommendations,
-  isLoading 
+  isLoading,
+  eventName = "Evento",
+  eventDate = new Date().toLocaleDateString("es-ES")
 }: AIRecommendationsDrawerProps) => {
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
+  const { toast } = useToast();
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -96,6 +103,23 @@ const AIRecommendationsDrawer = ({
     setCategoryFilter(null);
   };
 
+  const handleExportPDF = () => {
+    try {
+      exportRecommendationsToPDF(recommendations, eventName, eventDate);
+      toast({
+        title: "PDF exportado",
+        description: "Las recomendaciones se han exportado correctamente.",
+      });
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el PDF. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl">
@@ -105,11 +129,24 @@ const AIRecommendationsDrawer = ({
               <Brain className="h-5 w-5 text-primary" />
               <SheetTitle>Centro de Alertas IA</SheetTitle>
             </div>
-            <SheetClose asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <X className="h-4 w-4" />
-              </Button>
-            </SheetClose>
+            <div className="flex items-center gap-2">
+              {!isLoading && recommendations.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportPDF}
+                  className="h-8 gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar PDF
+                </Button>
+              )}
+              <SheetClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <X className="h-4 w-4" />
+                </Button>
+              </SheetClose>
+            </div>
           </div>
           {!isLoading && (
             <div className="flex gap-2 pt-2">
