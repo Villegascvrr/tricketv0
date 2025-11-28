@@ -9,6 +9,7 @@ import NewEvent from "./pages/NewEvent";
 import EventDetail from "./pages/EventDetail";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/AppSidebar";
+import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
 
 const queryClient = new QueryClient();
 
@@ -21,41 +22,43 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route
-            path="/events"
-            element={
-              <AppLayout>
-                <Events />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/events/new"
-            element={
-              <AppLayout>
-                <NewEvent />
-              </AppLayout>
-            }
-          />
-          <Route
-            path="/events/:id"
-            element={
-              <AppLayout>
-                <EventDetail />
-              </AppLayout>
-            }
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <RecommendationStatusProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route
+              path="/events"
+              element={
+                <AppLayout>
+                  <Events />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/events/new"
+              element={
+                <AppLayout>
+                  <NewEvent />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <AppLayout>
+                  <EventDetail />
+                </AppLayout>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </RecommendationStatusProvider>
   </QueryClientProvider>
 );
 

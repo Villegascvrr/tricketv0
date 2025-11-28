@@ -2,6 +2,7 @@
 import { festivalData } from '@/data/festivalData';
 
 interface Recommendation {
+  id: string;
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
@@ -19,6 +20,7 @@ export function generateAIRecommendations(): Recommendation[] {
   // ALERTA: Ocupación global baja
   if (ocupacionGlobal < 0.7) {
     recs.push({
+      id: 'global-ocupacion-baja',
       title: 'Ocupación global del evento por debajo del 70%',
       description: `El evento tiene una ocupación del ${(ocupacionGlobal * 100).toFixed(1)}% (${festivalData.overview.entradasVendidas.toLocaleString('es-ES')} / ${festivalData.aforoTotal.toLocaleString('es-ES')} entradas, ${festivalData.overview.ingresosTotales.toLocaleString('es-ES')} € de ingresos). Considera lanzar campañas de marketing agresivas, promociones de último minuto o paquetes especiales para aumentar las ventas y alcanzar el 75-80% de ocupación.`,
       priority: 'high',
@@ -34,6 +36,7 @@ export function generateAIRecommendations(): Recommendation[] {
     // CRÍTICO: Proveedor con ocupación muy baja
     if (ocupacionProveedor < 0.3) {
       recs.push({
+        id: `provider-${provider.nombre.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '')}-critico`,
         title: `${provider.nombre} con ocupación crítica (${(ocupacionProveedor * 100).toFixed(1)}%)`,
         description: `${provider.nombre} solo ha vendido ${provider.vendidas.toLocaleString('es-ES')} de ${provider.capacidad.toLocaleString('es-ES')} entradas (${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Es urgente implementar una campaña de marketing intensiva específica para este canal o revisar la visibilidad y accesibilidad de compra.`,
         priority: 'high',
@@ -45,6 +48,7 @@ export function generateAIRecommendations(): Recommendation[] {
     // MEDIA: Proveedor con ocupación media-baja
     else if (ocupacionProveedor < 0.5) {
       recs.push({
+        id: `provider-${provider.nombre.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '')}-potenciar`,
         title: `Potenciar ventas en ${provider.nombre}`,
         description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}% (${provider.vendidas.toLocaleString('es-ES')} / ${provider.capacidad.toLocaleString('es-ES')} entradas, ${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Implementa promociones exclusivas, descuentos por tiempo limitado o paquetes atractivos para acelerar las ventas en este canal.`,
         priority: 'medium',
@@ -56,6 +60,7 @@ export function generateAIRecommendations(): Recommendation[] {
     // BUENO: Proveedor con buena ocupación pero se puede optimizar precio
     else if (ocupacionProveedor > 0.75) {
       recs.push({
+        id: `provider-${provider.nombre.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '')}-optimizar`,
         title: `${provider.nombre} con alta demanda - optimizar pricing`,
         description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}% (${provider.vendidas.toLocaleString('es-ES')} / ${provider.capacidad.toLocaleString('es-ES')} entradas, ${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Con esta alta demanda, puedes considerar ajustar precios al alza para entradas restantes o crear paquetes premium para maximizar ingresos.`,
         priority: 'medium',
@@ -73,6 +78,7 @@ export function generateAIRecommendations(): Recommendation[] {
     // Zona con alta ocupación - oportunidad de pricing
     if (ocupacionZona > 0.8) {
       recs.push({
+        id: `zone-${zone.zona.toLowerCase().replace(/\s+/g, '-')}-alta-demanda`,
         title: `Zona ${zone.zona} - alta demanda detectada`,
         description: `La zona ${zone.zona} tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación (${zone.vendidas.toLocaleString('es-ES')} / ${zone.aforo.toLocaleString('es-ES')} entradas, ${zone.ingresos.toLocaleString('es-ES')} € de ingresos). Considera aumentar precios para las entradas restantes o crear paquetes VIP exclusivos para maximizar el revenue de esta zona popular.`,
         priority: 'high',
@@ -84,6 +90,7 @@ export function generateAIRecommendations(): Recommendation[] {
     // Zona con baja ocupación - alerta
     else if (ocupacionZona < 0.5) {
       recs.push({
+        id: `zone-${zone.zona.toLowerCase().replace(/\s+/g, '-')}-baja-ocupacion`,
         title: `Zona ${zone.zona} con baja ocupación`,
         description: `La zona ${zone.zona} solo tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación (${zone.vendidas.toLocaleString('es-ES')} / ${zone.aforo.toLocaleString('es-ES')} entradas, ${zone.ingresos.toLocaleString('es-ES')} € de ingresos). Implementa descuentos específicos para esta zona o campañas de marketing que resalten sus ventajas.`,
         priority: 'medium',
@@ -100,6 +107,7 @@ export function generateAIRecommendations(): Recommendation[] {
   // Si el precio promedio es bajo, sugerir estrategia de upselling
   if (precioPromedio < 120) {
     recs.push({
+      id: 'global-precio-promedio-bajo',
       title: 'Precio promedio por entrada inferior a objetivo',
       description: `El precio promedio actual es de ${precioPromedio.toFixed(2)}€. Considera implementar estrategias de upselling como paquetes VIP, merchandising incluido, o experiencias premium para aumentar el ticket promedio.`,
       priority: 'medium',
@@ -112,6 +120,7 @@ export function generateAIRecommendations(): Recommendation[] {
   const vipZone = festivalData.zones.find(z => z.zona === 'VIP');
   if (vipZone && (vipZone.vendidas / vipZone.aforo) > 0.8) {
     recs.push({
+      id: 'global-exito-premium',
       title: 'Éxito en segmento premium - expandir oferta',
       description: `La zona VIP tiene excelente ocupación (${((vipZone.vendidas / vipZone.aforo) * 100).toFixed(1)}%). Esto indica que existe demanda para experiencias premium. Considera crear paquetes adicionales premium o aumentar la capacidad de zonas VIP en futuros eventos.`,
       priority: 'high',
