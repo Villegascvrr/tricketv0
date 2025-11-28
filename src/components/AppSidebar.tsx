@@ -1,55 +1,54 @@
 import { useState, useEffect } from "react";
-import { 
-  Calendar, 
-  LayoutDashboard, 
-  Settings, 
-  Brain,
-  FileText,
-  Plug,
-  Users,
-  HelpCircle,
-  Home,
-  ChevronLeft,
-  Menu
-} from "lucide-react";
+import { Calendar, LayoutDashboard, Settings, Brain, FileText, Plug, Users, HelpCircle, Home, ChevronLeft, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-  SidebarHeader,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TryTricketModal from "@/components/TryTricketModal";
 import { Sparkles } from "lucide-react";
-
-const mainItems = [
-  { title: "Inicio", url: "/dashboard", icon: Home },
-  { title: "Eventos", url: "/events", icon: Calendar },
-  { title: "Panel IA", url: "/ai-panel", icon: Brain },
-  { title: "Plantillas", url: "/templates", icon: FileText },
-  { title: "Integraciones", url: "/integrations", icon: Plug },
-];
-
-const secondaryItems = [
-  { title: "Equipo y permisos", url: "/team", icon: Users },
-  { title: "Configuración", url: "/settings", icon: Settings },
-  { title: "Ayuda & Feedback", url: "/help", icon: HelpCircle },
-];
-
+const mainItems = [{
+  title: "Inicio",
+  url: "/dashboard",
+  icon: Home
+}, {
+  title: "Eventos",
+  url: "/events",
+  icon: Calendar
+}, {
+  title: "Panel IA",
+  url: "/ai-panel",
+  icon: Brain
+}, {
+  title: "Plantillas",
+  url: "/templates",
+  icon: FileText
+}, {
+  title: "Integraciones",
+  url: "/integrations",
+  icon: Plug
+}];
+const secondaryItems = [{
+  title: "Equipo y permisos",
+  url: "/team",
+  icon: Users
+}, {
+  title: "Configuración",
+  url: "/settings",
+  icon: Settings
+}, {
+  title: "Ayuda & Feedback",
+  url: "/help",
+  icon: HelpCircle
+}];
 export function AppSidebar() {
-  const { state, toggleSidebar, isMobile } = useSidebar();
+  const {
+    state,
+    toggleSidebar,
+    isMobile
+  } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -74,77 +73,42 @@ export function AppSidebar() {
       localStorage.setItem("sidebar-state", state);
     }
   }, [state, isMobile]);
-
   const isActive = (path: string) => {
     if (path === "/events") {
       return currentPath === "/events" || currentPath.startsWith("/events/");
     }
     return currentPath === path;
   };
-
   const renderMenuItem = (item: typeof mainItems[0]) => {
     const active = isActive(item.url);
-    
-    return (
-      <SidebarMenuItem key={item.title}>
+    return <SidebarMenuItem key={item.title}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <SidebarMenuButton asChild className={cn("h-10", active && "bg-sidebar-accent")}>
-              <NavLink 
-                to={item.url} 
-                className="hover:bg-sidebar-accent/50"
-                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-              >
+              <NavLink to={item.url} className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
                 <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "")} />
                 {!collapsed && <span>{item.title}</span>}
               </NavLink>
             </SidebarMenuButton>
           </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent side="right" className="z-50">
+          {collapsed && <TooltipContent side="right" className="z-50">
               {item.title}
-            </TooltipContent>
-          )}
+            </TooltipContent>}
         </Tooltip>
-      </SidebarMenuItem>
-    );
+      </SidebarMenuItem>;
   };
-
-  return (
-    <Sidebar
-      collapsible="icon"
-      className={cn(
-        "border-r border-sidebar-border transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
-      )}
-    >
+  return <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-16" : "w-64")}>
       {/* Header with Logo and Toggle */}
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center justify-between">
-          {!collapsed && (
-            <div className="flex-1">
+          {!collapsed && <div className="flex-1">
               <h1 className="text-lg font-bold text-sidebar-foreground">
                 Tricket Brain
               </h1>
-              <p className="text-xs text-sidebar-foreground/60">
-                Análisis de eventos
-              </p>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className={cn(
-              "h-8 w-8 shrink-0",
-              collapsed && "mx-auto"
-            )}
-          >
-            {collapsed ? (
-              <Menu className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
+              <p className="text-xs text-sidebar-foreground/60">Festival Business Inteligence</p>
+            </div>}
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("h-8 w-8 shrink-0", collapsed && "mx-auto")}>
+            {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
       </SidebarHeader>
@@ -154,32 +118,22 @@ export function AppSidebar() {
         <div className={cn("px-3 py-4", collapsed && "px-2")}>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button
-                onClick={() => setTryModalOpen(true)}
-                className={cn(
-                  "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200",
-                  collapsed ? "h-10 w-10 p-0" : "h-10"
-                )}
-              >
+              <Button onClick={() => setTryModalOpen(true)} className={cn("w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200", collapsed ? "h-10 w-10 p-0" : "h-10")}>
                 <Sparkles className={cn("h-5 w-5", !collapsed && "mr-2")} />
                 {!collapsed && <span className="font-semibold">Probar gratis</span>}
               </Button>
             </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent side="right" className="z-50">
+            {collapsed && <TooltipContent side="right" className="z-50">
                 Probar Tricket gratis
-              </TooltipContent>
-            )}
+              </TooltipContent>}
           </Tooltip>
         </div>
 
         {/* Main Navigation */}
         <SidebarGroup>
-          {!collapsed && (
-            <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
+          {!collapsed && <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
               Principal
-            </SidebarGroupLabel>
-          )}
+            </SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-2">
               {mainItems.map(renderMenuItem)}
@@ -194,11 +148,9 @@ export function AppSidebar() {
 
         {/* Secondary Navigation */}
         <SidebarGroup>
-          {!collapsed && (
-            <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
+          {!collapsed && <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
               Cuenta
-            </SidebarGroupLabel>
-          )}
+            </SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-2">
               {secondaryItems.map(renderMenuItem)}
@@ -209,20 +161,13 @@ export function AppSidebar() {
 
       {/* Footer */}
       <SidebarFooter className="p-4 border-t border-sidebar-border">
-        {!collapsed && (
-          <p className="text-xs text-sidebar-foreground/40 text-center">
+        {!collapsed && <p className="text-xs text-sidebar-foreground/40 text-center">
             © 2024 Tricket Brain
-          </p>
-        )}
+          </p>}
       </SidebarFooter>
 
       {/* Try Tricket Modal */}
-      <TryTricketModal
-        open={tryModalOpen}
-        onOpenChange={setTryModalOpen}
-      />
-    </Sidebar>
-  );
+      <TryTricketModal open={tryModalOpen} onOpenChange={setTryModalOpen} />
+    </Sidebar>;
 }
-
 export default AppSidebar;
