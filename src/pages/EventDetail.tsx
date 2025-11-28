@@ -215,6 +215,7 @@ const EventDetail = () => {
               eventId={event.id}
               totalCapacity={event.total_capacity}
               eventStartDate={event.start_date}
+              onOpenRecommendations={() => setDrawerOpen(true)}
             />
           </TabsContent>
 

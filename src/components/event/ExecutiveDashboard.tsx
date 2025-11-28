@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { festivalData } from "@/data/festivalData";
+import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -10,7 +12,8 @@ import {
   Target,
   AlertCircle,
   Calendar,
-  Zap
+  Zap,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Sparkline from "@/components/ui/sparkline";
@@ -19,6 +22,7 @@ interface ExecutiveDashboardProps {
   eventId: string;
   totalCapacity: number | null;
   eventStartDate: string;
+  onOpenRecommendations?: () => void;
 }
 
 interface KPI {
@@ -37,12 +41,13 @@ interface Forecast {
   impact: string;
 }
 
-const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: ExecutiveDashboardProps) => {
+const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenRecommendations }: ExecutiveDashboardProps) => {
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [salesTrend, setSalesTrend] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [daysUntilEvent, setDaysUntilEvent] = useState(0);
+  const [topRecommendations, setTopRecommendations] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -57,82 +62,77 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: Executiv
       const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       setDaysUntilEvent(daysUntil);
 
-      // Fetch tickets data
-      const { data: tickets, error } = await supabase
-        .from("tickets")
-        .select("price, sale_date")
-        .eq("event_id", eventId)
-        .eq("status", "confirmed");
+      // Use data from festivalData
+      const totalSold = festivalData.overview.entradasVendidas;
+      const totalRevenue = festivalData.overview.ingresosTotales;
+      const capacity = festivalData.aforoTotal;
+      const occupancyRate = festivalData.overview.ocupacion * 100;
 
-      if (error) throw error;
-
-      const totalSold = tickets?.length || 0;
-      const totalRevenue = tickets?.reduce((sum, t) => sum + Number(t.price), 0) || 0;
-      const occupancyRate = totalCapacity ? (totalSold / totalCapacity) * 100 : 0;
-
-      // Calculate average daily sales (last 7 days)
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
-        return date.toISOString().split("T")[0];
-      });
-
-      const dailySales = last7Days.map(day => {
-        return tickets?.filter(t => 
-          new Date(t.sale_date).toISOString().split("T")[0] === day
-        ).length || 0;
-      });
+      // Generate realistic sales trend for last 7 days
+      // Simulate a distribution of sales over the last 7 days
+      const totalLast7Days = Math.floor(totalSold * 0.08); // ~8% of total sales in last 7 days
+      const dailySales = [
+        Math.floor(totalLast7Days * 0.12), // Day 1
+        Math.floor(totalLast7Days * 0.14), // Day 2
+        Math.floor(totalLast7Days * 0.13), // Day 3
+        Math.floor(totalLast7Days * 0.15), // Day 4
+        Math.floor(totalLast7Days * 0.16), // Day 5
+        Math.floor(totalLast7Days * 0.15), // Day 6
+        Math.floor(totalLast7Days * 0.15), // Day 7
+      ];
 
       setSalesTrend(dailySales);
 
       // Calculate trends (comparing last 7 days vs previous 7 days)
       const last7DaysTotal = dailySales.reduce((a, b) => a + b, 0);
-      const previous7Days = tickets?.filter(t => {
-        const date = new Date(t.sale_date);
-        const daysAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-        return daysAgo >= 7 && daysAgo < 14;
-      }).length || 0;
+      const previous7DaysTotal = Math.floor(totalSold * 0.09); // Previous week had slightly more
       
-      const salesTrend = previous7Days > 0 
-        ? ((last7DaysTotal - previous7Days) / previous7Days) * 100 
+      const salesTrendPercent = previous7DaysTotal > 0 
+        ? ((last7DaysTotal - previous7DaysTotal) / previous7DaysTotal) * 100 
         : 0;
 
       // Average ticket price
-      const avgTicketPrice = totalSold > 0 ? totalRevenue / totalSold : 0;
+      const avgTicketPrice = totalSold > 0 ? Math.round(totalRevenue / totalSold) : 0;
+
+      // Check against targets
+      const targetRevenue = 5000000; // 5M €
+      const targetSales = 50000;
+      const revenueVsTarget = (totalRevenue / targetRevenue) * 100;
+      const salesVsTarget = (totalSold / targetSales) * 100;
 
       // Build KPIs
       const kpisData: KPI[] = [
         {
           label: "Ocupación",
           value: `${occupancyRate.toFixed(1)}%`,
-          change: salesTrend,
-          trend: salesTrend > 0 ? "up" : salesTrend < 0 ? "down" : "stable",
+          change: salesTrendPercent,
+          trend: salesTrendPercent > 0 ? "up" : salesTrendPercent < 0 ? "down" : "stable",
           icon: <Target className="h-4 w-4" />,
-          color: occupancyRate >= 70 ? "success" : occupancyRate >= 30 ? "warning" : "danger"
+          color: occupancyRate >= 70 ? "success" : occupancyRate >= 50 ? "warning" : "danger"
         },
         {
-          label: "Ingresos",
-          value: `${(totalRevenue / 1000).toFixed(0)}K €`,
-          change: salesTrend,
-          trend: salesTrend > 0 ? "up" : salesTrend < 0 ? "down" : "stable",
+          label: "Ingresos brutos",
+          value: `${(totalRevenue / 1000000).toFixed(1)} M€`,
+          change: salesTrendPercent,
+          trend: salesTrendPercent > 0 ? "up" : salesTrendPercent < 0 ? "down" : "stable",
           icon: <DollarSign className="h-4 w-4" />,
-          color: "primary"
+          color: revenueVsTarget >= 90 ? "success" : revenueVsTarget >= 70 ? "warning" : "danger"
         },
         {
-          label: "Entradas Vendidas",
+          label: "Entradas vendidas",
           value: totalSold.toLocaleString(),
-          change: salesTrend,
-          trend: salesTrend > 0 ? "up" : salesTrend < 0 ? "down" : "stable",
+          change: salesTrendPercent,
+          trend: salesTrendPercent > 0 ? "up" : salesTrendPercent < 0 ? "down" : "stable",
           icon: <Users className="h-4 w-4" />,
-          color: "primary"
+          color: salesVsTarget >= 90 ? "success" : salesVsTarget >= 70 ? "warning" : "danger"
         },
         {
-          label: "Precio Medio",
-          value: `${avgTicketPrice.toFixed(0)} €`,
+          label: "Precio medio",
+          value: `${avgTicketPrice} €`,
           change: 0,
           trend: "stable",
           icon: <TrendingUp className="h-4 w-4" />,
-          color: "primary"
+          color: avgTicketPrice >= 95 && avgTicketPrice <= 115 ? "success" : "warning"
         }
       ];
 
@@ -142,49 +142,75 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: Executiv
       const forecastsData: Forecast[] = [];
 
       // Sales velocity forecast
-      if (daysUntil > 0 && totalCapacity) {
+      if (daysUntil > 0) {
         const avgDailySales = last7DaysTotal / 7;
         const projectedSales = totalSold + (avgDailySales * daysUntil);
-        const projectedOccupancy = (projectedSales / totalCapacity) * 100;
+        const projectedOccupancy = Math.min((projectedSales / capacity) * 100, 100);
         
         forecastsData.push({
-          metric: "Ocupación Final Estimada",
-          prediction: `${Math.min(projectedOccupancy, 100).toFixed(1)}%`,
-          confidence: avgDailySales > 5 ? "high" : avgDailySales > 2 ? "medium" : "low",
-          impact: projectedOccupancy >= 90 ? "Sold Out probable" : 
-                  projectedOccupancy >= 70 ? "Buena ocupación" : 
-                  "Mejora recomendada"
+          metric: "Ocupación final estimada",
+          prediction: `${projectedOccupancy.toFixed(1)}%`,
+          confidence: avgDailySales > 300 ? "high" : avgDailySales > 150 ? "medium" : "low",
+          impact: projectedOccupancy >= 90 && projectedOccupancy <= 110 ? "Dentro de objetivo" : 
+                  projectedOccupancy < 90 ? "Por debajo de objetivo (en riesgo)" : 
+                  "Por encima de objetivo (sobre cumplimiento)"
         });
       }
 
       // Revenue forecast
       const avgDailySales = last7DaysTotal / 7;
       const projectedRevenue = totalRevenue + (avgDailySales * avgTicketPrice * daysUntil);
+      const revenueVsTargetProjected = (projectedRevenue / targetRevenue) * 100;
+      
       forecastsData.push({
-        metric: "Ingresos Finales",
-        prediction: `${(projectedRevenue / 1000).toFixed(0)}K €`,
+        metric: "Ingresos finales estimados",
+        prediction: `${(projectedRevenue / 1000000).toFixed(1)} M€`,
         confidence: "medium",
-        impact: projectedRevenue > totalRevenue * 1.5 ? "Excepcional" : "Dentro de expectativas"
+        impact: revenueVsTargetProjected >= 90 && revenueVsTargetProjected <= 110 ? "Dentro de objetivo" :
+                revenueVsTargetProjected < 90 ? "Por debajo de objetivo (en riesgo)" :
+                "Por encima de objetivo (sobre cumplimiento)"
       });
 
-      // Trend forecast
-      if (salesTrend < -20) {
+      // Velocity status
+      let velocityStatus = "";
+      let velocityColor = "";
+      if (salesTrendPercent <= -25) {
+        velocityStatus = "Crítico";
+        velocityColor = "danger";
         forecastsData.push({
-          metric: "Velocidad de Ventas",
+          metric: "Velocidad de ventas",
+          prediction: "Desaceleración crítica",
+          confidence: "high",
+          impact: `Las ventas de esta semana están un ${Math.abs(salesTrendPercent).toFixed(1)}% por debajo de la semana anterior. Acción inmediata requerida.`
+        });
+      } else if (salesTrendPercent <= -10) {
+        velocityStatus = "En riesgo moderado";
+        velocityColor = "warning";
+        forecastsData.push({
+          metric: "Velocidad de ventas",
           prediction: "Desaceleración detectada",
           confidence: "high",
-          impact: "Acción inmediata requerida"
+          impact: `Las ventas de esta semana están un ${Math.abs(salesTrendPercent).toFixed(1)}% por debajo de la semana anterior. Revisa campañas y precios en los canales clave.`
         });
-      } else if (salesTrend > 20) {
+      } else if (salesTrendPercent > 10) {
+        velocityStatus = "Crecimiento saludable";
+        velocityColor = "success";
         forecastsData.push({
-          metric: "Velocidad de Ventas",
+          metric: "Velocidad de ventas",
           prediction: "Aceleración positiva",
           confidence: "high",
-          impact: "Mantener estrategia actual"
+          impact: `Las ventas crecieron un ${salesTrendPercent.toFixed(1)}% respecto a la semana anterior. Mantener estrategia actual.`
         });
       }
 
       setForecasts(forecastsData);
+
+      // Get top 3 high priority recommendations
+      const allRecommendations = generateAIRecommendations();
+      const topRecs = allRecommendations
+        .filter(rec => rec.priority === 'high')
+        .slice(0, 3);
+      setTopRecommendations(topRecs);
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -240,46 +266,71 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: Executiv
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, index) => (
-          <Card 
-            key={index} 
-            className={cn(
-              "p-4 hover:shadow-lg transition-all border-2",
-              kpi.color === "success" && "border-success/30 bg-success/5",
-              kpi.color === "warning" && "border-warning/30 bg-warning/5",
-              kpi.color === "danger" && "border-danger/30 bg-danger/5",
-              kpi.color === "primary" && "border-primary/30 bg-primary/5"
-            )}
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className={cn(
-                "p-2 rounded-lg",
-                kpi.color === "success" && "bg-success/20 text-success",
-                kpi.color === "warning" && "bg-warning/20 text-warning",
-                kpi.color === "danger" && "bg-danger/20 text-danger",
-                kpi.color === "primary" && "bg-primary/20 text-primary"
-              )}>
-                {kpi.icon}
-              </div>
-              {kpi.change !== 0 && (
-                <div className="flex items-center gap-1">
-                  {getTrendIcon(kpi.trend)}
-                  <span className={cn(
-                    "text-xs font-semibold",
-                    kpi.trend === "up" ? "text-success" : "text-danger"
-                  )}>
-                    {Math.abs(kpi.change).toFixed(1)}%
-                  </span>
-                </div>
+        {kpis.map((kpi, index) => {
+          // Calculate subtexts based on KPI label
+          let subtext = "";
+          if (kpi.label === "Ocupación") {
+            subtext = `${festivalData.overview.entradasVendidas.toLocaleString()} / ${festivalData.aforoTotal.toLocaleString()} asientos`;
+          } else if (kpi.label === "Ingresos brutos") {
+            subtext = "Objetivo: 5,0 M€";
+          } else if (kpi.label === "Entradas vendidas") {
+            subtext = "Objetivo: 50.000";
+          } else if (kpi.label === "Precio medio") {
+            subtext = "Rango esperado: 95–115 €";
+          }
+
+          return (
+            <Card 
+              key={index} 
+              className={cn(
+                "p-4 hover:shadow-lg transition-all border-2",
+                kpi.color === "success" && "border-success/30 bg-success/5",
+                kpi.color === "warning" && "border-warning/30 bg-warning/5",
+                kpi.color === "danger" && "border-danger/30 bg-danger/5",
+                kpi.color === "primary" && "border-primary/30 bg-primary/5"
               )}
-            </div>
-            <div>
-              <p className="text-2xl font-bold mb-1">{kpi.value}</p>
-              <p className="text-xs text-muted-foreground">{kpi.label}</p>
-            </div>
-          </Card>
-        ))}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={cn(
+                  "p-2 rounded-lg",
+                  kpi.color === "success" && "bg-success/20 text-success",
+                  kpi.color === "warning" && "bg-warning/20 text-warning",
+                  kpi.color === "danger" && "bg-danger/20 text-danger",
+                  kpi.color === "primary" && "bg-primary/20 text-primary"
+                )}>
+                  {kpi.icon}
+                </div>
+                {kpi.change !== 0 && (
+                  <div className="flex items-center gap-1">
+                    {getTrendIcon(kpi.trend)}
+                    <span className={cn(
+                      "text-xs font-semibold",
+                      kpi.trend === "up" ? "text-success" : "text-danger"
+                    )}>
+                      {Math.abs(kpi.change).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-2xl font-bold mb-1">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mb-1">{kpi.label}</p>
+                <p className="text-xs text-muted-foreground">{subtext}</p>
+                {kpi.color === "warning" && kpi.label !== "Precio medio" && (
+                  <Badge variant="outline" className="mt-2 text-xs border-warning/40 text-warning">
+                    Por debajo de objetivo
+                  </Badge>
+                )}
+                {kpi.color === "danger" && (
+                  <Badge variant="outline" className="mt-2 text-xs border-danger/40 text-danger">
+                    En riesgo
+                  </Badge>
+                )}
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Trends Section */}
@@ -340,38 +391,54 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate }: Executiv
         </div>
       </Card>
 
-      {/* Quick Actions */}
+      {/* AI Recommendations */}
       <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          Acciones Recomendadas
-        </h3>
-        <ul className="space-y-2">
-          {kpis[0]?.value && parseFloat(kpis[0].value) < 50 && (
-            <li className="flex items-start gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
-              <span>
-                <strong>Ocupación baja:</strong> Considera lanzar promociones o campañas de marketing adicionales
-              </span>
-            </li>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Acciones Recomendadas (IA)
+          </h3>
+          {onOpenRecommendations && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onOpenRecommendations}
+              className="text-xs"
+            >
+              Ver Centro de Alertas
+            </Button>
           )}
-          {salesTrend.reduce((a, b) => a + b, 0) / 7 < 5 && daysUntilEvent > 7 && (
-            <li className="flex items-start gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 text-danger mt-0.5 flex-shrink-0" />
-              <span>
-                <strong>Velocidad de ventas baja:</strong> Revisa estrategia de precios y canales de distribución
-              </span>
-            </li>
+        </div>
+        <div className="space-y-3">
+          {topRecommendations.length > 0 ? (
+            topRecommendations.map((rec) => (
+              <div 
+                key={rec.id}
+                className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+              >
+                <AlertCircle className="h-5 w-5 text-danger mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-semibold text-sm">{rec.title}</p>
+                    <Badge variant="outline" className="text-xs border-danger/40 text-danger">
+                      {rec.category === 'marketing' ? 'Marketing' : 
+                       rec.category === 'pricing' ? 'Pricing' : 
+                       rec.category === 'alert' ? 'Alerta' : 'Oportunidad'}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs bg-danger/10 text-danger border-danger/20">
+                      Prioridad Alta
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{rec.description}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No hay recomendaciones críticas en este momento.
+            </p>
           )}
-          {salesTrend[salesTrend.length - 1] > salesTrend[0] * 2 && (
-            <li className="flex items-start gap-2 text-sm">
-              <TrendingUp className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-              <span>
-                <strong>Aceleración positiva:</strong> Mantén estrategia actual y considera aumentar capacidad si es posible
-              </span>
-            </li>
-          )}
-        </ul>
+        </div>
       </Card>
     </div>
   );
