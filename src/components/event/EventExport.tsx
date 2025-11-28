@@ -7,8 +7,8 @@ interface EventExportProps {
 
 const EventExport = ({ eventId, eventName }: EventExportProps) => {
   return (
-    <div className="space-y-6">
-      <Card className="p-8 text-center">
+    <div className="space-y-4">
+      <Card className="p-6 text-center">
         <p className="text-muted-foreground">
           Módulo de Exportación - En desarrollo
         </p>

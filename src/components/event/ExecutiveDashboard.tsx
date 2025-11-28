@@ -244,28 +244,28 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary" />
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
             Panel Ejecutivo
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Foto rápida de métricas clave, tendencias y predicciones para toma de decisiones
           </p>
         </div>
         {daysUntilEvent > 0 && (
-          <Badge variant="outline" className="text-base px-4 py-2">
-            <Calendar className="h-4 w-4 mr-2" />
+          <Badge variant="outline" className="text-sm px-3 py-1.5">
+            <Calendar className="h-3.5 w-3.5 mr-1.5" />
             {daysUntilEvent} días hasta el evento
           </Badge>
         )}
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {kpis.map((kpi, index) => {
           // Calculate subtexts based on KPI label
           let subtext = "";
@@ -283,7 +283,7 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
             <Card 
               key={index} 
               className={cn(
-                "p-4 hover:shadow-lg transition-all border-2",
+                "p-3 hover:shadow-lg transition-all border-2",
                 kpi.color === "success" && "border-success/30 bg-success/5",
                 kpi.color === "warning" && "border-warning/30 bg-warning/5",
                 kpi.color === "danger" && "border-danger/30 bg-danger/5",
@@ -291,9 +291,9 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
               )}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <div className={cn(
-                  "p-2 rounded-lg",
+                  "p-1.5 rounded-lg",
                   kpi.color === "success" && "bg-success/20 text-success",
                   kpi.color === "warning" && "bg-warning/20 text-warning",
                   kpi.color === "danger" && "bg-danger/20 text-danger",
@@ -314,16 +314,16 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
                 )}
               </div>
               <div>
-                <p className="text-2xl font-bold mb-1">{kpi.value}</p>
-                <p className="text-xs text-muted-foreground font-medium mb-1">{kpi.label}</p>
+                <p className="text-xl font-bold mb-0.5">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mb-0.5">{kpi.label}</p>
                 <p className="text-xs text-muted-foreground">{subtext}</p>
                 {kpi.color === "warning" && kpi.label !== "Precio medio" && (
-                  <Badge variant="outline" className="mt-2 text-xs border-warning/40 text-warning">
+                  <Badge variant="outline" className="mt-1.5 text-xs border-warning/40 text-warning">
                     Por debajo de objetivo
                   </Badge>
                 )}
                 {kpi.color === "danger" && (
-                  <Badge variant="outline" className="mt-2 text-xs border-danger/40 text-danger">
+                  <Badge variant="outline" className="mt-1.5 text-xs border-danger/40 text-danger">
                     En riesgo
                   </Badge>
                 )}
@@ -334,47 +334,47 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       </div>
 
       {/* Trends Section */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
+      <Card className="p-4">
+        <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
           Tendencia de Ventas (últimos 7 días)
         </h3>
-        <div className="h-32">
+        <div className="h-24">
           <Sparkline data={salesTrend} className="w-full h-full" />
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+        <div className="mt-3 grid grid-cols-3 gap-3 text-center">
           <div>
-            <p className="text-2xl font-bold">{salesTrend.reduce((a, b) => a + b, 0)}</p>
+            <p className="text-xl font-bold">{salesTrend.reduce((a, b) => a + b, 0)}</p>
             <p className="text-xs text-muted-foreground">Ventas últimos 7d</p>
           </div>
           <div>
-            <p className="text-2xl font-bold">
+            <p className="text-xl font-bold">
               {(salesTrend.reduce((a, b) => a + b, 0) / 7).toFixed(1)}
             </p>
             <p className="text-xs text-muted-foreground">Promedio diario</p>
           </div>
           <div>
-            <p className="text-2xl font-bold">{Math.max(...salesTrend)}</p>
+            <p className="text-xl font-bold">{Math.max(...salesTrend)}</p>
             <p className="text-xs text-muted-foreground">Día pico</p>
           </div>
         </div>
       </Card>
 
       {/* Forecasts Section */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-primary" />
+      <Card className="p-4">
+        <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-primary" />
           Pronósticos y Predicciones
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {forecasts.map((forecast, index) => (
             <div 
               key={index} 
-              className="flex items-start justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+              className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
             >
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold">{forecast.metric}</p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="font-semibold text-sm">{forecast.metric}</p>
                   <Badge 
                     variant="outline" 
                     className={cn("text-xs", getConfidenceBadge(forecast.confidence))}
@@ -383,8 +383,8 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
                      forecast.confidence === "medium" ? "Media confianza" : "Baja confianza"}
                   </Badge>
                 </div>
-                <p className="text-2xl font-bold text-primary mb-1">{forecast.prediction}</p>
-                <p className="text-sm text-muted-foreground">{forecast.impact}</p>
+                <p className="text-xl font-bold text-primary mb-0.5">{forecast.prediction}</p>
+                <p className="text-xs text-muted-foreground">{forecast.impact}</p>
               </div>
             </div>
           ))}
@@ -392,10 +392,10 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       </Card>
 
       {/* AI Recommendations */}
-      <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+      <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
             Acciones Recomendadas (IA)
           </h3>
           {onOpenRecommendations && (
@@ -403,23 +403,23 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
               variant="outline" 
               size="sm"
               onClick={onOpenRecommendations}
-              className="text-xs"
+              className="text-xs h-7"
             >
               Ver Centro de Alertas
             </Button>
           )}
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {topRecommendations.length > 0 ? (
             topRecommendations.map((rec) => (
               <div 
                 key={rec.id}
-                className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                className="flex items-start gap-2 p-2.5 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
               >
-                <AlertCircle className="h-5 w-5 text-danger mt-0.5 flex-shrink-0" />
+                <AlertCircle className="h-4 w-4 text-danger mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-sm">{rec.title}</p>
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <p className="font-semibold text-xs">{rec.title}</p>
                     <Badge variant="outline" className="text-xs border-danger/40 text-danger">
                       {rec.category === 'marketing' ? 'Marketing' : 
                        rec.category === 'pricing' ? 'Pricing' : 
@@ -429,12 +429,12 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
                       Prioridad Alta
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{rec.description}</p>
+                  <p className="text-xs text-muted-foreground">{rec.description}</p>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               No hay recomendaciones críticas en este momento.
             </p>
           )}
