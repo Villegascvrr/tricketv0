@@ -103,90 +103,93 @@ const EventDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="max-w-7xl mx-auto px-8 py-4">
           <Button
             variant="ghost"
-            className="mb-4"
+            size="sm"
+            className="mb-2"
             onClick={() => navigate("/events")}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-3 w-3 mr-1" />
             Volver a eventos
           </Button>
 
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">
-                  {event.name}
-                </h1>
-                <span className="text-xs font-medium px-3 py-1 bg-primary/10 text-primary rounded-full">
-                  {event.type}
-                </span>
-              </div>
-              <div className="flex gap-6 text-sm text-muted-foreground">
-                <span>{event.venue}</span>
-                <span>
-                  {format(new Date(event.start_date), "d MMM yyyy", {
-                    locale: es,
-                  })}
-                  {event.start_date !== event.end_date &&
-                    ` - ${format(new Date(event.end_date), "d MMM yyyy", {
-                      locale: es,
-                    })}`}
-                </span>
-                {event.total_capacity && (
-                  <span>Aforo: {event.total_capacity.toLocaleString()}</span>
-                )}
-              </div>
+          {/* Línea 1: Título + Chip | Botones principales */}
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                {event.name}
+              </h1>
+              <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                {event.type}
+              </span>
             </div>
 
-            <div className="flex flex-col gap-3">
-              {/* First row - AI Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* AI Chat Button - Primary */}
-                <Button 
-                  onClick={() => setChatOpen(true)}
-                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>Chat con IA</span>
-                </Button>
+            <div className="flex items-center gap-2">
+              {/* AI Chat Button - Primary */}
+              <Button 
+                onClick={() => setChatOpen(true)}
+                size="sm"
+                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium bg-primary hover:bg-primary/90 transition-colors"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Chat con IA</span>
+              </Button>
 
-                {/* AI Recommendations with Critical Badge - Primary */}
-                <Button 
-                  onClick={() => setDrawerOpen(true)}
-                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium bg-primary hover:bg-primary/90 transition-colors relative"
-                >
-                  <Brain className="h-4 w-4" />
-                  <span>IA: {recommendations.length} recomendaciones</span>
-                  {criticalCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="h-6 px-2 text-xs font-semibold rounded-full"
-                    >
-                      {criticalCount} críticas
-                    </Badge>
-                  )}
-                </Button>
-              </div>
+              {/* AI Recommendations with Critical Badge - Primary */}
+              <Button 
+                onClick={() => setDrawerOpen(true)}
+                size="sm"
+                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium bg-primary hover:bg-primary/90 transition-colors relative"
+              >
+                <Brain className="h-3.5 w-3.5" />
+                <span>IA: {recommendations.length} recomendaciones</span>
+                {criticalCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="h-5 px-1.5 text-xs font-semibold rounded-full"
+                  >
+                    {criticalCount} críticas
+                  </Badge>
+                )}
+              </Button>
+            </div>
+          </div>
 
-              {/* Second row - Management Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Ticket Provider Manager - Secondary */}
-                <TicketProviderManager
-                  eventId={event.id}
-                  totalCapacity={event.total_capacity}
-                />
+          {/* Línea 2: Subtítulo (lugar, fechas, aforo) | Botones secundarios */}
+          <div className="flex justify-between items-center">
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <span>{event.venue}</span>
+              <span>
+                {format(new Date(event.start_date), "d MMM yyyy", {
+                  locale: es,
+                })}
+                {event.start_date !== event.end_date &&
+                  ` - ${format(new Date(event.end_date), "d MMM yyyy", {
+                    locale: es,
+                  })}`}
+              </span>
+              {event.total_capacity && (
+                <span>Aforo: {event.total_capacity.toLocaleString()}</span>
+              )}
+            </div>
 
-                {/* Import Data - Secondary */}
-                <Button 
-                  variant="outline"
-                  className="h-10 px-4 gap-2 rounded-full text-sm font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  <Upload className="h-4 w-4" />
-                  Importar Datos
-                </Button>
-              </div>
+            <div className="flex items-center gap-2">
+              {/* Ticket Provider Manager - Secondary */}
+              <TicketProviderManager
+                eventId={event.id}
+                totalCapacity={event.total_capacity}
+              />
+
+              {/* Import Data - Secondary */}
+              <Button 
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                Importar Datos
+              </Button>
             </div>
           </div>
         </div>
