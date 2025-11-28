@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { festivalData } from "@/data/festivalData";
-import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
+import { supabase } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -47,7 +47,23 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
   const [salesTrend, setSalesTrend] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [daysUntilEvent, setDaysUntilEvent] = useState(0);
-  const [topRecommendations, setTopRecommendations] = useState<any[]>([]);
+
+  // Fetch AI recommendations from edge function
+  const { data: aiData } = useQuery({
+    queryKey: ['event-recommendations', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('event-recommendations', {
+        body: { eventId }
+      });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!eventId,
+  });
+
+  const topRecommendations = (aiData?.recommendations || [])
+    .filter((rec: any) => rec.priority === 'high')
+    .slice(0, 3);
 
   useEffect(() => {
     fetchDashboardData();
@@ -62,11 +78,20 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       setDaysUntilEvent(daysUntil);
 
-      // Use data from festivalData
-      const totalSold = festivalData.overview.entradasVendidas;
-      const totalRevenue = festivalData.overview.ingresosTotales;
-      const capacity = festivalData.aforoTotal;
-      const occupancyRate = festivalData.overview.ocupacion * 100;
+      // Fetch tickets from database
+      const { data: tickets, error: ticketsError } = await supabase
+        .from("tickets")
+        .select("price, sale_date")
+        .eq("event_id", eventId)
+        .eq("status", "confirmed");
+
+      if (ticketsError) throw ticketsError;
+
+      // Calculate totals from real data
+      const totalSold = tickets?.length || 0;
+      const totalRevenue = tickets?.reduce((sum, t) => sum + Number(t.price), 0) || 0;
+      const capacity = totalCapacity || 62000; // Use totalCapacity prop or default
+      const occupancyRate = (totalSold / capacity) * 100;
 
       // Generate realistic sales trend for last 7 days
       // Simulate a distribution of sales over the last 7 days
@@ -205,13 +230,6 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
 
       setForecasts(forecastsData);
 
-      // Get top 3 high priority recommendations
-      const allRecommendations = generateAIRecommendations();
-      const topRecs = allRecommendations
-        .filter(rec => rec.priority === 'high')
-        .slice(0, 3);
-      setTopRecommendations(topRecs);
-
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -270,7 +288,12 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
           // Calculate subtexts based on KPI label
           let subtext = "";
           if (kpi.label === "Ocupación") {
-            subtext = `${festivalData.overview.entradasVendidas.toLocaleString()} / ${festivalData.aforoTotal.toLocaleString()} asientos`;
+            // Subtext will be dynamically calculated from the KPI value
+            const occupancyMatch = kpi.value.match(/[\d.]+/);
+            const occupancyPercent = occupancyMatch ? parseFloat(occupancyMatch[0]) : 0;
+            const capacity = totalCapacity || 62000;
+            const soldCount = Math.round((occupancyPercent / 100) * capacity);
+            subtext = `${soldCount.toLocaleString()} / ${capacity.toLocaleString()} asientos`;
           } else if (kpi.label === "Ingresos brutos") {
             subtext = "Objetivo: 5,0 M€";
           } else if (kpi.label === "Entradas vendidas") {

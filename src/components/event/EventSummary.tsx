@@ -9,8 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
-import { festivalData, calculateProviderOccupancy, calculateProviderRemaining } from "@/data/festivalData";
-import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { Button } from "@/components/ui/button";
 import {
   LineChart,
@@ -113,8 +111,20 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerContext, setDrawerContext] = useState<{ type: 'provider' | 'zone' | 'ageSegment' | 'global'; value: string } | undefined>(undefined);
 
-  // Generate AI recommendations from festivalData
-  const recommendations: AIRecommendation[] = generateAIRecommendations();
+  // Fetch AI recommendations from edge function
+  const { data: aiData } = useQuery({
+    queryKey: ['event-recommendations', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('event-recommendations', {
+        body: { eventId }
+      });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!eventId,
+  });
+
+  const recommendations: AIRecommendation[] = aiData?.recommendations || [];
 
   const getRecommendationsForScope = (scope: string, targetKey?: string) => {
     return recommendations.filter(r => {
@@ -144,10 +154,10 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       if (error) throw error;
 
-      // Use festivalData as single source of truth
-      const totalSold = festivalData.overview.entradasVendidas;
-      const grossRevenue = festivalData.overview.ingresosTotales;
-      const occupancyRate = festivalData.overview.ocupacion * 100;
+      // Calculate totals from real data
+      const totalSold = tickets?.length || 0;
+      const grossRevenue = tickets?.reduce((sum, t) => sum + Number(t.price), 0) || 0;
+      const occupancyRate = totalCapacity ? (totalSold / totalCapacity) * 100 : 0;
 
       setKpis({ totalSold, occupancyRate, grossRevenue });
 
@@ -204,66 +214,103 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setChannelData(channelDataArray);
 
-      // Sales by PROVIDER (ticketing platform) - FROM FESTIVALDATA
-      // ÚNICA FUENTE DE DATOS: festivalData.ticketingProviders
+      // Fetch provider allocations
+      const { data: allocations, error: allocError } = await supabase
+        .from("ticket_provider_allocations")
+        .select("*")
+        .eq("event_id", eventId);
 
-      // Calculate trends for each provider
-      const providerStats: {
-        [key: string]: { dailySales: { [day: string]: number } };
+      if (allocError) throw allocError;
+
+      // Sales by PROVIDER (ticketing platform) - FROM REAL DATA
+      const providerStatsCalc: {
+        [key: string]: { count: number; revenue: number; allocated: number; dailySales: { [day: string]: number } };
       } = {};
+      
       tickets?.forEach((ticket) => {
         const provider = ticket.provider_name || "Sin ticketera";
         const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        if (!providerStats[provider]) {
-          providerStats[provider] = { dailySales: {} };
+        if (!providerStatsCalc[provider]) {
+          providerStatsCalc[provider] = { count: 0, revenue: 0, allocated: 0, dailySales: {} };
         }
-        providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
+        providerStatsCalc[provider].count += 1;
+        providerStatsCalc[provider].revenue += Number(ticket.price);
+        providerStatsCalc[provider].dailySales[day] = (providerStatsCalc[provider].dailySales[day] || 0) + 1;
       });
 
-      // Map festivalData.ticketingProviders to ProviderStats format
-      const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider) => {
-        const stats = providerStats[provider.nombre] || { dailySales: {} };
-        const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
-        const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
+      // Add allocation data
+      allocations?.forEach(alloc => {
+        if (providerStatsCalc[alloc.provider_name]) {
+          providerStatsCalc[alloc.provider_name].allocated = alloc.allocated_capacity;
+        } else {
+          providerStatsCalc[alloc.provider_name] = { 
+            count: 0, 
+            revenue: 0, 
+            allocated: alloc.allocated_capacity, 
+            dailySales: {} 
+          };
+        }
+      });
+
+      const providerDataArray: ProviderStats[] = Object.entries(providerStatsCalc).map(([name, stats]) => {
+        const occupancy = stats.allocated > 0 ? (stats.count / stats.allocated) * 100 : 0;
+        const remaining = stats.allocated - stats.count;
 
         return {
-          ticketera: provider.nombre,
-          capacidad: provider.capacidad,
-          vendidas: provider.vendidas,
+          ticketera: name,
+          capacidad: stats.allocated,
+          vendidas: stats.count,
           ocupacion: `${occupancy.toFixed(1)}%`,
-          restantes: remaining.toLocaleString(),
-          ingresos: provider.ingresos,
+          restantes: remaining > 0 ? remaining.toLocaleString() : "0",
+          ingresos: Math.round(stats.revenue),
           trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });
 
       setProviderData(providerDataArray);
 
-      // Sales by ZONE - FROM FESTIVALDATA
-      // ÚNICA FUENTE DE DATOS: festivalData.zones
+      // Fetch zones
+      const { data: zones, error: zonesError } = await supabase
+        .from("zones")
+        .select("*")
+        .eq("event_id", eventId);
+
+      if (zonesError) throw zonesError;
+
+      // Sales by ZONE - FROM REAL DATA
+      const zoneStatsCalc: { 
+        [key: string]: { count: number; revenue: number; capacity: number; dailySales: { [day: string]: number } } 
+      } = {};
       
-      // Calculate trends for each zone from tickets (keep for sparkline)
-      const zoneStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
       tickets?.forEach((ticket) => {
         const zone = ticket.zone_name || "Sin zona";
         const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        if (!zoneStats[zone]) {
-          zoneStats[zone] = { dailySales: {} };
+        if (!zoneStatsCalc[zone]) {
+          zoneStatsCalc[zone] = { count: 0, revenue: 0, capacity: 0, dailySales: {} };
         }
-        zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
+        zoneStatsCalc[zone].count += 1;
+        zoneStatsCalc[zone].revenue += Number(ticket.price);
+        zoneStatsCalc[zone].dailySales[day] = (zoneStatsCalc[zone].dailySales[day] || 0) + 1;
       });
 
-      // Map festivalData.zones to zone data format
-      const zoneDataArray = festivalData.zones.map((zone) => {
-        const stats = zoneStats[zone.zona] || { dailySales: {} };
-        const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
+      // Add capacity data from zones table
+      zones?.forEach(zone => {
+        if (zoneStatsCalc[zone.name]) {
+          zoneStatsCalc[zone.name].capacity = zone.capacity || 0;
+        } else {
+          zoneStatsCalc[zone.name] = { count: 0, revenue: 0, capacity: zone.capacity || 0, dailySales: {} };
+        }
+      });
+
+      const zoneDataArray = Object.entries(zoneStatsCalc).map(([name, stats]) => {
+        const porcentajeOcupacionZona = stats.capacity > 0 ? (stats.count / stats.capacity) * 100 : 0;
 
         return {
-          zona: zone.zona,
-          vendidas: zone.vendidas,
-          aforo: zone.aforo,
+          zona: name,
+          vendidas: stats.count,
+          aforo: stats.capacity,
           ocupacion: porcentajeOcupacionZona.toFixed(1),
-          ingresos: zone.ingresos,
+          ingresos: Math.round(stats.revenue),
           trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });

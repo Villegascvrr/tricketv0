@@ -26,7 +26,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { festivalData } from "@/data/festivalData";
 
 interface EventAudienceProps {
   eventId: string;
@@ -94,52 +93,118 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
     loadAudienceData();
   }, [eventId]);
 
-  const loadAudienceData = () => {
+  const loadAudienceData = async () => {
     setLoading(true);
-    
-    // Usar datos de festivalData.audiencia
-    const { audiencia } = festivalData;
-    const total = audiencia.totalAsistentes;
+    try {
+      // Fetch tickets with all relevant data
+      const { data: tickets, error } = await supabase
+        .from("tickets")
+        .select("buyer_province, buyer_city, buyer_age, has_email, has_phone, marketing_consent")
+        .eq("event_id", eventId)
+        .eq("status", "confirmed");
 
-    // Cargar datos de provincias
-    const provinceArray = audiencia.provincias.map(p => ({
-      location: p.nombre,
-      count: p.asistentes,
-      percentage: (p.asistentes / total) * 100
-    }));
-    setProvinceData(provinceArray);
+      if (error) throw error;
 
-    // Cargar datos de ciudades
-    const cityArray = audiencia.ciudades.map(c => ({
-      location: c.nombre,
-      count: c.asistentes,
-      percentage: (c.asistentes / total) * 100
-    }));
-    setCityData(cityArray);
+      const total = tickets?.length || 0;
 
-    // Cargar datos de edades
-    const ageArray = audiencia.edades.map(e => ({
-      range: e.rango,
-      count: e.asistentes,
-      percentage: (e.asistentes / total) * 100
-    }));
-    setAgeData(ageArray);
+      // Calculate province distribution
+      const provinceStats: { [key: string]: number } = {};
+      tickets?.forEach(ticket => {
+        const province = ticket.buyer_province || "Desconocido";
+        provinceStats[province] = (provinceStats[province] || 0) + 1;
+      });
 
-    // Cargar estadísticas de contacto
-    setContactStats({
-      emailPercentage: (audiencia.contactStats.conEmail / total) * 100,
-      phonePercentage: (audiencia.contactStats.conTelefono / total) * 100,
-      marketingConsentPercentage: (audiencia.contactStats.consentimientoMarketing / total) * 100,
-      totalTickets: total,
-    });
+      const provinceArray = Object.entries(provinceStats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([location, count]) => ({
+          location,
+          count,
+          percentage: total > 0 ? (count / total) * 100 : 0
+        }));
+      setProvinceData(provinceArray);
+      setAvailableProvinces(Object.keys(provinceStats));
 
-    // Opciones de filtros
-    setAvailableProvinces(audiencia.provincias.map(p => p.nombre));
-    setAvailableCities(audiencia.ciudades.map(c => c.nombre));
-    setAvailableChannels([]);
-    setAvailableTicketTypes([]);
+      // Calculate city distribution
+      const cityStats: { [key: string]: number } = {};
+      tickets?.forEach(ticket => {
+        const city = ticket.buyer_city || "Desconocido";
+        cityStats[city] = (cityStats[city] || 0) + 1;
+      });
 
-    setLoading(false);
+      const cityArray = Object.entries(cityStats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15) // Top 15 cities
+        .map(([location, count]) => ({
+          location,
+          count,
+          percentage: total > 0 ? (count / total) * 100 : 0
+        }));
+      setCityData(cityArray);
+      setAvailableCities(Object.keys(cityStats));
+
+      // Calculate age distribution
+      const ageRangeStats: { [key: string]: number } = {
+        '<18': 0,
+        '18-24': 0,
+        '25-34': 0,
+        '35-44': 0,
+        '45+': 0
+      };
+
+      tickets?.forEach(ticket => {
+        if (ticket.buyer_age) {
+          if (ticket.buyer_age < 18) ageRangeStats['<18']++;
+          else if (ticket.buyer_age < 25) ageRangeStats['18-24']++;
+          else if (ticket.buyer_age < 35) ageRangeStats['25-34']++;
+          else if (ticket.buyer_age < 45) ageRangeStats['35-44']++;
+          else ageRangeStats['45+']++;
+        }
+      });
+
+      const ageArray = Object.entries(ageRangeStats).map(([range, count]) => ({
+        range,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0
+      }));
+      setAgeData(ageArray);
+
+      // Calculate contact stats
+      const withEmail = tickets?.filter(t => t.has_email).length || 0;
+      const withPhone = tickets?.filter(t => t.has_phone).length || 0;
+      const withMarketing = tickets?.filter(t => t.marketing_consent).length || 0;
+
+      setContactStats({
+        emailPercentage: total > 0 ? (withEmail / total) * 100 : 0,
+        phonePercentage: total > 0 ? (withPhone / total) * 100 : 0,
+        marketingConsentPercentage: total > 0 ? (withMarketing / total) * 100 : 0,
+        totalTickets: total,
+      });
+
+      // For filters, we'll need to fetch unique values
+      const { data: channelsData } = await supabase
+        .from("tickets")
+        .select("channel")
+        .eq("event_id", eventId)
+        .not("channel", "is", null);
+      
+      const { data: ticketTypesData } = await supabase
+        .from("tickets")
+        .select("ticket_type")
+        .eq("event_id", eventId)
+        .not("ticket_type", "is", null);
+
+      const uniqueChannels = [...new Set(channelsData?.map(t => t.channel) || [])];
+      const uniqueTicketTypes = [...new Set(ticketTypesData?.map(t => t.ticket_type) || [])];
+      
+      setAvailableChannels(uniqueChannels);
+      setAvailableTicketTypes(uniqueTicketTypes);
+
+    } catch (error) {
+      console.error("Error loading audience data:", error);
+      toast.error("Error al cargar datos de audiencia");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportSegment = async () => {
