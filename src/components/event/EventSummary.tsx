@@ -233,37 +233,31 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setProviderData(providerDataArray);
 
-      // Sales by zone with trends
-      const zoneStats: { [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } } } =
-        {};
+      // Sales by ZONE - FROM FESTIVALDATA
+      // ÚNICA FUENTE DE DATOS: festivalData.zones
+      
+      // Calculate trends for each zone from tickets (keep for sparkline)
+      const zoneStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
       tickets?.forEach((ticket) => {
         const zone = ticket.zone_name || "Sin zona";
         const day = new Date(ticket.sale_date).toISOString().split("T")[0];
         if (!zoneStats[zone]) {
-          zoneStats[zone] = { count: 0, revenue: 0, dailySales: {} };
+          zoneStats[zone] = { dailySales: {} };
         }
-        zoneStats[zone].count += 1;
-        zoneStats[zone].revenue += Number(ticket.price);
         zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
       });
 
-      // Get zone capacities
-      const { data: zones } = await supabase
-        .from("zones")
-        .select("name, capacity")
-        .eq("event_id", eventId);
-
-      const zoneDataArray = Object.entries(zoneStats).map(([zone, stats]) => {
-        const zoneInfo = zones?.find((z) => z.name === zone);
-        const capacity = zoneInfo?.capacity || null;
-        const occupancy = capacity ? (stats.count / capacity) * 100 : null;
+      // Map festivalData.zones to zone data format
+      const zoneDataArray = festivalData.zones.map((zone) => {
+        const stats = zoneStats[zone.zona] || { dailySales: {} };
+        const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
 
         return {
-          zona: zone,
-          vendidas: stats.count,
-          aforo: capacity,
-          ocupacion: occupancy ? occupancy.toFixed(1) : "N/D",
-          ingresos: Math.round(stats.revenue),
+          zona: zone.zona,
+          vendidas: zone.vendidas,
+          aforo: zone.aforo,
+          ocupacion: porcentajeOcupacionZona.toFixed(1),
+          ingresos: zone.ingresos,
           trend: last7Days.map(day => stats.dailySales[day] || 0),
         };
       });
