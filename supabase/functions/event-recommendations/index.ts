@@ -53,7 +53,8 @@ serve(async (req) => {
       .from('tickets')
       .select('price')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Ensure we get all tickets
 
     if (revenueError) throw revenueError;
 
@@ -62,12 +63,13 @@ serve(async (req) => {
     
     console.log(`Total tickets sold: ${totalTicketsSold}, Total revenue: ${totalRevenue}, Avg price: ${avgPrice}`);
 
-    // Get sales by provider with aggregated data
+    // Get sales by provider with ALL data
     const { data: providerData, error: providerError } = await supabase
       .from('tickets')
       .select('provider_name, price')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Critical: get ALL tickets, not just 1000
 
     if (providerError) throw providerError;
 
@@ -107,7 +109,8 @@ serve(async (req) => {
       .from('tickets')
       .select('channel, price')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Get ALL tickets
 
     if (channelError) throw channelError;
 
@@ -126,7 +129,8 @@ serve(async (req) => {
       .from('tickets')
       .select('buyer_province')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Get ALL tickets
 
     if (geoError) throw geoError;
 
@@ -141,7 +145,8 @@ serve(async (req) => {
       .from('tickets')
       .select('buyer_age')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Get ALL tickets
 
     if (ageError) throw ageError;
 
@@ -163,7 +168,8 @@ serve(async (req) => {
       .from('tickets')
       .select('has_email, has_phone, marketing_consent')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Get ALL tickets
 
     if (contactError) throw contactError;
 
