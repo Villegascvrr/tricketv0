@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      interested_users: {
+        Row: {
+          comment: string | null
+          company: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string | null
+        }
+        Insert: {
+          comment?: string | null
+          company: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role?: string | null
+        }
+        Update: {
+          comment?: string | null
+          company?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
       ticket_imports: {
         Row: {
           error_count: number
