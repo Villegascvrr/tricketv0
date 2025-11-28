@@ -38,8 +38,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Redirect root to Festival Primavera Sound 2024 */}
+            <Route path="/" element={<Navigate to="/events/123e4567-e89b-12d3-a456-426614174000" replace />} />
             
             {/* Dashboard */}
             <Route
