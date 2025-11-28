@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp, DollarSign, Sparkles, RefreshCw } from "lucide-react";
-import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { useState } from "react";
 import { useRecommendationStatus, RecommendationStatus } from "@/contexts/RecommendationStatusContext";
 import { RecommendationStatusBadge } from "./RecommendationStatusBadge";
@@ -30,8 +29,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
   const [statusFilter, setStatusFilter] = useState<RecommendationStatus | 'all'>('all');
   const { getStatus, updateStatus } = useRecommendationStatus();
   
-  // Use recommendations from props (from edge function) or fallback to local generation
-  const recommendations: Recommendation[] = propRecommendations || generateAIRecommendations();
+  // Use recommendations from props (from edge function) - no fallback to ensure fresh data
+  const recommendations: Recommendation[] = propRecommendations || [];
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -253,12 +252,26 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
         </div>
       )}
 
-      {recommendations.length === 0 && (
+      {recommendations.length === 0 && !isLoading && (
         <Card>
           <CardContent className="p-6 text-center">
             <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mb-2">
               No hay recomendaciones disponibles en este momento
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Haz clic en "Actualizar" para generar nuevas recomendaciones basadas en los datos actuales del evento
+            </p>
+          </CardContent>
+        </Card>
+      )}
+      
+      {isLoading && (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-3 animate-spin" />
+            <p className="text-xs text-muted-foreground">
+              Generando recomendaciones...
             </p>
           </CardContent>
         </Card>
