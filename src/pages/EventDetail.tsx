@@ -17,6 +17,7 @@ import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
+import TryTricketModal from "@/components/TryTricketModal";
 
 interface Event {
   id: string;
@@ -35,6 +36,7 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [tryModalOpen, setTryModalOpen] = useState(false);
 
   // Fetch AI recommendations
   const { data: aiData, isLoading: aiLoading, refetch: refetchRecommendations } = useQuery({
@@ -126,6 +128,16 @@ const EventDetail = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Try Tricket Free Button */}
+              <Button 
+                onClick={() => setTryModalOpen(true)}
+                size="sm"
+                variant="outline"
+                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                Probar gratis
+              </Button>
+
               {/* AI Chat Button - Primary */}
               <Button 
                 onClick={() => setChatOpen(true)}
@@ -258,6 +270,12 @@ const EventDetail = () => {
         eventName={event.name}
         open={chatOpen}
         onOpenChange={setChatOpen}
+      />
+
+      {/* Try Tricket Modal */}
+      <TryTricketModal
+        open={tryModalOpen}
+        onOpenChange={setTryModalOpen}
       />
     </div>
   );
