@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
+import { festivalData, calculateProviderOccupancy, calculateProviderRemaining } from "@/data/festivalData";
+import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import {
   LineChart,
   Line,
@@ -105,19 +107,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
   const [zoneData, setZoneData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch AI recommendations
-  const { data: aiData } = useQuery({
-    queryKey: ['event-recommendations', eventId],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('event-recommendations', {
-        body: { eventId }
-      });
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const recommendations: AIRecommendation[] = aiData?.recommendations || [];
+  // Generate AI recommendations from festivalData
+  const recommendations: AIRecommendation[] = generateAIRecommendations();
 
   const getRecommendationsForScope = (scope: string, targetKey?: string) => {
     return recommendations.filter(r => {
@@ -147,12 +138,10 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       if (error) throw error;
 
-      const totalSold = tickets?.length || 0;
-      const grossRevenue =
-        tickets?.reduce((sum, t) => sum + Number(t.price), 0) || 0;
-      const occupancyRate = totalCapacity
-        ? (totalSold / totalCapacity) * 100
-        : 0;
+      // Use festivalData as single source of truth
+      const totalSold = festivalData.overview.entradasVendidas;
+      const grossRevenue = festivalData.overview.ingresosTotales;
+      const occupancyRate = festivalData.overview.ocupacion * 100;
 
       setKpis({ totalSold, occupancyRate, grossRevenue });
 
@@ -209,33 +198,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setChannelData(channelDataArray);
 
-      // Sales by PROVIDER (ticketing platform) - HARDCODED DATA
-      const ticketingProviders = [
-        {
-          nombre: 'Ticketmaster',
-          capacidad: 30000,
-          vendidas: 23800,
-          ingresos: 2973592
-        },
-        {
-          nombre: 'Entradas.com',
-          capacidad: 12000,
-          vendidas: 4900,
-          ingresos: 367054
-        },
-        {
-          nombre: 'Bclever',
-          capacidad: 10000,
-          vendidas: 8800,
-          ingresos: 633226
-        },
-        {
-          nombre: 'Forvenues',
-          capacidad: 5000,
-          vendidas: 1850,
-          ingresos: 125220
-        }
-      ];
+      // Sales by PROVIDER (ticketing platform) - FROM FESTIVALDATA
+      // ÚNICA FUENTE DE DATOS: festivalData.ticketingProviders
 
       // Calculate trends for each provider
       const providerStats: {
@@ -250,11 +214,11 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
       });
 
-      // Map to ProviderStats format with calculated values
-      const providerDataArray: ProviderStats[] = ticketingProviders.map((provider) => {
+      // Map festivalData.ticketingProviders to ProviderStats format
+      const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider) => {
         const stats = providerStats[provider.nombre] || { dailySales: {} };
-        const occupancy = (provider.vendidas / provider.capacidad) * 100;
-        const remaining = provider.capacidad - provider.vendidas;
+        const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
+        const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
 
         return {
           ticketera: provider.nombre,
