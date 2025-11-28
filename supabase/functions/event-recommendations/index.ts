@@ -31,16 +31,17 @@ serve(async (req) => {
 
     if (eventError) throw eventError;
 
-    // Fetch tickets data (confirmed status only)
+    // Fetch tickets data (confirmed status only) - no limit to get all tickets
     const { data: tickets, error: ticketsError } = await supabase
       .from('tickets')
       .select('*')
       .eq('event_id', eventId)
-      .eq('status', 'confirmed');
+      .eq('status', 'confirmed')
+      .limit(999999); // Ensure we get all tickets, not just the default 1000
 
     if (ticketsError) throw ticketsError;
     
-    console.log(`Fetched ${tickets.length} confirmed tickets for event ${eventId}`);
+    console.log(`Fetched ${tickets?.length || 0} confirmed tickets for event ${eventId}`);
 
     // Fetch provider allocations
     const { data: allocations, error: allocationsError } = await supabase
@@ -85,6 +86,20 @@ serve(async (req) => {
         providerStats[alloc.provider_name].allocated = alloc.allocated_capacity;
       }
     });
+    
+    // Log provider stats for debugging
+    console.log('Provider stats:', JSON.stringify(
+      Object.entries(providerStats).map(([name, stats]) => {
+        const s = stats as { count: number; revenue: number; allocated: number };
+        return {
+          name,
+          tickets: s.count,
+          allocated: s.allocated,
+          occupancy: s.allocated ? ((s.count / s.allocated) * 100).toFixed(1) + '%' : 'N/A'
+        };
+      }),
+      null, 2
+    ));
 
     // Geographic distribution
     const provinceStats = tickets.reduce((acc, ticket) => {
