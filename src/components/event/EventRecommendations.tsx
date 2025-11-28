@@ -31,72 +31,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
   const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
   const { getStatus, updateStatus } = useRecommendationStatus();
   
-  // Static recommendations based on current event data
-  const recommendations: Recommendation[] = [
-    // Marketing
-    {
-      id: 'marketing-entradas-com',
-      title: 'Potenciar ventas en Entradas.com',
-      description: '⚠️ Rendimiento bajo detectado\n\n📊 Situación actual: 4.900 / 12.000 entradas vendidas (40,8%)\n💰 Capacidad disponible: 7.100 entradas sin vender\n\n🎯 Acción sugerida: Lanzar campaña específica en canales digitales asociados a Entradas.com para impulsar las ventas en esta ticketera.',
-      priority: 'high',
-      category: 'marketing',
-      scope: 'provider',
-      targetKey: 'Entradas.com'
-    },
-    {
-      id: 'marketing-forvenues',
-      title: 'Impulsar conversión en Forvenues',
-      description: '⚠️ Ocupación crítica en este canal\n\n📊 Situación actual: 1.850 / 5.000 entradas vendidas (37%)\n💰 Gap de ventas: 3.150 entradas por vender\n\n🎯 Acción sugerida: Activar promociones específicas y reforzar presencia en los puntos de venta físicos asociados a Forvenues.',
-      priority: 'high',
-      category: 'marketing',
-      scope: 'provider',
-      targetKey: 'Forvenues'
-    },
-    {
-      id: 'marketing-general-push',
-      title: 'Campaña general de impulso',
-      description: '📊 Situación general: 39.350 / 62.000 entradas vendidas (63,5%)\n💰 Potencial restante: 22.650 entradas disponibles\n\n💡 Oportunidad: Aunque el evento va por buen camino, hay margen significativo para incrementar ventas con una campaña coordinada en todos los canales.',
-      priority: 'medium',
-      category: 'marketing',
-      scope: 'global'
-    },
-    // Pricing
-    {
-      id: 'pricing-premium-zones',
-      title: 'Optimizar pricing en zonas premium',
-      description: '✅ Alto rendimiento en Bclever\n\n📊 Ocupación: 8.800 / 10.000 (88%)\n💡 Insight: Este nivel de ocupación sugiere que el precio puede estar infravalorado\n\n🎯 Acción sugerida: Considerar incremento de precio en últimas entradas disponibles o crear paquetes premium con servicios adicionales.',
-      priority: 'low',
-      category: 'pricing',
-      scope: 'provider',
-      targetKey: 'Bclever'
-    },
-    {
-      id: 'pricing-ticketmaster-optimization',
-      title: 'Ajuste de precios en Ticketmaster',
-      description: '✅ Buen rendimiento detectado\n\n📊 Ocupación: 23.800 / 30.000 (79,3%)\n💰 Margen restante: 6.200 entradas\n\n💡 Estrategia: Con este nivel de ocupación, es momento ideal para aplicar dynamic pricing en las entradas restantes para maximizar ingresos.',
-      priority: 'low',
-      category: 'pricing',
-      scope: 'provider',
-      targetKey: 'Ticketmaster'
-    },
-    // Alertas
-    {
-      id: 'alert-capacity-opportunity',
-      title: 'Oportunidad: 36,5% de capacidad disponible',
-      description: '📊 Estado actual del evento:\n• Vendidas: 39.350 entradas\n• Capacidad total: 62.000\n• Disponibles: 22.650 (36,5%)\n\n⚠️ Alerta: Hay una oportunidad significativa de incrementar ventas en las próximas semanas. Recomendamos activar estrategias de última hora.',
-      priority: 'medium',
-      category: 'alert',
-      scope: 'global'
-    },
-    {
-      id: 'alert-channel-imbalance',
-      title: 'Desbalance entre ticketeras',
-      description: '📊 Análisis comparativo:\n• Bclever: 88% ocupación ✅\n• Ticketmaster: 79,3% ocupación ✅\n• Entradas.com: 40,8% ocupación ⚠️\n• Forvenues: 37% ocupación ⚠️\n\n🎯 Alerta: Hay un desequilibrio notable. Enfocar esfuerzos en las ticketeras de bajo rendimiento para equilibrar la distribución.',
-      priority: 'high',
-      category: 'alert',
-      scope: 'global'
-    }
-  ];
+  // Use recommendations from props (from edge function) - no fallback to ensure fresh data
+  const recommendations: Recommendation[] = propRecommendations || [];
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
