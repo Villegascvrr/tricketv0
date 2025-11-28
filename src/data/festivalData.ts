@@ -41,7 +41,40 @@ export const festivalData = {
     { zona: 'Lateral Este', aforo: 10000, vendidas: 5900,  ingresos: 590000  },
     { zona: 'Lateral Oeste',aforo: 7000,  vendidas: 5600,  ingresos: 532000  },
     { zona: 'VIP',          aforo: 5000,  vendidas: 4350,  ingresos: 783092  }
-  ]
+  ],
+  // Datos de audiencia (base: 1.000 asistentes)
+  audiencia: {
+    totalAsistentes: 1000,
+    contactStats: {
+      conEmail: 1000,        // 100%
+      conTelefono: 780,      // 78%
+      consentimientoMarketing: 610  // 61%
+    },
+    provincias: [
+      { nombre: 'Madrid', asistentes: 230 },
+      { nombre: 'Barcelona', asistentes: 210 },
+      { nombre: 'Valencia', asistentes: 170 },
+      { nombre: 'Sevilla', asistentes: 140 },
+      { nombre: 'Zaragoza', asistentes: 120 },
+      { nombre: 'Bizkaia', asistentes: 90 },
+      { nombre: 'Girona', asistentes: 40 }
+    ],
+    ciudades: [
+      { nombre: 'Madrid', asistentes: 230 },
+      { nombre: 'Barcelona', asistentes: 210 },
+      { nombre: 'Valencia', asistentes: 170 },
+      { nombre: 'Sevilla', asistentes: 140 },
+      { nombre: 'Zaragoza', asistentes: 120 },
+      { nombre: 'Bilbao', asistentes: 90 },
+      { nombre: 'Girona', asistentes: 40 }
+    ],
+    edades: [
+      { rango: '18-24', asistentes: 220 },
+      { rango: '25-34', asistentes: 380 },
+      { rango: '35-44', asistentes: 260 },
+      { rango: '45+', asistentes: 140 }
+    ]
+  }
 };
 
 // Funciones de cálculo derivadas
