@@ -2,11 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, TrendingUp, DollarSign, Sparkles, RefreshCw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
+import { useState } from "react";
 
 interface EventRecommendationsProps {
   eventId: string;
@@ -22,27 +20,14 @@ interface Recommendation {
 }
 
 const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
-  const { toast } = useToast();
-
-  const { data, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ['event-recommendations', eventId],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('event-recommendations', {
-        body: { eventId }
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    retry: 1,
-  });
+  // Generate recommendations directly from festivalData
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Call generateAIRecommendations() to get dynamic recommendations
+  const recommendations: Recommendation[] = generateAIRecommendations();
 
   const handleRefresh = () => {
-    refetch();
-    toast({
-      title: "Actualizando recomendaciones",
-      description: "Generando nuevas recomendaciones con IA...",
-    });
+    setRefreshKey(prev => prev + 1);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -84,44 +69,7 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
     }
   };
 
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Error al cargar recomendaciones: {error instanceof Error ? error.message : 'Error desconocido'}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Recomendaciones IA</h2>
-            <p className="text-muted-foreground">Generando insights con inteligencia artificial...</p>
-          </div>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-32 mb-2" />
-                <Skeleton className="h-6 w-full" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const recommendations: Recommendation[] = data?.recommendations || [];
+  // No loading states needed - recommendations are generated instantly from festivalData
 
   const groupedRecommendations = {
     marketing: recommendations.filter(r => r.category === 'marketing'),
@@ -143,11 +91,10 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
         </div>
         <Button 
           onClick={handleRefresh} 
-          disabled={isRefetching}
           variant="outline"
           size="sm"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+          <RefreshCw className="h-4 w-4 mr-2" />
           Actualizar
         </Button>
       </div>
