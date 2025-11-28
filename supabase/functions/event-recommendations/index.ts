@@ -31,19 +31,7 @@ serve(async (req) => {
 
     if (eventError) throw eventError;
 
-    // Fetch tickets data (confirmed status only) - no limit to get all tickets
-    const { data: tickets, error: ticketsError } = await supabase
-      .from('tickets')
-      .select('*')
-      .eq('event_id', eventId)
-      .eq('status', 'confirmed')
-      .limit(999999); // Ensure we get all tickets, not just the default 1000
-
-    if (ticketsError) throw ticketsError;
-    
-    console.log(`Fetched ${tickets?.length || 0} confirmed tickets for event ${eventId}`);
-
-    // Fetch provider allocations
+    // Fetch provider allocations first
     const { data: allocations, error: allocationsError } = await supabase
       .from('ticket_provider_allocations')
       .select('*')
@@ -51,32 +39,45 @@ serve(async (req) => {
 
     if (allocationsError) throw allocationsError;
 
-    // Calculate metrics
-    const totalTicketsSold = tickets.length;
-    const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
+    // Use aggregated queries instead of fetching all tickets
+    // Get total count and revenue
+    const { count: totalTicketsSold, error: countError } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (countError) throw countError;
+
+    const { data: revenueData, error: revenueError } = await supabase
+      .from('tickets')
+      .select('price')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (revenueError) throw revenueError;
+
+    const totalRevenue = revenueData.reduce((sum, t) => sum + (Number(t.price) || 0), 0);
     const avgPrice = totalRevenue / (totalTicketsSold || 1);
     
     console.log(`Total tickets sold: ${totalTicketsSold}, Total revenue: ${totalRevenue}, Avg price: ${avgPrice}`);
 
-    // Sales by channel
-    const channelStats = tickets.reduce((acc, ticket) => {
-      const channel = ticket.channel || 'Unknown';
-      if (!acc[channel]) {
-        acc[channel] = { count: 0, revenue: 0 };
-      }
-      acc[channel].count++;
-      acc[channel].revenue += ticket.price || 0;
-      return acc;
-    }, {} as Record<string, { count: number; revenue: number }>);
+    // Get sales by provider with aggregated data
+    const { data: providerData, error: providerError } = await supabase
+      .from('tickets')
+      .select('provider_name, price')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
 
-    // Sales by provider
-    const providerStats = tickets.reduce((acc, ticket) => {
+    if (providerError) throw providerError;
+
+    const providerStats = providerData.reduce((acc, ticket) => {
       const provider = ticket.provider_name || 'Unknown';
       if (!acc[provider]) {
         acc[provider] = { count: 0, revenue: 0, allocated: 0 };
       }
       acc[provider].count++;
-      acc[provider].revenue += ticket.price || 0;
+      acc[provider].revenue += Number(ticket.price) || 0;
       return acc;
     }, {} as Record<string, { count: number; revenue: number; allocated: number }>);
 
@@ -101,15 +102,50 @@ serve(async (req) => {
       null, 2
     ));
 
-    // Geographic distribution
-    const provinceStats = tickets.reduce((acc, ticket) => {
+    // Get sales by channel
+    const { data: channelData, error: channelError } = await supabase
+      .from('tickets')
+      .select('channel, price')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (channelError) throw channelError;
+
+    const channelStats = channelData.reduce((acc, ticket) => {
+      const channel = ticket.channel || 'Unknown';
+      if (!acc[channel]) {
+        acc[channel] = { count: 0, revenue: 0 };
+      }
+      acc[channel].count++;
+      acc[channel].revenue += Number(ticket.price) || 0;
+      return acc;
+    }, {} as Record<string, { count: number; revenue: number }>);
+
+    // Get geographic distribution
+    const { data: geoData, error: geoError } = await supabase
+      .from('tickets')
+      .select('buyer_province')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (geoError) throw geoError;
+
+    const provinceStats = geoData.reduce((acc, ticket) => {
       const province = ticket.buyer_province || 'Unknown';
       acc[province] = (acc[province] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    // Age distribution
-    const ageRanges = tickets.reduce((acc, ticket) => {
+    // Get age distribution
+    const { data: ageData, error: ageError } = await supabase
+      .from('tickets')
+      .select('buyer_age')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (ageError) throw ageError;
+
+    const ageRanges = ageData.reduce((acc, ticket) => {
       if (ticket.buyer_age) {
         let range = 'Unknown';
         if (ticket.buyer_age < 18) range = '<18';
@@ -122,11 +158,19 @@ serve(async (req) => {
       return acc;
     }, {} as Record<string, number>);
 
-    // Contact data
+    // Get contact data
+    const { data: contactData, error: contactError } = await supabase
+      .from('tickets')
+      .select('has_email, has_phone, marketing_consent')
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (contactError) throw contactError;
+
     const contactStats = {
-      withEmail: tickets.filter(t => t.has_email).length,
-      withPhone: tickets.filter(t => t.has_phone).length,
-      withMarketing: tickets.filter(t => t.marketing_consent).length,
+      withEmail: contactData.filter(t => t.has_email).length,
+      withPhone: contactData.filter(t => t.has_phone).length,
+      withMarketing: contactData.filter(t => t.marketing_consent).length,
     };
 
     // Prepare context for AI
@@ -140,16 +184,16 @@ serve(async (req) => {
         endDate: event.end_date,
       },
       sales: {
-        totalTickets: totalTicketsSold,
+        totalTickets: totalTicketsSold || 0,
         totalRevenue,
         avgPrice,
-        occupancyRate: ((totalTicketsSold / (event.total_capacity || 1)) * 100).toFixed(1),
+        occupancyRate: (((totalTicketsSold || 0) / (event.total_capacity || 1)) * 100).toFixed(1),
       },
       channels: Object.entries(channelStats).map(([name, stats]) => ({
         name,
         tickets: (stats as { count: number; revenue: number }).count,
         revenue: (stats as { count: number; revenue: number }).revenue,
-        percentage: (((stats as { count: number; revenue: number }).count / totalTicketsSold) * 100).toFixed(1),
+        percentage: (((stats as { count: number; revenue: number }).count / (totalTicketsSold || 1)) * 100).toFixed(1),
       })),
       providers: Object.entries(providerStats).map(([name, stats]) => ({
         name,
@@ -166,18 +210,18 @@ serve(async (req) => {
         .map(([province, count]) => ({
           province,
           count,
-          percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
+          percentage: (((count as number) / (totalTicketsSold || 1)) * 100).toFixed(1),
         })),
       demographics: {
         ageRanges: Object.entries(ageRanges).map(([range, count]) => ({
           range,
           count,
-          percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
+          percentage: (((count as number) / (totalTicketsSold || 1)) * 100).toFixed(1),
         })),
         contactData: {
-          emailRate: ((contactStats.withEmail / totalTicketsSold) * 100).toFixed(1),
-          phoneRate: ((contactStats.withPhone / totalTicketsSold) * 100).toFixed(1),
-          marketingRate: ((contactStats.withMarketing / totalTicketsSold) * 100).toFixed(1),
+          emailRate: ((contactStats.withEmail / (totalTicketsSold || 1)) * 100).toFixed(1),
+          phoneRate: ((contactStats.withPhone / (totalTicketsSold || 1)) * 100).toFixed(1),
+          marketingRate: ((contactStats.withMarketing / (totalTicketsSold || 1)) * 100).toFixed(1),
         },
       },
     };
