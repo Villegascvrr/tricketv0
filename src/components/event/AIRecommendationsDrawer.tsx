@@ -49,6 +49,7 @@ const AIRecommendationsDrawer = ({
 }: AIRecommendationsDrawerProps) => {
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
+  const [filtersVisible, setFiltersVisible] = useState(false);
   const { toast } = useToast();
   const { getStatus, updateStatus } = useRecommendationStatus();
   const getPriorityColor = (priority: string) => {
@@ -148,65 +149,61 @@ const AIRecommendationsDrawer = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl">
-        <SheetHeader className="border-b pb-4">
+      <SheetContent className="w-full sm:max-w-4xl">
+        <SheetHeader className="border-b pb-2">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
-                <SheetTitle>Centro de Alertas IA</SheetTitle>
-              </div>
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <SheetTitle className="text-base">Centro de Alertas IA</SheetTitle>
               {context && (
-                <p className="text-xs text-primary font-medium">
-                  Contexto: {context.value}
-                </p>
+                <Badge variant="outline" className="text-xs">
+                  {context.value}
+                </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {onRefresh && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={onRefresh}
                   disabled={isLoading}
-                  className="h-8 gap-2"
+                  className="h-7 px-2 gap-1"
                 >
-                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                  Actualizar
+                  <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
                 </Button>
               )}
               {!isLoading && recommendations.length > 0 && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleExportPDF}
-                  className="h-8 gap-2"
+                  className="h-7 px-2 gap-1"
                 >
-                  <Download className="h-4 w-4" />
-                  Exportar PDF
+                  <Download className="h-3 w-3" />
                 </Button>
               )}
               <SheetClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <X className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <X className="h-3 w-3" />
                 </Button>
               </SheetClose>
             </div>
           </div>
           {!isLoading && (
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-1.5 pt-1.5">
               {recommendations.filter(r => r.priority === 'high').length > 0 && (
-                <Badge variant="outline" className="bg-danger/10 text-danger border-danger/20">
+                <Badge variant="outline" className="text-xs h-5 px-1.5 bg-danger/10 text-danger border-danger/20">
                   {recommendations.filter(r => r.priority === 'high').length} críticas
                 </Badge>
               )}
               {recommendations.filter(r => r.priority === 'medium').length > 0 && (
-                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
+                <Badge variant="outline" className="text-xs h-5 px-1.5 bg-warning/10 text-warning border-warning/20">
                   {recommendations.filter(r => r.priority === 'medium').length} importantes
                 </Badge>
               )}
               {recommendations.filter(r => r.priority === 'low').length > 0 && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                <Badge variant="outline" className="text-xs h-5 px-1.5 bg-primary/10 text-primary border-primary/20">
                   {recommendations.filter(r => r.priority === 'low').length} sugerencias
                 </Badge>
               )}
@@ -214,313 +211,300 @@ const AIRecommendationsDrawer = ({
           )}
         </SheetHeader>
 
-        {/* Filters Section */}
+        {/* Filters Section - Compact Toolbar */}
         {!isLoading && recommendations.length > 0 && (
-          <div className="px-6 pt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Filter className="h-4 w-4" />
-                <span>Filtros</span>
-              </div>
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-7 text-xs"
-                >
-                  Limpiar filtros
-                </Button>
+          <div className="px-6 py-2 border-b bg-muted/30">
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFiltersVisible(!filtersVisible)}
+                className="h-6 px-2 gap-1.5 text-xs"
+              >
+                <Filter className="h-3 w-3" />
+                Filtros
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="h-4 px-1 text-xs ml-1">
+                    {(priorityFilter ? 1 : 0) + (categoryFilter ? 1 : 0)}
+                  </Badge>
+                )}
+              </Button>
+              
+              {filtersVisible && (
+                <div className="flex items-center gap-2 flex-1">
+                  {/* Priority Filters */}
+                  <div className="flex gap-1">
+                    <Button
+                      variant={priorityFilter === "high" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPriorityFilter(priorityFilter === "high" ? null : "high")}
+                      className={cn(
+                        "h-6 px-2 text-xs",
+                        priorityFilter === "high" && "bg-danger hover:bg-danger/90 text-white border-danger"
+                      )}
+                    >
+                      Alta
+                    </Button>
+                    <Button
+                      variant={priorityFilter === "medium" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPriorityFilter(priorityFilter === "medium" ? null : "medium")}
+                      className={cn(
+                        "h-6 px-2 text-xs",
+                        priorityFilter === "medium" && "bg-warning hover:bg-warning/90 text-white border-warning"
+                      )}
+                    >
+                      Media
+                    </Button>
+                    <Button
+                      variant={priorityFilter === "low" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPriorityFilter(priorityFilter === "low" ? null : "low")}
+                      className={cn(
+                        "h-6 px-2 text-xs",
+                        priorityFilter === "low" && "bg-primary hover:bg-primary/90 text-white"
+                      )}
+                    >
+                      Baja
+                    </Button>
+                  </div>
+
+                  <Separator orientation="vertical" className="h-4" />
+
+                  {/* Category Filters */}
+                  <div className="flex gap-1">
+                    <Button
+                      variant={categoryFilter === "marketing" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategoryFilter(categoryFilter === "marketing" ? null : "marketing")}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Marketing
+                    </Button>
+                    <Button
+                      variant={categoryFilter === "pricing" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategoryFilter(categoryFilter === "pricing" ? null : "pricing")}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Pricing
+                    </Button>
+                    <Button
+                      variant={categoryFilter === "alert" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategoryFilter(categoryFilter === "alert" ? null : "alert")}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Alerta
+                    </Button>
+                  </div>
+
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="h-6 px-2 text-xs ml-auto"
+                    >
+                      Limpiar
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
-
-            {/* Priority Filters */}
-            <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Prioridad</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={priorityFilter === "high" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPriorityFilter(priorityFilter === "high" ? null : "high")}
-                  className={cn(
-                    "h-8 text-xs",
-                    priorityFilter === "high" && "bg-danger hover:bg-danger/90 text-white border-danger"
-                  )}
-                >
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Alta
-                </Button>
-                <Button
-                  variant={priorityFilter === "medium" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPriorityFilter(priorityFilter === "medium" ? null : "medium")}
-                  className={cn(
-                    "h-8 text-xs",
-                    priorityFilter === "medium" && "bg-warning hover:bg-warning/90 text-white border-warning"
-                  )}
-                >
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Media
-                </Button>
-                <Button
-                  variant={priorityFilter === "low" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPriorityFilter(priorityFilter === "low" ? null : "low")}
-                  className={cn(
-                    "h-8 text-xs",
-                    priorityFilter === "low" && "bg-primary hover:bg-primary/90 text-white"
-                  )}
-                >
-                  <Brain className="h-3 w-3 mr-1" />
-                  Baja
-                </Button>
-              </div>
-            </div>
-
-            {/* Category Filters */}
-            <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Categoría</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={categoryFilter === "marketing" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCategoryFilter(categoryFilter === "marketing" ? null : "marketing")}
-                  className="h-8 text-xs"
-                >
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Marketing
-                </Button>
-                <Button
-                  variant={categoryFilter === "pricing" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCategoryFilter(categoryFilter === "pricing" ? null : "pricing")}
-                  className="h-8 text-xs"
-                >
-                  <DollarSign className="h-3 w-3 mr-1" />
-                  Pricing
-                </Button>
-                <Button
-                  variant={categoryFilter === "alert" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCategoryFilter(categoryFilter === "alert" ? null : "alert")}
-                  className="h-8 text-xs"
-                >
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Alerta
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
           </div>
         )}
 
-        <ScrollArea className="h-[calc(100vh-8rem)]">
+        <ScrollArea className="h-[calc(100vh-7rem)]">
           {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <Skeleton className="h-4 w-32 mb-2" />
-                    <Skeleton className="h-6 w-full" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-16 w-full" />
-                  </CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="p-3">
+                  <Skeleton className="h-3 w-24 mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-12 w-full" />
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="space-y-6 pr-4">
+            <div className="space-y-4 p-4">
               {/* Critical Recommendations */}
               {groupedRecommendations.high.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-danger flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-danger flex items-center gap-1.5 px-1">
+                    <AlertCircle className="h-3.5 w-3.5" />
                     Críticas ({groupedRecommendations.high.length})
                   </h3>
-                  {groupedRecommendations.high.map((rec, index) => (
-                    <Card 
-                      key={rec.id} 
-                      className={cn(
-                        "border-2 hover:shadow-md transition-shadow animate-fade-in",
-                        "border-danger/30 bg-danger/5"
-                      )}
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-1">
-                            {getCategoryIcon(rec.category)}
-                            <div className="flex flex-col gap-1">
-                              <CardTitle className="text-base leading-tight">
-                                {rec.title}
-                              </CardTitle>
-                              {getScopeLabel(rec.scope, rec.targetKey) && (
-                                <span className="text-xs text-muted-foreground">
-                                  {getScopeLabel(rec.scope, rec.targetKey)}
-                                </span>
-                              )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {groupedRecommendations.high.map((rec, index) => (
+                      <Card 
+                        key={rec.id} 
+                        className={cn(
+                          "border hover:shadow-md transition-shadow animate-fade-in",
+                          "border-danger/30 bg-danger/5"
+                        )}
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <CardHeader className="p-3 pb-2">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <CardTitle className="text-xs leading-tight flex-1">
+                              {rec.title}
+                            </CardTitle>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                {getCategoryLabel(rec.category)}
+                              </Badge>
+                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                Alta
+                              </Badge>
+                              <RecommendationStatusBadge
+                                status={getStatus(rec.id)}
+                                onStatusChange={(status) => updateStatus(rec.id, status)}
+                              />
                             </div>
                           </div>
-                           <div className="flex gap-1.5">
-                            <Badge variant="outline" className="text-xs bg-muted animate-scale-in" style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
-                              {getCategoryLabel(rec.category)}
-                            </Badge>
-                            <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "animate-scale-in")} style={{ animationDelay: `${index * 0.1 + 0.15}s` }}>
-                              Alta
-                            </Badge>
-                            <RecommendationStatusBadge
-                              status={getStatus(rec.id)}
-                              onStatusChange={(status) => updateStatus(rec.id, status)}
-                            />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
-                          {rec.description}
-                        </CardDescription>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          {getScopeLabel(rec.scope, rec.targetKey) && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              {getCategoryIcon(rec.category)}
+                              {getScopeLabel(rec.scope, rec.targetKey)}
+                            </span>
+                          )}
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0">
+                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                            {rec.description}
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Important Recommendations */}
               {groupedRecommendations.medium.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-warning flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-warning flex items-center gap-1.5 px-1">
+                    <TrendingUp className="h-3.5 w-3.5" />
                     Importantes ({groupedRecommendations.medium.length})
                   </h3>
-                  {groupedRecommendations.medium.map((rec, index) => (
-                    <Card 
-                      key={rec.id} 
-                      className="border hover:shadow-md transition-shadow animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-1">
-                            {getCategoryIcon(rec.category)}
-                            <div className="flex flex-col gap-1">
-                              <CardTitle className="text-base leading-tight">
-                                {rec.title}
-                              </CardTitle>
-                              {getScopeLabel(rec.scope, rec.targetKey) && (
-                                <span className="text-xs text-muted-foreground">
-                                  {getScopeLabel(rec.scope, rec.targetKey)}
-                                </span>
-                              )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {groupedRecommendations.medium.map((rec, index) => (
+                      <Card 
+                        key={rec.id} 
+                        className="border hover:shadow-md transition-shadow animate-fade-in"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <CardHeader className="p-3 pb-2">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <CardTitle className="text-xs leading-tight flex-1">
+                              {rec.title}
+                            </CardTitle>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                {getCategoryLabel(rec.category)}
+                              </Badge>
+                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                Media
+                              </Badge>
+                              <RecommendationStatusBadge
+                                status={getStatus(rec.id)}
+                                onStatusChange={(status) => updateStatus(rec.id, status)}
+                              />
                             </div>
                           </div>
-                          <div className="flex gap-1.5">
-                            <Badge variant="outline" className="text-xs bg-muted">
-                              {getCategoryLabel(rec.category)}
-                            </Badge>
-                            <Badge variant="outline" className={getPriorityColor(rec.priority)}>
-                              Media
-                            </Badge>
-                            <RecommendationStatusBadge
-                              status={getStatus(rec.id)}
-                              onStatusChange={(status) => updateStatus(rec.id, status)}
-                            />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
-                          {rec.description}
-                        </CardDescription>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          {getScopeLabel(rec.scope, rec.targetKey) && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              {getCategoryIcon(rec.category)}
+                              {getScopeLabel(rec.scope, rec.targetKey)}
+                            </span>
+                          )}
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0">
+                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                            {rec.description}
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Low Priority Recommendations */}
+              {/* Suggestions */}
               {groupedRecommendations.low.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
-                    <Brain className="h-4 w-4" />
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-primary flex items-center gap-1.5 px-1">
+                    <Brain className="h-3.5 w-3.5" />
                     Sugerencias ({groupedRecommendations.low.length})
                   </h3>
-                  {groupedRecommendations.low.map((rec, index) => (
-                    <Card 
-                      key={rec.id} 
-                      className="border hover:shadow-md transition-shadow animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-1">
-                            {getCategoryIcon(rec.category)}
-                            <div className="flex flex-col gap-1">
-                              <CardTitle className="text-base leading-tight">
-                                {rec.title}
-                              </CardTitle>
-                              {getScopeLabel(rec.scope, rec.targetKey) && (
-                                <span className="text-xs text-muted-foreground">
-                                  {getScopeLabel(rec.scope, rec.targetKey)}
-                                </span>
-                              )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {groupedRecommendations.low.map((rec, index) => (
+                      <Card 
+                        key={rec.id} 
+                        className="border hover:shadow-md transition-shadow animate-fade-in"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <CardHeader className="p-3 pb-2">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <CardTitle className="text-xs leading-tight flex-1">
+                              {rec.title}
+                            </CardTitle>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                {getCategoryLabel(rec.category)}
+                              </Badge>
+                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                Baja
+                              </Badge>
+                              <RecommendationStatusBadge
+                                status={getStatus(rec.id)}
+                                onStatusChange={(status) => updateStatus(rec.id, status)}
+                              />
                             </div>
                           </div>
-                          <div className="flex gap-1.5">
-                            <Badge variant="outline" className="text-xs bg-muted">
-                              {getCategoryLabel(rec.category)}
-                            </Badge>
-                            <Badge variant="outline" className={getPriorityColor(rec.priority)}>
-                              Baja
-                            </Badge>
-                            <RecommendationStatusBadge
-                              status={getStatus(rec.id)}
-                              onStatusChange={(status) => updateStatus(rec.id, status)}
-                            />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
-                          {rec.description}
-                        </CardDescription>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          {getScopeLabel(rec.scope, rec.targetKey) && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              {getCategoryIcon(rec.category)}
+                              {getScopeLabel(rec.scope, rec.targetKey)}
+                            </span>
+                          )}
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0">
+                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                            {rec.description}
+                          </CardDescription>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {filteredRecommendations.length === 0 && !isLoading && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
                   {hasActiveFilters ? (
                     <>
-                      <Filter className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground mb-2">
+                      <Filter className="h-10 w-10 text-muted-foreground mb-3" />
+                      <p className="text-xs text-muted-foreground mb-2">
                         No hay recomendaciones con los filtros seleccionados
                       </p>
-                      <Button variant="link" onClick={clearFilters} className="text-xs">
+                      <Button variant="link" onClick={clearFilters} className="text-xs h-6">
                         Limpiar filtros
                       </Button>
                     </>
                   ) : recommendations.length === 0 ? (
                     <>
-                      <Brain className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground text-sm max-w-xs">
+                      <Brain className="h-10 w-10 text-muted-foreground mb-3" />
+                      <p className="text-xs text-muted-foreground">
                         Aún no hay suficientes datos para generar alertas inteligentes.
                       </p>
-                      <p className="text-muted-foreground text-xs mt-2 max-w-xs">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Importa ventas o conecta ticketeras para ver análisis en tiempo real.
                       </p>
                     </>
-                  ) : (
-                    <>
-                      <Brain className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">
-                        No hay recomendaciones disponibles
-                      </p>
-                    </>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
