@@ -85,15 +85,15 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
               Recomendaciones IA
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Insights y sugerencias generadas automáticamente
             </p>
           </div>
@@ -150,18 +150,18 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
 
       {/* Marketing Recommendations */}
       {groupedRecommendations.marketing.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
             Marketing
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.marketing.map((rec, index) => (
               <Card key={rec.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
+                <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <div className="flex gap-2">
+                    <CardTitle className="text-sm">{rec.title}</CardTitle>
+                    <div className="flex gap-1.5">
                       <Badge variant="outline" className={getPriorityColor(rec.priority)}>
                         {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
                       </Badge>
@@ -172,8 +172,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
+                <CardContent className="p-4 pt-0">
+                  <CardDescription className="text-xs leading-relaxed whitespace-pre-line">
                     {rec.description}
                   </CardDescription>
                 </CardContent>
@@ -185,18 +185,18 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
 
       {/* Pricing Recommendations */}
       {groupedRecommendations.pricing.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
             Pricing
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.pricing.map((rec, index) => (
               <Card key={rec.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
+                <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <div className="flex gap-2">
+                    <CardTitle className="text-sm">{rec.title}</CardTitle>
+                    <div className="flex gap-1.5">
                       <Badge variant="outline" className={getPriorityColor(rec.priority)}>
                         {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
                       </Badge>
@@ -207,8 +207,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
+                <CardContent className="p-4 pt-0">
+                  <CardDescription className="text-xs leading-relaxed whitespace-pre-line">
                     {rec.description}
                   </CardDescription>
                 </CardContent>
@@ -220,18 +220,18 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
 
       {/* Alerts */}
       {groupedRecommendations.alert.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <AlertCircle className="h-5 w-5" />
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
             Alertas y Oportunidades
           </h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.alert.map((rec, index) => (
               <Card key={rec.id} className="hover:shadow-md transition-shadow border-2">
-                <CardHeader>
+                <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <div className="flex gap-2">
+                    <CardTitle className="text-sm">{rec.title}</CardTitle>
+                    <div className="flex gap-1.5">
                       <Badge variant="outline" className={getPriorityColor(rec.priority)}>
                         {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
                       </Badge>
@@ -242,8 +242,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed whitespace-pre-line">
+                <CardContent className="p-4 pt-0">
+                  <CardDescription className="text-xs leading-relaxed whitespace-pre-line">
                     {rec.description}
                   </CardDescription>
                 </CardContent>
@@ -255,9 +255,9 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
 
       {recommendations.length === 0 && (
         <Card>
-          <CardContent className="p-8 text-center">
-            <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
+          <CardContent className="p-6 text-center">
+            <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-xs text-muted-foreground">
               No hay recomendaciones disponibles en este momento
             </p>
           </CardContent>

@@ -258,59 +258,59 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Contact Stats KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Con Email</p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-xs text-muted-foreground mb-1">Con Email</p>
+              <p className="text-2xl font-bold text-foreground">
                 {contactStats.emailPercentage.toFixed(1)}%
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {Math.round(
                   (contactStats.emailPercentage / 100) * contactStats.totalTickets
                 )}{" "}
                 / {contactStats.totalTickets}
               </p>
             </div>
-            <div className="bg-primary/10 p-3 rounded-lg">
-              <Mail className="h-6 w-6 text-primary" />
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Mail className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Con Teléfono</p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-xs text-muted-foreground mb-1">Con Teléfono</p>
+              <p className="text-2xl font-bold text-foreground">
                 {contactStats.phonePercentage.toFixed(1)}%
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {Math.round(
                   (contactStats.phonePercentage / 100) * contactStats.totalTickets
                 )}{" "}
                 / {contactStats.totalTickets}
               </p>
             </div>
-            <div className="bg-success/10 p-3 rounded-lg">
-              <Phone className="h-6 w-6 text-success" />
+            <div className="bg-success/10 p-2 rounded-lg">
+              <Phone className="h-5 w-5 text-success" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-xs text-muted-foreground mb-1">
                 Consentimiento Marketing
               </p>
-              <p className="text-3xl font-bold text-foreground">
+              <p className="text-2xl font-bold text-foreground">
                 {contactStats.marketingConsentPercentage.toFixed(1)}%
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {Math.round(
                   (contactStats.marketingConsentPercentage / 100) *
                     contactStats.totalTickets
@@ -318,24 +318,24 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
                 / {contactStats.totalTickets}
               </p>
             </div>
-            <div className="bg-warning/10 p-3 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-warning" />
+            <div className="bg-warning/10 p-2 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-warning" />
             </div>
           </div>
         </Card>
       </div>
 
       {/* Geographic Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* By Province */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">Distribución por Provincia</h3>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="h-4 w-4 text-primary" />
+            <h3 className="text-base font-semibold">Distribución por Provincia</h3>
           </div>
 
-          <div className="space-y-4">
-            <ResponsiveContainer width="100%" height={250}>
+          <div className="space-y-3">
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
                   data={provinceData.slice(0, 5)}
@@ -343,8 +343,9 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
                   nameKey="location"
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={60}
                   label={(entry) => `${entry.percentage.toFixed(1)}%`}
+                  style={{ fontSize: 10 }}
                 >
                   {provinceData.slice(0, 5).map((entry, index) => (
                     <Cell
@@ -353,23 +354,23 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
 
-            <div className="max-h-64 overflow-y-auto">
-              <table className="w-full text-sm">
+            <div className="max-h-48 overflow-y-auto">
+              <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-card">
                   <tr className="border-b">
-                    <th className="text-left py-2">Provincia</th>
-                    <th className="text-right py-2">Entradas</th>
-                    <th className="text-right py-2">%</th>
+                    <th className="text-left py-1.5">Provincia</th>
+                    <th className="text-right py-1.5">Entradas</th>
+                    <th className="text-right py-1.5">%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {provinceData.map((item) => (
                     <tr key={item.location} className="border-b">
-                      <td className="py-2">{item.location}</td>
+                      <td className="py-1.5">{item.location}</td>
                       <td className="text-right">{item.count}</td>
                       <td className="text-right">{item.percentage.toFixed(1)}%</td>
                     </tr>
@@ -381,38 +382,38 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
         </Card>
 
         {/* By City */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="h-4 w-4 text-primary" />
+            <h3 className="text-base font-semibold">
               Top 15 Ciudades
             </h3>
           </div>
 
-          <div className="space-y-4">
-            <ResponsiveContainer width="100%" height={250}>
+          <div className="space-y-3">
+            <ResponsiveContainer width="100%" height={180}>
               <BarChart data={cityData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="location" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="location" angle={-45} textAnchor="end" height={60} tick={{ fontSize: 9 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={{ fontSize: 11 }} />
                 <Bar dataKey="count" fill="hsl(var(--chart-2))" />
               </BarChart>
             </ResponsiveContainer>
 
-            <div className="max-h-64 overflow-y-auto">
-              <table className="w-full text-sm">
+            <div className="max-h-48 overflow-y-auto">
+              <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-card">
                   <tr className="border-b">
-                    <th className="text-left py-2">Ciudad</th>
-                    <th className="text-right py-2">Entradas</th>
-                    <th className="text-right py-2">%</th>
+                    <th className="text-left py-1.5">Ciudad</th>
+                    <th className="text-right py-1.5">Entradas</th>
+                    <th className="text-right py-1.5">%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cityData.map((item) => (
                     <tr key={item.location} className="border-b">
-                      <td className="py-2">{item.location}</td>
+                      <td className="py-1.5">{item.location}</td>
                       <td className="text-right">{item.count}</td>
                       <td className="text-right">{item.percentage.toFixed(1)}%</td>
                     </tr>
@@ -425,37 +426,37 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
       </div>
 
       {/* Age Distribution */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Distribución por Edad</h3>
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="h-4 w-4 text-primary" />
+          <h3 className="text-base font-semibold">Distribución por Edad</h3>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ResponsiveContainer width="100%" height={250}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={ageData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="range" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <XAxis dataKey="range" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="count" fill="hsl(var(--chart-3))" name="Entradas" />
             </BarChart>
           </ResponsiveContainer>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">Rango</th>
-                  <th className="text-right py-2">Entradas</th>
-                  <th className="text-right py-2">%</th>
+                  <th className="text-left py-1.5">Rango</th>
+                  <th className="text-right py-1.5">Entradas</th>
+                  <th className="text-right py-1.5">%</th>
                 </tr>
               </thead>
               <tbody>
                 {ageData.map((item) => (
                   <tr key={item.range} className="border-b">
-                    <td className="py-2 font-medium">{item.range} años</td>
+                    <td className="py-1.5 font-medium">{item.range} años</td>
                     <td className="text-right">{item.count}</td>
                     <td className="text-right">{item.percentage.toFixed(1)}%</td>
                   </tr>
@@ -467,14 +468,14 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
       </Card>
 
       {/* Export Segment */}
-      <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-start justify-between gap-4 mb-4">
+      <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-              <Filter className="h-5 w-5 text-primary" />
+            <h3 className="text-base font-semibold mb-1 flex items-center gap-2">
+              <Filter className="h-4 w-4 text-primary" />
               Segmentación y Exportación
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Selecciona filtros y descarga un CSV con este segmento para usarlo en campañas de email, anuncios en redes sociales o acciones de marketing directo.
             </p>
           </div>

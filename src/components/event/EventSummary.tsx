@@ -281,38 +281,38 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* KPIs - Enhanced with hierarchy and semantic colors */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className={cn(
-          "p-8 border-2 hover:border-primary/50 transition-colors",
+          "p-4 border-2 hover:border-primary/50 transition-colors",
           kpis.occupancyRate >= 50 ? "border-success/30" : "border-warning/30"
         )}>
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 Entradas Vendidas
               </p>
               <p className={cn(
-                "text-4xl font-bold mb-1",
+                "text-2xl font-bold mb-0.5",
                 kpis.occupancyRate >= 70 ? "text-success" :
                 kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )}>
                 {kpis.totalSold.toLocaleString()}
               </p>
               {totalCapacity && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Objetivo: {totalCapacity.toLocaleString()} entradas
                 </p>
               )}
             </div>
             <div className={cn(
-              "p-4 rounded-xl",
+              "p-2 rounded-lg",
               kpis.occupancyRate >= 70 ? "bg-success/10" :
               kpis.occupancyRate >= 30 ? "bg-warning/10" : "bg-danger/10"
             )}>
               <Users className={cn(
-                "h-7 w-7",
+                "h-5 w-5",
                 kpis.occupancyRate >= 70 ? "text-success" :
                 kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )} />
@@ -321,33 +321,33 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         </Card>
 
         <Card className={cn(
-          "p-8 border-2 hover:border-success/50 transition-colors",
+          "p-4 border-2 hover:border-success/50 transition-colors",
           getOccupancyBgClass(kpis.occupancyRate).includes("success") ? "border-success/30" :
           getOccupancyBgClass(kpis.occupancyRate).includes("warning") ? "border-warning/30" : "border-danger/30"
         )}>
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 Ocupación del Aforo
               </p>
               <p className={cn(
-                "text-4xl font-bold mb-1",
+                "text-2xl font-bold mb-0.5",
                 getOccupancyTextClass(kpis.occupancyRate).split(" ")[0]
               )}>
                 {totalCapacity ? `${kpis.occupancyRate.toFixed(1)}%` : "N/D"}
               </p>
               {totalCapacity && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {kpis.totalSold.toLocaleString()} / {totalCapacity.toLocaleString()}
                 </p>
               )}
             </div>
             <div className={cn(
-              "p-4 rounded-xl",
+              "p-2 rounded-lg",
               getOccupancyBgClass(kpis.occupancyRate)
             )}>
               <Target className={cn(
-                "h-7 w-7",
+                "h-5 w-5",
                 kpis.occupancyRate >= 70 ? "text-success" :
                 kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )} />
@@ -355,13 +355,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           </div>
         </Card>
 
-        <Card className="p-8 border-2 hover:border-primary/50 transition-colors border-primary/30">
-          <div className="flex items-start justify-between mb-4">
+        <Card className="p-4 border-2 hover:border-primary/50 transition-colors border-primary/30">
+          <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 Ingresos Brutos
               </p>
-              <p className="text-4xl font-bold text-primary mb-1">
+              <p className="text-2xl font-bold text-primary mb-0.5">
                 {kpis.grossRevenue.toLocaleString("es-ES", {
                   style: "currency",
                   currency: "EUR",
@@ -369,7 +369,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   maximumFractionDigits: 0,
                 })}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Precio promedio: {kpis.totalSold > 0 ? 
                   (kpis.grossRevenue / kpis.totalSold).toLocaleString("es-ES", {
                     style: "currency",
@@ -378,23 +378,23 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   }) : "N/D"}
               </p>
             </div>
-            <div className="bg-primary/10 p-4 rounded-xl">
-              <DollarSign className="h-7 w-7 text-primary" />
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <DollarSign className="h-5 w-5 text-primary" />
             </div>
           </div>
         </Card>
       </div>
 
       {/* Sales over time chart */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Ventas en el tiempo</h3>
-        <ResponsiveContainer width="100%" height={300}>
+      <Card className="p-4">
+        <h3 className="text-base font-semibold mb-3">Ventas en el tiempo</h3>
+        <ResponsiveContainer width="100%" height={200}>
           <LineChart data={salesOverTime}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} />
             <Tooltip />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone"
               dataKey="ventas"
@@ -406,10 +406,10 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       </Card>
 
       {/* Sales by PROVIDER (ticketing platform) */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-base font-semibold flex items-center gap-2">
               Ventas por Ticketera / Proveedor
               <Button
                 variant="outline"
@@ -418,20 +418,20 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   setDrawerContext(undefined);
                   setDrawerOpen(true);
                 }}
-                className="gap-2 h-7"
+                className="gap-2 h-7 text-xs"
               >
-                <Brain className="h-3.5 w-3.5" />
+                <Brain className="h-3 w-3" />
                 Centro de Alertas IA: {recommendations.length} · {getCriticalCount(recommendations)} críticas
               </Button>
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Plataformas de venta externas (Ticketmaster, Entradas.com, etc.)
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <ResponsiveContainer width="100%" height={250}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie
                 data={providerData.map((p) => ({
@@ -442,8 +442,9 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                outerRadius={60}
                 label={(entry) => entry.name}
+                style={{ fontSize: 11 }}
               >
                 {providerData.map((entry, index) => (
                   <Cell
@@ -452,16 +453,16 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
             </PieChart>
           </ResponsiveContainer>
 
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={providerData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ticketera" />
-              <YAxis />
-              <Tooltip />
+              <XAxis dataKey="ticketera" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
               <Bar dataKey="vendidas">
                 {providerData.map((entry, index) => {
                   const occupancy = entry.capacidad 
@@ -480,17 +481,17 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-2">Ticketera</th>
-                <th className="text-left py-2 min-w-[180px]">Progreso</th>
-                <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
-                <th className="text-right py-2">Capacidad</th>
-                <th className="text-right py-2">Vendidas</th>
-                <th className="text-right py-2">% Ocupación</th>
-                <th className="text-right py-2">Restantes</th>
-                <th className="text-right py-2">Ingresos</th>
+                <th className="text-left py-1.5">Ticketera</th>
+                <th className="text-left py-1.5 min-w-[140px]">Progreso</th>
+                <th className="text-left py-1.5 min-w-[100px]">Tendencia 7d</th>
+                <th className="text-right py-1.5">Capacidad</th>
+                <th className="text-right py-1.5">Vendidas</th>
+                <th className="text-right py-1.5">% Ocupación</th>
+                <th className="text-right py-1.5">Restantes</th>
+                <th className="text-right py-1.5">Ingresos</th>
               </tr>
             </thead>
             <tbody>
@@ -509,7 +510,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       !hasCritical && providerRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
-                    <td className="py-3 font-medium">
+                    <td className="py-2 font-medium">
                       <div className="flex items-center gap-2">
                         {row.ticketera}
                         {providerRecs.length > 0 && (
@@ -524,7 +525,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                         )}
                       </div>
                     </td>
-                    <td className="py-3">
+                    <td className="py-2">
                       {row.capacidad ? (
                         <ProgressBar 
                           value={row.vendidas} 
@@ -535,8 +536,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                         <span className="text-muted-foreground text-xs">N/D</span>
                       )}
                     </td>
-                    <td className="py-3">
-                      <Sparkline data={row.trend} className="w-24" />
+                    <td className="py-2">
+                      <Sparkline data={row.trend} className="w-20" />
                     </td>
                     <td className="text-right">
                       {row.capacidad?.toLocaleString() || "N/D"}
@@ -565,10 +566,10 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       </Card>
 
       {/* Sales by CHANNEL (internal) */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+            <h3 className="text-base font-semibold flex items-center gap-2">
               Ventas por Canal Interno
               <AIBadgePopover
                 count={getRecommendationsForScope("channel").length}
@@ -578,19 +579,19 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 onOpenDrawer={() => onOpenDrawer?.()}
               />
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Canales de venta internos (App móvil, RRPP, Taquilla, Online, etc.)
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ResponsiveContainer width="100%" height={250}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={channelData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="canal" />
-              <YAxis />
-              <Tooltip />
+              <XAxis dataKey="canal" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
               <Bar dataKey="entradas">
                 {channelData.map((entry, index) => {
                   const percentage = parseFloat(entry.porcentaje);
@@ -606,14 +607,14 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           </ResponsiveContainer>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">Canal</th>
-                  <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
-                  <th className="text-right py-2">Entradas</th>
-                  <th className="text-right py-2">%</th>
-                  <th className="text-right py-2">Ingresos</th>
+                  <th className="text-left py-1.5">Canal</th>
+                  <th className="text-left py-1.5 min-w-[100px]">Tendencia 7d</th>
+                  <th className="text-right py-1.5">Entradas</th>
+                  <th className="text-right py-1.5">%</th>
+                  <th className="text-right py-1.5">Ingresos</th>
                 </tr>
               </thead>
               <tbody>
@@ -630,7 +631,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                         !hasCritical && channelRecs.length > 0 && "bg-warning/5 border-warning/20"
                       )}
                     >
-                      <td className="py-2 flex items-center gap-2">
+                      <td className="py-1.5 flex items-center gap-2">
                         {row.canal}
                         {channelRecs.length > 0 && (
                           <AIBadgePopover
@@ -642,8 +643,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                           />
                         )}
                       </td>
-                      <td className="py-2">
-                        <Sparkline data={row.trend} className="w-24" />
+                      <td className="py-1.5">
+                        <Sparkline data={row.trend} className="w-20" />
                       </td>
                       <td className="text-right">{row.entradas}</td>
                       <td className={cn(
@@ -670,8 +671,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       </Card>
 
       {/* Zone data */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-4">
+        <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
           Zonas y aforos
           <Button
             variant="outline"
@@ -680,23 +681,23 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               setDrawerContext(undefined);
               setDrawerOpen(true);
             }}
-            className="gap-2 h-7"
+            className="gap-2 h-7 text-xs"
           >
-            <Brain className="h-3.5 w-3.5" />
+            <Brain className="h-3 w-3" />
             Centro de Alertas IA: {getRecommendationsForScope("zone").length} · {getCriticalCount(getRecommendationsForScope("zone"))} críticas
           </Button>
         </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-2">Zona</th>
-                <th className="text-left py-2 min-w-[200px]">Progreso</th>
-                <th className="text-left py-2 min-w-[120px]">Tendencia 7d</th>
-                <th className="text-right py-2">Aforo</th>
-                <th className="text-right py-2">Vendidas</th>
-                <th className="text-right py-2">% Ocupación</th>
-                <th className="text-right py-2">Ingresos</th>
+                <th className="text-left py-1.5">Zona</th>
+                <th className="text-left py-1.5 min-w-[140px]">Progreso</th>
+                <th className="text-left py-1.5 min-w-[100px]">Tendencia 7d</th>
+                <th className="text-right py-1.5">Aforo</th>
+                <th className="text-right py-1.5">Vendidas</th>
+                <th className="text-right py-1.5">% Ocupación</th>
+                <th className="text-right py-1.5">Ingresos</th>
               </tr>
             </thead>
             <tbody>
@@ -715,7 +716,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       !hasCritical && zoneRecs.length > 0 && "bg-warning/5 border-warning/20"
                     )}
                   >
-                    <td className="py-3">
+                    <td className="py-2">
                       <div className="flex items-center gap-2">
                         {row.zona}
                         {zoneRecs.length > 0 && (
@@ -730,7 +731,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                         )}
                       </div>
                     </td>
-                    <td className="py-3">
+                    <td className="py-2">
                       {row.aforo ? (
                         <ProgressBar 
                           value={row.vendidas} 
@@ -741,8 +742,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                         <span className="text-muted-foreground text-xs">N/D</span>
                       )}
                     </td>
-                    <td className="py-3">
-                      <Sparkline data={row.trend} className="w-24" />
+                    <td className="py-2">
+                      <Sparkline data={row.trend} className="w-20" />
                     </td>
                     <td className="text-right">
                       {row.aforo?.toLocaleString() || "N/D"}
