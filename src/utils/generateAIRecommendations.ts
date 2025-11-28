@@ -20,7 +20,7 @@ export function generateAIRecommendations(): Recommendation[] {
   if (ocupacionGlobal < 0.7) {
     recs.push({
       title: 'Ocupación global del evento por debajo del 70%',
-      description: `El evento tiene una ocupación del ${(ocupacionGlobal * 100).toFixed(1)}%. Considera lanzar campañas de marketing agresivas, promociones de último minuto o paquetes especiales para aumentar las ventas y alcanzar el 75-80% de ocupación.`,
+      description: `El evento tiene una ocupación del ${(ocupacionGlobal * 100).toFixed(1)}% (${festivalData.overview.entradasVendidas.toLocaleString('es-ES')} / ${festivalData.aforoTotal.toLocaleString('es-ES')} entradas, ${festivalData.overview.ingresosTotales.toLocaleString('es-ES')} € de ingresos). Considera lanzar campañas de marketing agresivas, promociones de último minuto o paquetes especiales para aumentar las ventas y alcanzar el 75-80% de ocupación.`,
       priority: 'high',
       category: 'alert',
       scope: 'global'
@@ -35,7 +35,7 @@ export function generateAIRecommendations(): Recommendation[] {
     if (ocupacionProveedor < 0.3) {
       recs.push({
         title: `${provider.nombre} con ocupación crítica (${(ocupacionProveedor * 100).toFixed(1)}%)`,
-        description: `${provider.nombre} solo ha vendido ${provider.vendidas.toLocaleString()} de ${provider.capacidad.toLocaleString()} entradas. Es urgente implementar una campaña de marketing intensiva específica para este canal o revisar la visibilidad y accesibilidad de compra.`,
+        description: `${provider.nombre} solo ha vendido ${provider.vendidas.toLocaleString('es-ES')} de ${provider.capacidad.toLocaleString('es-ES')} entradas (${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Es urgente implementar una campaña de marketing intensiva específica para este canal o revisar la visibilidad y accesibilidad de compra.`,
         priority: 'high',
         category: 'marketing',
         scope: 'provider',
@@ -46,7 +46,7 @@ export function generateAIRecommendations(): Recommendation[] {
     else if (ocupacionProveedor < 0.5) {
       recs.push({
         title: `Potenciar ventas en ${provider.nombre}`,
-        description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}%. Implementa promociones exclusivas, descuentos por tiempo limitado o paquetes atractivos para acelerar las ventas en este canal.`,
+        description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}% (${provider.vendidas.toLocaleString('es-ES')} / ${provider.capacidad.toLocaleString('es-ES')} entradas, ${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Implementa promociones exclusivas, descuentos por tiempo limitado o paquetes atractivos para acelerar las ventas en este canal.`,
         priority: 'medium',
         category: 'marketing',
         scope: 'provider',
@@ -57,7 +57,7 @@ export function generateAIRecommendations(): Recommendation[] {
     else if (ocupacionProveedor > 0.75) {
       recs.push({
         title: `${provider.nombre} con alta demanda - optimizar pricing`,
-        description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}%. Con esta alta demanda, puedes considerar ajustar precios al alza para entradas restantes o crear paquetes premium para maximizar ingresos.`,
+        description: `${provider.nombre} tiene una ocupación del ${(ocupacionProveedor * 100).toFixed(1)}% (${provider.vendidas.toLocaleString('es-ES')} / ${provider.capacidad.toLocaleString('es-ES')} entradas, ${provider.ingresos.toLocaleString('es-ES')} € de ingresos). Con esta alta demanda, puedes considerar ajustar precios al alza para entradas restantes o crear paquetes premium para maximizar ingresos.`,
         priority: 'medium',
         category: 'pricing',
         scope: 'provider',
@@ -74,7 +74,7 @@ export function generateAIRecommendations(): Recommendation[] {
     if (ocupacionZona > 0.8) {
       recs.push({
         title: `Zona ${zone.zona} - alta demanda detectada`,
-        description: `La zona ${zone.zona} tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación. Considera aumentar precios para las entradas restantes o crear paquetes VIP exclusivos para maximizar el revenue de esta zona popular.`,
+        description: `La zona ${zone.zona} tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación (${zone.vendidas.toLocaleString('es-ES')} / ${zone.aforo.toLocaleString('es-ES')} entradas, ${zone.ingresos.toLocaleString('es-ES')} € de ingresos). Considera aumentar precios para las entradas restantes o crear paquetes VIP exclusivos para maximizar el revenue de esta zona popular.`,
         priority: 'high',
         category: 'pricing',
         scope: 'zone',
@@ -85,7 +85,7 @@ export function generateAIRecommendations(): Recommendation[] {
     else if (ocupacionZona < 0.5) {
       recs.push({
         title: `Zona ${zone.zona} con baja ocupación`,
-        description: `La zona ${zone.zona} solo tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación (${zone.vendidas.toLocaleString()} de ${zone.aforo.toLocaleString()} entradas). Implementa descuentos específicos para esta zona o campañas de marketing que resalten sus ventajas.`,
+        description: `La zona ${zone.zona} solo tiene ${(ocupacionZona * 100).toFixed(1)}% de ocupación (${zone.vendidas.toLocaleString('es-ES')} / ${zone.aforo.toLocaleString('es-ES')} entradas, ${zone.ingresos.toLocaleString('es-ES')} € de ingresos). Implementa descuentos específicos para esta zona o campañas de marketing que resalten sus ventajas.`,
         priority: 'medium',
         category: 'alert',
         scope: 'zone',
