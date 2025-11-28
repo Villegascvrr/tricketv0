@@ -6,6 +6,7 @@ import { AlertCircle, TrendingUp, DollarSign, Sparkles, RefreshCw } from "lucide
 import { useState } from "react";
 import { useRecommendationStatus, RecommendationStatus } from "@/contexts/RecommendationStatusContext";
 import { RecommendationStatusBadge } from "./RecommendationStatusBadge";
+import { AlertDetailModal } from "./AlertDetailModal";
 import { cn } from "@/lib/utils";
 
 interface EventRecommendationsProps {
@@ -27,6 +28,7 @@ interface Recommendation {
 
 const EventRecommendations = ({ eventId, recommendations: propRecommendations, isLoading, onRefresh }: EventRecommendationsProps) => {
   const [statusFilter, setStatusFilter] = useState<RecommendationStatus | 'all'>('all');
+  const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
   const { getStatus, updateStatus } = useRecommendationStatus();
   
   // Use recommendations from props (from edge function) - no fallback to ensure fresh data
@@ -84,7 +86,13 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
   };
 
   return (
-    <div className="space-y-4">
+    <>
+      <AlertDetailModal 
+        recommendation={selectedRecommendation}
+        open={!!selectedRecommendation}
+        onOpenChange={(open) => !open && setSelectedRecommendation(null)}
+      />
+      <div className="space-y-4">
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div>
@@ -156,7 +164,11 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
           </h3>
           <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.marketing.map((rec, index) => (
-              <Card key={rec.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={rec.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedRecommendation(rec)}
+              >
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm">{rec.title}</CardTitle>
@@ -191,7 +203,11 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
           </h3>
           <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.pricing.map((rec, index) => (
-              <Card key={rec.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={rec.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedRecommendation(rec)}
+              >
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm">{rec.title}</CardTitle>
@@ -226,7 +242,11 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
           </h3>
           <div className="grid gap-3 md:grid-cols-2">
             {groupedRecommendations.alert.map((rec, index) => (
-              <Card key={rec.id} className="hover:shadow-md transition-shadow border-2">
+              <Card 
+                key={rec.id} 
+                className="hover:shadow-md transition-shadow border-2 cursor-pointer"
+                onClick={() => setSelectedRecommendation(rec)}
+              >
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm">{rec.title}</CardTitle>
@@ -276,7 +296,8 @@ const EventRecommendations = ({ eventId, recommendations: propRecommendations, i
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
