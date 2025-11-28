@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Target, Brain } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import AIBadgePopover from "./AIBadgePopover";
+import AIRecommendationsDrawer from "./AIRecommendationsDrawer";
+import AIBadge from "./AIBadge";
 import { useQuery } from "@tanstack/react-query";
 import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
 import { festivalData, calculateProviderOccupancy, calculateProviderRemaining } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
+import { Button } from "@/components/ui/button";
 import {
   LineChart,
   Line,
@@ -106,6 +109,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
   const [providerData, setProviderData] = useState<ProviderStats[]>([]);
   const [zoneData, setZoneData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerContext, setDrawerContext] = useState<{ type: 'provider' | 'zone' | 'ageSegment' | 'global'; value: string } | undefined>(undefined);
 
   // Generate AI recommendations from festivalData
   const recommendations: AIRecommendation[] = generateAIRecommendations();
@@ -405,13 +410,18 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           <div>
             <h3 className="text-lg font-semibold flex items-center gap-2">
               Ventas por Ticketera / Proveedor
-              <AIBadgePopover
-                count={getRecommendationsForScope("provider").length}
-                criticalCount={getCriticalCount(getRecommendationsForScope("provider"))}
-                recommendations={getRecommendationsForScope("provider")}
-                eventId={eventId}
-                onOpenDrawer={() => onOpenDrawer?.()}
-              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDrawerContext(undefined);
+                  setDrawerOpen(true);
+                }}
+                className="gap-2 h-7"
+              >
+                <Brain className="h-3.5 w-3.5" />
+                Centro de Alertas IA: {recommendations.length} · {getCriticalCount(recommendations)} críticas
+              </Button>
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
               Plataformas de venta externas (Ticketmaster, Entradas.com, etc.)
@@ -502,12 +512,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       <div className="flex items-center gap-2">
                         {row.ticketera}
                         {providerRecs.length > 0 && (
-                          <AIBadgePopover
+                          <AIBadge
                             count={providerRecs.length}
                             criticalCount={getCriticalCount(providerRecs)}
-                            recommendations={providerRecs}
-                            eventId={eventId}
-                            onOpenDrawer={() => onOpenDrawer?.()}
+                            onClick={() => {
+                              setDrawerContext({ type: 'provider', value: row.ticketera });
+                              setDrawerOpen(true);
+                            }}
                           />
                         )}
                       </div>
@@ -661,13 +672,18 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           Zonas y aforos
-          <AIBadgePopover
-            count={getRecommendationsForScope("zone").length}
-            criticalCount={getCriticalCount(getRecommendationsForScope("zone"))}
-            recommendations={getRecommendationsForScope("zone")}
-            eventId={eventId}
-            onOpenDrawer={() => onOpenDrawer?.()}
-          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setDrawerContext(undefined);
+              setDrawerOpen(true);
+            }}
+            className="gap-2 h-7"
+          >
+            <Brain className="h-3.5 w-3.5" />
+            Centro de Alertas IA: {getRecommendationsForScope("zone").length} · {getCriticalCount(getRecommendationsForScope("zone"))} críticas
+          </Button>
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -702,12 +718,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       <div className="flex items-center gap-2">
                         {row.zona}
                         {zoneRecs.length > 0 && (
-                          <AIBadgePopover
+                          <AIBadge
                             count={zoneRecs.length}
                             criticalCount={getCriticalCount(zoneRecs)}
-                            recommendations={zoneRecs}
-                            eventId={eventId}
-                            onOpenDrawer={() => onOpenDrawer?.()}
+                            onClick={() => {
+                              setDrawerContext({ type: 'zone', value: row.zona });
+                              setDrawerOpen(true);
+                            }}
                           />
                         )}
                       </div>
@@ -750,6 +767,17 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
           </table>
         </div>
       </Card>
+
+      {/* AI Recommendations Drawer */}
+      <AIRecommendationsDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        recommendations={recommendations}
+        isLoading={false}
+        eventName="Festival Primavera Sound 2024"
+        eventDate={new Date().toLocaleDateString("es-ES")}
+        context={drawerContext}
+      />
     </div>
   );
 };

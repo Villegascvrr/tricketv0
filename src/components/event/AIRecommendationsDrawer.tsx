@@ -27,6 +27,10 @@ interface AIRecommendationsDrawerProps {
   isLoading: boolean;
   eventName?: string;
   eventDate?: string;
+  context?: {
+    type: 'provider' | 'zone' | 'ageSegment' | 'global';
+    value: string;
+  };
 }
 
 const AIRecommendationsDrawer = ({ 
@@ -35,7 +39,8 @@ const AIRecommendationsDrawer = ({
   recommendations,
   isLoading,
   eventName = "Evento",
-  eventDate = new Date().toLocaleDateString("es-ES")
+  eventDate = new Date().toLocaleDateString("es-ES"),
+  context
 }: AIRecommendationsDrawerProps) => {
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
@@ -84,10 +89,25 @@ const AIRecommendationsDrawer = ({
     return targetKey || scope;
   };
 
-  // Apply filters
+  // Apply filters including context filter
   const filteredRecommendations = recommendations.filter(r => {
     if (priorityFilter && r.priority !== priorityFilter) return false;
     if (categoryFilter && r.category !== categoryFilter) return false;
+    
+    // Apply context filter if present
+    if (context) {
+      if (context.type === 'provider' && r.scope === 'provider') {
+        return r.targetKey === context.value;
+      } else if (context.type === 'zone' && r.scope === 'zone') {
+        return r.targetKey === context.value;
+      } else if (context.type === 'ageSegment' && r.scope === 'ageSegment') {
+        return r.targetKey === context.value;
+      } else if (context.type === 'global') {
+        return r.scope === 'global';
+      }
+      return false;
+    }
+    
     return true;
   });
 
@@ -125,9 +145,16 @@ const AIRecommendationsDrawer = ({
       <SheetContent className="w-full sm:max-w-xl">
         <SheetHeader className="border-b pb-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-primary" />
-              <SheetTitle>Centro de Alertas IA</SheetTitle>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-primary" />
+                <SheetTitle>Centro de Alertas IA</SheetTitle>
+              </div>
+              {context && (
+                <p className="text-xs text-primary font-medium">
+                  Contexto: {context.value}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {!isLoading && recommendations.length > 0 && (
