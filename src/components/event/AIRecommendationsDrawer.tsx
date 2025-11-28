@@ -54,6 +54,18 @@ const AIRecommendationsDrawer = ({
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const { toast } = useToast();
   const { getStatus, updateStatus } = useRecommendationStatus();
+  
+  // Extract action from description (looks for "🎯 Acción sugerida:" line)
+  const extractAction = (description: string): string => {
+    const lines = description.split('\n');
+    const actionLine = lines.find(line => line.includes('🎯 Acción sugerida:'));
+    if (actionLine) {
+      return actionLine.replace('🎯 Acción sugerida:', '').trim();
+    }
+    // Fallback: return first line or truncated description
+    return lines[0]?.substring(0, 80) + '...' || '';
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -356,9 +368,16 @@ const AIRecommendationsDrawer = ({
                             <CollapsibleTrigger asChild>
                               <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
                                 <div className="flex items-start justify-between gap-2">
-                                  <CardTitle className="text-xs leading-tight flex-1">
-                                    {rec.title}
-                                  </CardTitle>
+                                  <div className="flex-1 space-y-1">
+                                    <CardTitle className="text-xs leading-tight">
+                                      {rec.title}
+                                    </CardTitle>
+                                    {!isExpanded && (
+                                      <p className="text-xs text-muted-foreground line-clamp-1">
+                                        🎯 {extractAction(rec.description)}
+                                      </p>
+                                    )}
+                                  </div>
                                   <div className="flex gap-1 flex-shrink-0">
                                     <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
                                       {getCategoryLabel(rec.category)}
@@ -424,9 +443,16 @@ const AIRecommendationsDrawer = ({
                             <CollapsibleTrigger asChild>
                               <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
                                 <div className="flex items-start justify-between gap-2">
-                                  <CardTitle className="text-xs leading-tight flex-1">
-                                    {rec.title}
-                                  </CardTitle>
+                                  <div className="flex-1 space-y-1">
+                                    <CardTitle className="text-xs leading-tight">
+                                      {rec.title}
+                                    </CardTitle>
+                                    {!isExpanded && (
+                                      <p className="text-xs text-muted-foreground line-clamp-1">
+                                        🎯 {extractAction(rec.description)}
+                                      </p>
+                                    )}
+                                  </div>
                                   <div className="flex gap-1 flex-shrink-0">
                                     <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
                                       {getCategoryLabel(rec.category)}
@@ -493,9 +519,16 @@ const AIRecommendationsDrawer = ({
                             <CollapsibleTrigger asChild>
                               <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
                                 <div className="flex items-start justify-between gap-2">
-                                  <CardTitle className="text-xs leading-tight flex-1">
-                                    {rec.title}
-                                  </CardTitle>
+                                  <div className="flex-1 space-y-1">
+                                    <CardTitle className="text-xs leading-tight">
+                                      {rec.title}
+                                    </CardTitle>
+                                    {!isExpanded && (
+                                      <p className="text-xs text-muted-foreground line-clamp-1">
+                                        🎯 {extractAction(rec.description)}
+                                      </p>
+                                    )}
+                                  </div>
                                   <div className="flex gap-1 flex-shrink-0">
                                     <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
                                       {getCategoryLabel(rec.category)}
