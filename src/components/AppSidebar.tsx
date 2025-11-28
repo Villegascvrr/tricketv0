@@ -31,6 +31,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import TryTricketModal from "@/components/TryTricketModal";
+import { Sparkles } from "lucide-react";
 
 const mainItems = [
   { title: "Inicio", url: "/dashboard", icon: Home },
@@ -51,6 +53,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const [tryModalOpen, setTryModalOpen] = useState(false);
 
   // Load saved state from localStorage on mount
   useEffect(() => {
@@ -147,6 +150,29 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Try Tricket Free CTA */}
+        <div className={cn("px-3 py-4", collapsed && "px-2")}>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setTryModalOpen(true)}
+                className={cn(
+                  "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200",
+                  collapsed ? "h-10 w-10 p-0" : "h-10"
+                )}
+              >
+                <Sparkles className={cn("h-5 w-5", !collapsed && "mr-2")} />
+                {!collapsed && <span className="font-semibold">Probar gratis</span>}
+              </Button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="z-50">
+                Probar Tricket gratis
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </div>
+
         {/* Main Navigation */}
         <SidebarGroup>
           {!collapsed && (
@@ -189,6 +215,12 @@ export function AppSidebar() {
           </p>
         )}
       </SidebarFooter>
+
+      {/* Try Tricket Modal */}
+      <TryTricketModal
+        open={tryModalOpen}
+        onOpenChange={setTryModalOpen}
+      />
     </Sidebar>
   );
 }
