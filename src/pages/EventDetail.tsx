@@ -37,7 +37,7 @@ const EventDetail = () => {
   const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch AI recommendations
-  const { data: aiData, isLoading: aiLoading } = useQuery({
+  const { data: aiData, isLoading: aiLoading, refetch: refetchRecommendations } = useQuery({
     queryKey: ['event-recommendations', id],
     queryFn: async () => {
       if (!id) return null;
@@ -224,7 +224,12 @@ const EventDetail = () => {
           </TabsContent>
 
           <TabsContent value="recommendations">
-            <EventRecommendations eventId={event.id} />
+            <EventRecommendations 
+              eventId={event.id} 
+              recommendations={recommendations}
+              isLoading={aiLoading}
+              onRefresh={() => refetchRecommendations()}
+            />
           </TabsContent>
 
           <TabsContent value="export">
@@ -241,6 +246,7 @@ const EventDetail = () => {
         isLoading={aiLoading}
         eventName={event.name}
         eventDate={format(new Date(event.start_date), "d 'de' MMMM 'de' yyyy", { locale: es })}
+        onRefresh={() => refetchRecommendations()}
       />
 
       {/* AI Chat Drawer */}

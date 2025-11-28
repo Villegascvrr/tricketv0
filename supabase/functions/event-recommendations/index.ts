@@ -240,46 +240,53 @@ serve(async (req) => {
 
     const systemPrompt = `Eres un experto analista de eventos y marketing de entretenimiento.
 
-Analiza los datos del evento y genera recomendaciones accionables basadas en la ocupación real y el rendimiento actual.
+Analiza los datos del evento y genera recomendaciones accionables basadas en REGLAS ESPECÍFICAS de ocupación y rendimiento.
 
-CONTEXTO IMPORTANTE:
-- Analiza la ocupación real de cada proveedor y zona
-- Identifica proveedores con baja ocupación vs alta ocupación
-- Detecta canales y zonas que necesitan optimización
-- Reconoce los segmentos demográficos más activos
-- Evalúa la distribución geográfica de ventas
+DATOS DEL EVENTO:
+${JSON.stringify(eventContext, null, 2)}
+
+REGLAS DE PRIORIDAD (CRÍTICO):
+
+**CRÍTICAS (priority: "high"):**
+1. Ocupación total < 50%
+2. Alguna zona con < 30% ocupación
+3. Alguna ticketera con > 80% capacidad sin vender (< 20% ocupación)
+4. Ingresos proyectados < 70% del objetivo (objetivo: 5,000,000 €)
+
+**IMPORTANTES (priority: "medium"):**
+1. Ocupación total entre 50-70%
+2. Zonas con ocupación entre 30-50%
+3. Ticketeras con ocupación entre 20-50%
+
+**SUGERENCIAS (priority: "low"):**
+1. Precio medio por entrada < 100€ (considerar upselling)
+2. Segmentos demográficos con < 10% de participación
+3. Zonas o ticketeras con alta ocupación (>75%) para optimizar pricing
 
 ESTRUCTURA DE RESPUESTA:
-Cada recomendación debe tener:
-- title: título corto y directo
-- description: máximo 2-3 líneas con dato clave + acción concreta
-- priority: "high" (crítica), "medium" (importante) o "low" (sugerencia)
+Cada recomendación debe incluir:
+- id: identificador único (ej: "global-ocupacion-critica", "provider-ticketmaster-critico")
+- title: título conciso que describe el problema o oportunidad
+- description: 
+  * Empieza con emoji apropiado (⚠️ para crítico, 📊 para datos, ✅ para éxito, 💡 para sugerencia)
+  * Incluye DATOS ESPECÍFICOS del evento (porcentajes, números, ingresos)
+  * Formato: "Situación actual + Datos + Acción sugerida"
+  * Usa saltos de línea (\\n\\n) para separar secciones
+  * Ejemplo: "⚠️ Ocupación crítica: 45.2%\\n\\n📊 Vendidas: 28,000 / 62,000 entradas\\n💰 Ingresos: 2,450,000 €\\n\\n🎯 Acción sugerida: Lanzar campaña urgente..."
+- priority: "high", "medium" o "low" según las reglas arriba
 - category: "marketing", "pricing" o "alert"
-- scope: indica qué elemento del dashboard está relacionado
-  * "provider" para ticketeras específicas (Ticketmaster, Entradas.com, Bclever, Forvenues)
-  * "channel" para canales internos (App móvil, RRPP, Taquilla, Online)
-  * "zone" para zonas del evento (VIP, Pista, Grada, etc.)
-  * "ageSegment" para grupos de edad (18-24, 25-34, 35-44, 45+)
-  * "city" para ciudades específicas (Madrid, Barcelona, Valencia, etc.)
-  * "global" para recomendaciones generales
-- targetKey: nombre exacto del elemento (ej: "Ticketmaster", "RRPP", "VIP", "45+", "Barcelona")
-  * Solo incluir si scope no es "global"
-  * Usar los nombres exactos que aparecen en los datos
+- scope: "global", "provider", "zone", "ageSegment", "channel"
+- targetKey: nombre exacto si scope no es global (ej: "Ticketmaster", "VIP", "25-34")
 
-PRIORIDADES:
-- high: problemas críticos (ocupación <40%), oportunidades urgentes, riesgos inmediatos
-- medium: optimizaciones importantes (ocupación 40-70%), tendencias relevantes
-- low: sugerencias menores (ocupación >70%), mejoras graduales
+IMPORTANTE:
+- Genera TODAS las recomendaciones que apliquen según las reglas
+- NO inventes datos, usa SOLO los datos proporcionados en eventContext
+- Para ticketeras, MENCIONA TODAS las que existen (Ticketmaster, Entradas.com, Bclever, Forvenues) con sus datos reales
+- Si una ticketera tiene 0 vendidas, es CRÍTICO y debe aparecer
+- Usa números con formato español (separadores de miles con punto o coma)
+- Emojis: ⚠️ 📊 💰 🎯 ✅ 💡 📈 📉
 
-CATEGORÍAS:
-- marketing: campañas, segmentación, canales de promoción
-- pricing: estrategias de precios, paquetes, descuentos
-- alert: problemas urgentes, oportunidades críticas, desequilibrios
-
-Genera exactamente 6 recomendaciones: 2 de marketing, 2 de pricing y 2 de alertas/oportunidades.
-Enfócate en los proveedores y zonas con BAJA ocupación (<50%) y en capitalizar los de ALTA ocupación (>70%).
-
-IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que las recomendaciones aparezcan en los bloques correctos del dashboard.`;
+Genera entre 4-8 recomendaciones basadas estrictamente en las reglas de prioridad.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -293,7 +300,7 @@ IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que la
           { role: 'system', content: systemPrompt },
           { 
             role: 'user', 
-            content: `Analiza estos datos del evento y genera recomendaciones:\n\n${JSON.stringify(eventContext, null, 2)}` 
+            content: `Analiza estos datos y genera recomendaciones siguiendo ESTRICTAMENTE las reglas de prioridad definidas.` 
           },
         ],
         tools: [
@@ -310,6 +317,7 @@ IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que la
                     items: {
                       type: 'object',
                       properties: {
+                        id: { type: 'string' },
                         title: { type: 'string' },
                         description: { type: 'string' },
                         priority: { type: 'string', enum: ['high', 'medium', 'low'] },
@@ -317,7 +325,7 @@ IMPORTANTE: Asigna scope y targetKey específicos cuando sea posible para que la
                         scope: { type: 'string', enum: ['global', 'provider', 'channel', 'zone', 'ageSegment', 'city'] },
                         targetKey: { type: 'string' },
                       },
-                      required: ['title', 'description', 'priority', 'category', 'scope'],
+                      required: ['id', 'title', 'description', 'priority', 'category', 'scope'],
                       additionalProperties: false,
                     },
                   },

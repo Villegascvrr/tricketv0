@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download } from "lucide-react";
+import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -30,6 +30,7 @@ interface AIRecommendationsDrawerProps {
   isLoading: boolean;
   eventName?: string;
   eventDate?: string;
+  onRefresh?: () => void;
   context?: {
     type: 'provider' | 'zone' | 'ageSegment' | 'global';
     value: string;
@@ -43,6 +44,7 @@ const AIRecommendationsDrawer = ({
   isLoading,
   eventName = "Evento",
   eventDate = new Date().toLocaleDateString("es-ES"),
+  onRefresh,
   context
 }: AIRecommendationsDrawerProps) => {
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
@@ -161,6 +163,18 @@ const AIRecommendationsDrawer = ({
               )}
             </div>
             <div className="flex items-center gap-2">
+              {onRefresh && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRefresh}
+                  disabled={isLoading}
+                  className="h-8 gap-2"
+                >
+                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                  Actualizar
+                </Button>
+              )}
               {!isLoading && recommendations.length > 0 && (
                 <Button
                   variant="outline"
@@ -488,6 +502,16 @@ const AIRecommendationsDrawer = ({
                       <Button variant="link" onClick={clearFilters} className="text-xs">
                         Limpiar filtros
                       </Button>
+                    </>
+                  ) : recommendations.length === 0 ? (
+                    <>
+                      <Brain className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground text-sm max-w-xs">
+                        Aún no hay suficientes datos para generar alertas inteligentes.
+                      </p>
+                      <p className="text-muted-foreground text-xs mt-2 max-w-xs">
+                        Importa ventas o conecta ticketeras para ver análisis en tiempo real.
+                      </p>
                     </>
                   ) : (
                     <>
