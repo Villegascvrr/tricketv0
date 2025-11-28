@@ -5,8 +5,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to events page
-    navigate("/events");
+    // Redirect to dashboard
+    navigate("/dashboard");
   }, [navigate]);
 
   return null;
