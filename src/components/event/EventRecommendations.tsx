@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 
 interface EventRecommendationsProps {
   eventId: string;
+  recommendations?: Recommendation[];
+  isLoading?: boolean;
+  onRefresh?: () => void;
 }
 
 interface Recommendation {
@@ -23,18 +26,12 @@ interface Recommendation {
   targetKey?: string;
 }
 
-const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
-  // Generate recommendations directly from festivalData
-  const [refreshKey, setRefreshKey] = useState(0);
+const EventRecommendations = ({ eventId, recommendations: propRecommendations, isLoading, onRefresh }: EventRecommendationsProps) => {
   const [statusFilter, setStatusFilter] = useState<RecommendationStatus | 'all'>('all');
   const { getStatus, updateStatus } = useRecommendationStatus();
   
-  // Call generateAIRecommendations() to get dynamic recommendations
-  const recommendations: Recommendation[] = generateAIRecommendations();
-
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-  };
+  // Use recommendations from props (from edge function) or fallback to local generation
+  const recommendations: Recommendation[] = propRecommendations || generateAIRecommendations();
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -100,14 +97,17 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
               Insights y sugerencias generadas automáticamente
             </p>
           </div>
-          <Button 
-            onClick={handleRefresh} 
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
+          {onRefresh && (
+            <Button 
+              onClick={onRefresh} 
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
+              Actualizar
+            </Button>
+          )}
         </div>
 
         {/* Status Filters */}
