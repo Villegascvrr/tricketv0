@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download, RefreshCw } from "lucide-react";
+import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download, RefreshCw, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { exportRecommendationsToPDF } from "@/lib/exportRecommendationsPDF";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +51,7 @@ const AIRecommendationsDrawer = ({
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const { toast } = useToast();
   const { getStatus, updateStatus } = useRecommendationStatus();
   const getPriorityColor = (priority: string) => {
@@ -336,47 +338,65 @@ const AIRecommendationsDrawer = ({
                     Críticas ({groupedRecommendations.high.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {groupedRecommendations.high.map((rec, index) => (
-                      <Card 
-                        key={rec.id} 
-                        className={cn(
-                          "border hover:shadow-md transition-shadow animate-fade-in",
-                          "border-danger/30 bg-danger/5"
-                        )}
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        <CardHeader className="p-3 pb-2">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <CardTitle className="text-xs leading-tight flex-1">
-                              {rec.title}
-                            </CardTitle>
-                            <div className="flex gap-1 flex-shrink-0">
-                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
-                                {getCategoryLabel(rec.category)}
-                              </Badge>
-                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
-                                Alta
-                              </Badge>
-                              <RecommendationStatusBadge
-                                status={getStatus(rec.id)}
-                                onStatusChange={(status) => updateStatus(rec.id, status)}
-                              />
-                            </div>
-                          </div>
-                          {getScopeLabel(rec.scope, rec.targetKey) && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              {getCategoryIcon(rec.category)}
-                              {getScopeLabel(rec.scope, rec.targetKey)}
-                            </span>
-                          )}
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
-                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
-                            {rec.description}
-                          </CardDescription>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {groupedRecommendations.high.map((rec, index) => {
+                      const isExpanded = expandedCard === rec.id;
+                      return (
+                        <Collapsible
+                          key={rec.id}
+                          open={isExpanded}
+                          onOpenChange={(open) => setExpandedCard(open ? rec.id : null)}
+                        >
+                          <Card 
+                            className={cn(
+                              "border hover:shadow-md transition-all animate-fade-in cursor-pointer",
+                              "border-danger/30 bg-danger/5"
+                            )}
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <CardTitle className="text-xs leading-tight flex-1">
+                                    {rec.title}
+                                  </CardTitle>
+                                  <div className="flex gap-1 flex-shrink-0">
+                                    <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                      {getCategoryLabel(rec.category)}
+                                    </Badge>
+                                    <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                      Alta
+                                    </Badge>
+                                    <RecommendationStatusBadge
+                                      status={getStatus(rec.id)}
+                                      onStatusChange={(status) => {
+                                        updateStatus(rec.id, status);
+                                      }}
+                                    />
+                                    <ChevronDown className={cn(
+                                      "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                                      isExpanded && "rotate-180"
+                                    )} />
+                                  </div>
+                                </div>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <CardContent className="p-3 pt-0">
+                                {getScopeLabel(rec.scope, rec.targetKey) && (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                                    {getCategoryIcon(rec.category)}
+                                    {getScopeLabel(rec.scope, rec.targetKey)}
+                                  </span>
+                                )}
+                                <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                                  {rec.description}
+                                </CardDescription>
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -389,44 +409,62 @@ const AIRecommendationsDrawer = ({
                     Importantes ({groupedRecommendations.medium.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {groupedRecommendations.medium.map((rec, index) => (
-                      <Card 
-                        key={rec.id} 
-                        className="border hover:shadow-md transition-shadow animate-fade-in"
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        <CardHeader className="p-3 pb-2">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <CardTitle className="text-xs leading-tight flex-1">
-                              {rec.title}
-                            </CardTitle>
-                            <div className="flex gap-1 flex-shrink-0">
-                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
-                                {getCategoryLabel(rec.category)}
-                              </Badge>
-                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
-                                Media
-                              </Badge>
-                              <RecommendationStatusBadge
-                                status={getStatus(rec.id)}
-                                onStatusChange={(status) => updateStatus(rec.id, status)}
-                              />
-                            </div>
-                          </div>
-                          {getScopeLabel(rec.scope, rec.targetKey) && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              {getCategoryIcon(rec.category)}
-                              {getScopeLabel(rec.scope, rec.targetKey)}
-                            </span>
-                          )}
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
-                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
-                            {rec.description}
-                          </CardDescription>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {groupedRecommendations.medium.map((rec, index) => {
+                      const isExpanded = expandedCard === rec.id;
+                      return (
+                        <Collapsible
+                          key={rec.id}
+                          open={isExpanded}
+                          onOpenChange={(open) => setExpandedCard(open ? rec.id : null)}
+                        >
+                          <Card 
+                            className="border hover:shadow-md transition-all animate-fade-in cursor-pointer"
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <CardTitle className="text-xs leading-tight flex-1">
+                                    {rec.title}
+                                  </CardTitle>
+                                  <div className="flex gap-1 flex-shrink-0">
+                                    <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                      {getCategoryLabel(rec.category)}
+                                    </Badge>
+                                    <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                      Media
+                                    </Badge>
+                                    <RecommendationStatusBadge
+                                      status={getStatus(rec.id)}
+                                      onStatusChange={(status) => {
+                                        updateStatus(rec.id, status);
+                                      }}
+                                    />
+                                    <ChevronDown className={cn(
+                                      "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                                      isExpanded && "rotate-180"
+                                    )} />
+                                  </div>
+                                </div>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <CardContent className="p-3 pt-0">
+                                {getScopeLabel(rec.scope, rec.targetKey) && (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                                    {getCategoryIcon(rec.category)}
+                                    {getScopeLabel(rec.scope, rec.targetKey)}
+                                  </span>
+                                )}
+                                <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                                  {rec.description}
+                                </CardDescription>
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -440,44 +478,62 @@ const AIRecommendationsDrawer = ({
                     Sugerencias ({groupedRecommendations.low.length})
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {groupedRecommendations.low.map((rec, index) => (
-                      <Card 
-                        key={rec.id} 
-                        className="border hover:shadow-md transition-shadow animate-fade-in"
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        <CardHeader className="p-3 pb-2">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <CardTitle className="text-xs leading-tight flex-1">
-                              {rec.title}
-                            </CardTitle>
-                            <div className="flex gap-1 flex-shrink-0">
-                              <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
-                                {getCategoryLabel(rec.category)}
-                              </Badge>
-                              <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
-                                Baja
-                              </Badge>
-                              <RecommendationStatusBadge
-                                status={getStatus(rec.id)}
-                                onStatusChange={(status) => updateStatus(rec.id, status)}
-                              />
-                            </div>
-                          </div>
-                          {getScopeLabel(rec.scope, rec.targetKey) && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              {getCategoryIcon(rec.category)}
-                              {getScopeLabel(rec.scope, rec.targetKey)}
-                            </span>
-                          )}
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
-                          <CardDescription className="text-xs leading-snug whitespace-pre-line">
-                            {rec.description}
-                          </CardDescription>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {groupedRecommendations.low.map((rec, index) => {
+                      const isExpanded = expandedCard === rec.id;
+                      return (
+                        <Collapsible
+                          key={rec.id}
+                          open={isExpanded}
+                          onOpenChange={(open) => setExpandedCard(open ? rec.id : null)}
+                        >
+                          <Card 
+                            className="border hover:shadow-md transition-all animate-fade-in cursor-pointer"
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className={cn("pb-2", isExpanded ? "p-3" : "p-2")}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <CardTitle className="text-xs leading-tight flex-1">
+                                    {rec.title}
+                                  </CardTitle>
+                                  <div className="flex gap-1 flex-shrink-0">
+                                    <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
+                                      {getCategoryLabel(rec.category)}
+                                    </Badge>
+                                    <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "text-xs h-4 px-1")}>
+                                      Baja
+                                    </Badge>
+                                    <RecommendationStatusBadge
+                                      status={getStatus(rec.id)}
+                                      onStatusChange={(status) => {
+                                        updateStatus(rec.id, status);
+                                      }}
+                                    />
+                                    <ChevronDown className={cn(
+                                      "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                                      isExpanded && "rotate-180"
+                                    )} />
+                                  </div>
+                                </div>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <CardContent className="p-3 pt-0">
+                                {getScopeLabel(rec.scope, rec.targetKey) && (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                                    {getCategoryIcon(rec.category)}
+                                    {getScopeLabel(rec.scope, rec.targetKey)}
+                                  </span>
+                                )}
+                                <CardDescription className="text-xs leading-snug whitespace-pre-line">
+                                  {rec.description}
+                                </CardDescription>
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 </div>
               )}
