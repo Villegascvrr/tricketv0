@@ -10,8 +10,11 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { exportRecommendationsToPDF } from "@/lib/exportRecommendationsPDF";
 import { useToast } from "@/hooks/use-toast";
+import { useRecommendationStatus } from "@/contexts/RecommendationStatusContext";
+import { RecommendationStatusBadge } from "./RecommendationStatusBadge";
 
 interface Recommendation {
+  id: string;
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
@@ -45,6 +48,7 @@ const AIRecommendationsDrawer = ({
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"marketing" | "pricing" | "alert" | null>(null);
   const { toast } = useToast();
+  const { getStatus, updateStatus } = useRecommendationStatus();
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -323,7 +327,7 @@ const AIRecommendationsDrawer = ({
                   </h3>
                   {groupedRecommendations.high.map((rec, index) => (
                     <Card 
-                      key={index} 
+                      key={rec.id} 
                       className={cn(
                         "border-2 hover:shadow-md transition-shadow animate-fade-in",
                         "border-danger/30 bg-danger/5"
@@ -345,13 +349,17 @@ const AIRecommendationsDrawer = ({
                               )}
                             </div>
                           </div>
-                          <div className="flex gap-1.5">
+                           <div className="flex gap-1.5">
                             <Badge variant="outline" className="text-xs bg-muted animate-scale-in" style={{ animationDelay: `${index * 0.1 + 0.1}s` }}>
                               {getCategoryLabel(rec.category)}
                             </Badge>
                             <Badge variant="outline" className={cn(getPriorityColor(rec.priority), "animate-scale-in")} style={{ animationDelay: `${index * 0.1 + 0.15}s` }}>
                               Alta
                             </Badge>
+                            <RecommendationStatusBadge
+                              status={getStatus(rec.id)}
+                              onStatusChange={(status) => updateStatus(rec.id, status)}
+                            />
                           </div>
                         </div>
                       </CardHeader>
@@ -374,7 +382,7 @@ const AIRecommendationsDrawer = ({
                   </h3>
                   {groupedRecommendations.medium.map((rec, index) => (
                     <Card 
-                      key={index} 
+                      key={rec.id} 
                       className="border hover:shadow-md transition-shadow animate-fade-in"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
@@ -400,6 +408,10 @@ const AIRecommendationsDrawer = ({
                             <Badge variant="outline" className={getPriorityColor(rec.priority)}>
                               Media
                             </Badge>
+                            <RecommendationStatusBadge
+                              status={getStatus(rec.id)}
+                              onStatusChange={(status) => updateStatus(rec.id, status)}
+                            />
                           </div>
                         </div>
                       </CardHeader>
@@ -422,7 +434,7 @@ const AIRecommendationsDrawer = ({
                   </h3>
                   {groupedRecommendations.low.map((rec, index) => (
                     <Card 
-                      key={index} 
+                      key={rec.id} 
                       className="border hover:shadow-md transition-shadow animate-fade-in"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
@@ -448,6 +460,10 @@ const AIRecommendationsDrawer = ({
                             <Badge variant="outline" className={getPriorityColor(rec.priority)}>
                               Baja
                             </Badge>
+                            <RecommendationStatusBadge
+                              status={getStatus(rec.id)}
+                              onStatusChange={(status) => updateStatus(rec.id, status)}
+                            />
                           </div>
                         </div>
                       </CardHeader>

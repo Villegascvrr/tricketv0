@@ -5,12 +5,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp, DollarSign, Sparkles, RefreshCw } from "lucide-react";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { useState } from "react";
+import { useRecommendationStatus, RecommendationStatus } from "@/contexts/RecommendationStatusContext";
+import { RecommendationStatusBadge } from "./RecommendationStatusBadge";
+import { cn } from "@/lib/utils";
 
 interface EventRecommendationsProps {
   eventId: string;
 }
 
 interface Recommendation {
+  id: string;
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
@@ -22,6 +26,8 @@ interface Recommendation {
 const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
   // Generate recommendations directly from festivalData
   const [refreshKey, setRefreshKey] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<RecommendationStatus | 'all'>('all');
+  const { getStatus, updateStatus } = useRecommendationStatus();
   
   // Call generateAIRecommendations() to get dynamic recommendations
   const recommendations: Recommendation[] = generateAIRecommendations();
@@ -69,34 +75,77 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
     }
   };
 
-  // No loading states needed - recommendations are generated instantly from festivalData
+  // Filter by status
+  const filteredRecommendations = recommendations.filter(rec => {
+    if (statusFilter === 'all') return true;
+    return getStatus(rec.id) === statusFilter;
+  });
 
   const groupedRecommendations = {
-    marketing: recommendations.filter(r => r.category === 'marketing'),
-    pricing: recommendations.filter(r => r.category === 'pricing'),
-    alert: recommendations.filter(r => r.category === 'alert'),
+    marketing: filteredRecommendations.filter(r => r.category === 'marketing'),
+    pricing: filteredRecommendations.filter(r => r.category === 'pricing'),
+    alert: filteredRecommendations.filter(r => r.category === 'alert'),
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            Recomendaciones IA
-          </h2>
-          <p className="text-muted-foreground">
-            Insights y sugerencias generadas automáticamente
-          </p>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              Recomendaciones IA
+            </h2>
+            <p className="text-muted-foreground">
+              Insights y sugerencias generadas automáticamente
+            </p>
+          </div>
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualizar
+          </Button>
         </div>
-        <Button 
-          onClick={handleRefresh} 
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualizar
-        </Button>
+
+        {/* Status Filters */}
+        <div className="flex gap-2 items-center">
+          <span className="text-sm text-muted-foreground">Estado:</span>
+          <Button
+            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter('all')}
+            className="h-8"
+          >
+            Todas
+          </Button>
+          <Button
+            variant={statusFilter === 'pending' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter('pending')}
+            className={cn("h-8", statusFilter === 'pending' && "bg-muted/50 text-foreground hover:bg-muted")}
+          >
+            Pendientes
+          </Button>
+          <Button
+            variant={statusFilter === 'in_progress' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter('in_progress')}
+            className={cn("h-8", statusFilter === 'in_progress' && "bg-blue-500 hover:bg-blue-600")}
+          >
+            En progreso
+          </Button>
+          <Button
+            variant={statusFilter === 'completed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter('completed')}
+            className={cn("h-8", statusFilter === 'completed' && "bg-green-500 hover:bg-green-600")}
+          >
+            Realizadas
+          </Button>
+        </div>
       </div>
 
       {/* Marketing Recommendations */}
@@ -108,13 +157,19 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {groupedRecommendations.marketing.map((rec, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
+              <Card key={rec.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <Badge variant="outline" className={getPriorityColor(rec.priority)}>
-                      {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className={getPriorityColor(rec.priority)}>
+                        {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
+                      </Badge>
+                      <RecommendationStatusBadge
+                        status={getStatus(rec.id)}
+                        onStatusChange={(status) => updateStatus(rec.id, status)}
+                      />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -137,13 +192,19 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {groupedRecommendations.pricing.map((rec, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
+              <Card key={rec.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <Badge variant="outline" className={getPriorityColor(rec.priority)}>
-                      {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className={getPriorityColor(rec.priority)}>
+                        {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
+                      </Badge>
+                      <RecommendationStatusBadge
+                        status={getStatus(rec.id)}
+                        onStatusChange={(status) => updateStatus(rec.id, status)}
+                      />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -166,13 +227,19 @@ const EventRecommendations = ({ eventId }: EventRecommendationsProps) => {
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
             {groupedRecommendations.alert.map((rec, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow border-2">
+              <Card key={rec.id} className="hover:shadow-md transition-shadow border-2">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{rec.title}</CardTitle>
-                    <Badge variant="outline" className={getPriorityColor(rec.priority)}>
-                      {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className={getPriorityColor(rec.priority)}>
+                        {rec.priority === 'high' ? 'Alta' : rec.priority === 'medium' ? 'Media' : 'Baja'}
+                      </Badge>
+                      <RecommendationStatusBadge
+                        status={getStatus(rec.id)}
+                        onStatusChange={(status) => updateStatus(rec.id, status)}
+                      />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
