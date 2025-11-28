@@ -56,6 +56,81 @@ const EventDetail = () => {
   const recommendations = aiData?.recommendations || [];
   const criticalCount = recommendations.filter((r: any) => r.priority === 'high').length;
 
+  // Static recommendations for the "Recomendaciones IA" tab based on current event data
+  const staticRecommendations: Array<{
+    id: string;
+    title: string;
+    description: string;
+    priority: "high" | "medium" | "low";
+    category: "marketing" | "pricing" | "alert";
+    scope: "global" | "provider" | "channel" | "zone" | "ageSegment" | "city";
+    targetKey?: string;
+  }> = [
+    // Marketing recommendations
+    {
+      id: 'marketing-entradas-com-low',
+      title: 'Campaña urgente en Entradas.com',
+      description: '⚠️ Bajo rendimiento detectado\n\n📊 Situación actual:\n• 4.900 entradas vendidas de 12.000 asignadas\n• Ocupación: 40,8%\n• Capacidad disponible: 7.100 entradas\n\n🎯 Acción recomendada:\nLanzar campaña específica con descuentos del 15-20% para Entradas.com. Considerar email marketing a su base de datos y promociones flash durante 48-72h.',
+      priority: 'high' as const,
+      category: 'marketing' as const,
+      scope: 'provider' as const,
+      targetKey: 'Entradas.com'
+    },
+    {
+      id: 'marketing-forvenues-critical',
+      title: 'Activar ventas urgentes en Forvenues',
+      description: '⚠️ Rendimiento crítico detectado\n\n📊 Situación actual:\n• 1.850 entradas vendidas de 5.000 asignadas\n• Ocupación: 37%\n• Capacidad disponible: 3.150 entradas\n\n🎯 Acción recomendada:\nImplementar estrategia de activación inmediata: partnership con influencers locales, promoción en redes sociales y ofertas 2x1 o early bird especiales para este canal.',
+      priority: 'high' as const,
+      category: 'marketing' as const,
+      scope: 'provider' as const,
+      targetKey: 'Forvenues'
+    },
+    {
+      id: 'marketing-ticketmaster-boost',
+      title: 'Impulsar últimas entradas en Ticketmaster',
+      description: '✅ Buen rendimiento, optimizar remate\n\n📊 Situación actual:\n• 23.800 entradas vendidas de 30.000 asignadas\n• Ocupación: 79,3%\n• Capacidad disponible: 6.200 entradas\n\n💡 Acción recomendada:\nActivar campaña de "últimas entradas" aprovechando el momentum. Crear sensación de urgencia con contadores y destacar zonas disponibles con mejor visibilidad.',
+      priority: 'medium' as const,
+      category: 'marketing' as const,
+      scope: 'provider' as const,
+      targetKey: 'Ticketmaster'
+    },
+    // Pricing recommendations
+    {
+      id: 'pricing-bclever-premium',
+      title: 'Ajustar pricing en Bclever (alta demanda)',
+      description: '📈 Alta ocupación detectada\n\n📊 Situación actual:\n• 8.800 entradas vendidas de 10.000 asignadas\n• Ocupación: 88%\n• Solo quedan 1.200 entradas disponibles\n\n💰 Acción recomendada:\nImplementar dynamic pricing en las últimas 1.200 entradas de Bclever. Aumentar precios un 15-25% aprovechando la alta demanda. Posicionar como "entradas premium" por disponibilidad limitada.',
+      priority: 'medium' as const,
+      category: 'pricing' as const,
+      scope: 'provider' as const,
+      targetKey: 'Bclever'
+    },
+    {
+      id: 'pricing-average-upsell',
+      title: 'Oportunidad de upselling en precio medio',
+      description: '💡 Optimización de ingresos\n\n📊 Situación actual:\n• Precio medio actual: ~104,17 €\n• Ingresos totales: 4.099.092 €\n• Ocupación global: 63,5%\n\n🎯 Acción recomendada:\nCrear paquetes VIP y experiencias premium para incrementar ticket promedio. Objetivo: elevar precio medio a 110-120 € con upselling de parking, merchandising y accesos preferenciales.',
+      priority: 'low' as const,
+      category: 'pricing' as const,
+      scope: 'global' as const
+    },
+    // Alert recommendations
+    {
+      id: 'alert-revenue-target',
+      title: 'Alerta: Gap de ingresos vs objetivo',
+      description: '⚠️ Proyección por debajo del objetivo\n\n📊 Situación actual:\n• Ingresos actuales: 4.099.092 €\n• Objetivo estimado: 5.000.000 €\n• Gap: 900.908 € (82% del objetivo alcanzado)\n• Ocupación: 63,5% (39.350 / 62.000 entradas)\n\n🎯 Acción urgente:\nActivar plan de acción comercial para cerrar gap:\n1. Campañas agresivas en canales con baja ocupación\n2. Dynamic pricing en zonas de alta demanda\n3. Paquetes y cross-selling para aumentar ticket promedio\n4. Revisar estrategia de última hora (1-2 semanas antes del evento)',
+      priority: 'high' as const,
+      category: 'alert' as const,
+      scope: 'global' as const
+    },
+    {
+      id: 'alert-occupancy-below-target',
+      title: 'Ocupación global por debajo del 70%',
+      description: '📊 Nivel de ocupación mejorable\n\n📊 Situación actual:\n• Ocupación global: 63,5%\n• Entradas vendidas: 39.350 de 62.000\n• Capacidad disponible: 22.650 entradas\n\n💡 Oportunidad:\nAún queda margen significativo de crecimiento. Implementar estrategia multi-canal:\n• Reforzar ticketeras con bajo rendimiento (Entradas.com, Forvenues)\n• Activar remarketing a usuarios que visitaron pero no compraron\n• Considerar promociones por volumen para grupos y empresas',
+      priority: 'medium' as const,
+      category: 'alert' as const,
+      scope: 'global' as const
+    }
+  ];
+
   useEffect(() => {
     fetchEvent();
   }, [id]);
@@ -230,9 +305,9 @@ const EventDetail = () => {
           <TabsContent value="recommendations">
             <EventRecommendations 
               eventId={event.id} 
-              recommendations={recommendations}
-              isLoading={aiLoading}
-              onRefresh={() => refetchRecommendations()}
+              recommendations={staticRecommendations}
+              isLoading={false}
+              onRefresh={() => {}}
             />
           </TabsContent>
 
