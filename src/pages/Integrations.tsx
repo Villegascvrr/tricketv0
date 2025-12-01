@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Plug, CheckCircle2, XCircle } from "lucide-react";
-
 const Integrations = () => {
-  return (
-    <div className="min-h-screen bg-background p-8">
+  return <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div>
@@ -20,35 +18,29 @@ const Integrations = () => {
 
         {/* Ticketing Providers */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Ticketeras</h2>
+          <h2 className="text-xl font-semibold mb-4">Tiqueteras</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                name: "Ticketmaster",
-                connected: true,
-                events: 8,
-                lastSync: "Hace 2 horas",
-              },
-              {
-                name: "Entradas.com",
-                connected: true,
-                events: 5,
-                lastSync: "Hace 4 horas",
-              },
-              {
-                name: "Bclever",
-                connected: true,
-                events: 3,
-                lastSync: "Hace 1 hora",
-              },
-              {
-                name: "Forvenues",
-                connected: false,
-                events: 0,
-                lastSync: null,
-              },
-            ].map((provider, i) => (
-              <Card key={i}>
+            {[{
+            name: "Ticketmaster",
+            connected: true,
+            events: 8,
+            lastSync: "Hace 2 horas"
+          }, {
+            name: "Entradas.com",
+            connected: true,
+            events: 5,
+            lastSync: "Hace 4 horas"
+          }, {
+            name: "Bclever",
+            connected: true,
+            events: 3,
+            lastSync: "Hace 1 hora"
+          }, {
+            name: "Forvenues",
+            connected: false,
+            events: 0,
+            lastSync: null
+          }].map((provider, i) => <Card key={i}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -58,39 +50,28 @@ const Integrations = () => {
                       <div>
                         <CardTitle className="text-lg">{provider.name}</CardTitle>
                         <CardDescription>
-                          {provider.connected
-                            ? `${provider.events} eventos activos`
-                            : "No conectada"}
+                          {provider.connected ? `${provider.events} eventos activos` : "No conectada"}
                         </CardDescription>
                       </div>
                     </div>
-                    {provider.connected ? (
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-muted-foreground" />
-                    )}
+                    {provider.connected ? <CheckCircle2 className="h-5 w-5 text-success" /> : <XCircle className="h-5 w-5 text-muted-foreground" />}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {provider.lastSync && (
-                    <p className="text-sm text-muted-foreground">
+                  {provider.lastSync && <p className="text-sm text-muted-foreground">
                       Última sincronización: {provider.lastSync}
-                    </p>
-                  )}
+                    </p>}
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
                       {provider.connected ? "Conectada" : "Conectar"}
                     </span>
                     <Switch checked={provider.connected} />
                   </div>
-                  {provider.connected && (
-                    <Button variant="outline" size="sm" className="w-full">
+                  {provider.connected && <Button variant="outline" size="sm" className="w-full">
                       Configurar
-                    </Button>
-                  )}
+                    </Button>}
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
 
@@ -140,8 +121,6 @@ const Integrations = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Integrations;
