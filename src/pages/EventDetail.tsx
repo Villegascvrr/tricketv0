@@ -38,19 +38,24 @@ const EventDetail = () => {
   const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch AI recommendations
-  const { data: aiData, isLoading: aiLoading, refetch: refetchRecommendations } = useQuery({
+  const { data: aiData, isLoading: aiLoading, error: aiError, refetch: refetchRecommendations } = useQuery({
     queryKey: ['event-recommendations', id],
     queryFn: async () => {
       if (!id) return null;
       const { data, error } = await supabase.functions.invoke('event-recommendations', {
         body: { eventId: id }
       });
-      if (error) throw error;
+      // Handle 404 gracefully - event doesn't exist yet
+      if (error) {
+        console.log('Recommendations error:', error);
+        return { recommendations: [], eventContext: null };
+      }
       return data;
     },
-    enabled: !!id,
-    staleTime: 0, // Always refetch to get latest recommendations
+    enabled: !!id && !!event, // Only fetch recommendations if event exists
+    staleTime: 0,
     refetchOnMount: true,
+    retry: false, // Don't retry on 404
   });
 
   const recommendations = aiData?.recommendations || [];
@@ -69,12 +74,13 @@ const EventDetail = () => {
         .from("events")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid error when no rows
 
       if (error) throw error;
       setEvent(data);
     } catch (error) {
       console.error("Error fetching event:", error);
+      setEvent(null);
     } finally {
       setLoading(false);
     }
@@ -90,13 +96,19 @@ const EventDetail = () => {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Evento no encontrado</p>
-          <Button onClick={() => navigate("/events")}>
-            Volver a eventos
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full gradient-festival flex items-center justify-center">
+            <ArrowLeft className="h-8 w-8 text-white" />
+          </div>
+          <h2 className="text-xl font-display font-bold">Evento no encontrado</h2>
+          <p className="text-muted-foreground text-sm">
+            El evento con ID <code className="px-1 py-0.5 bg-muted rounded text-xs">{id}</code> no existe o no tienes permisos para verlo.
+          </p>
+          <Button onClick={() => navigate("/events")} className="gradient-festival">
+            Ver mis eventos
           </Button>
-        </div>
+        </Card>
       </div>
     );
   }
