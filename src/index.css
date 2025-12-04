@@ -8,126 +8,132 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Dashboard professional colors */
-    --background: 216 28% 97%;
-    --foreground: 222 47% 11%;
+    /* Warm & Festive palette for Primaverando */
+    --background: 40 33% 98%;
+    --foreground: 20 14% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 20 14% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 20 14% 15%;
 
-    /* Corporate blue palette */
-    --primary: 217 91% 60%;
+    /* Warm orange primary */
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 50%;
+    --primary-hover: 24 95% 45%;
     
-    /* Success/positive metrics */
-    --success: 142 76% 36%;
+    /* Mint green for success/positive */
+    --success: 158 64% 52%;
     --success-foreground: 0 0% 100%;
     
-    /* Warning metrics */
+    /* Warm amber warning */
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 20 14% 15%;
     
-    /* Danger/negative metrics */
-    --danger: 0 84% 60%;
+    /* Coral for danger */
+    --danger: 12 76% 61%;
     --danger-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* Soft warm secondary */
+    --secondary: 40 33% 96%;
+    --secondary-foreground: 20 14% 15%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 20 10% 45%;
 
-    --accent: 217 91% 60%;
+    /* Mint accent */
+    --accent: 158 64% 52%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 12 76% 61%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 24 95% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar with warm dark tones */
+    --sidebar-background: 20 14% 12%;
+    --sidebar-foreground: 40 33% 96%;
+    --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 20 14% 18%;
+    --sidebar-accent-foreground: 40 33% 96%;
+    --sidebar-border: 20 14% 18%;
+    --sidebar-ring: 24 95% 53%;
     
-    /* Chart colors */
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 76% 36%;
+    /* Chart colors - warm festive palette */
+    --chart-1: 24 95% 53%;
+    --chart-2: 158 64% 52%;
     --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 82% 52%;
+    --chart-4: 340 82% 52%;
+    --chart-5: 280 65% 60%;
     
-    /* Custom shadows for depth */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    /* Custom shadows with warm tones */
+    --shadow-sm: 0 1px 2px 0 hsl(20 14% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(20 14% 15% / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(20 14% 15% / 0.1);
+    
+    /* Festival gradient */
+    --gradient-festival: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 50%, hsl(158 64% 52%) 100%);
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 20 14% 10%;
+    --foreground: 40 33% 96%;
 
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 20 14% 14%;
+    --card-foreground: 40 33% 96%;
 
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 20 14% 14%;
+    --popover-foreground: 40 33% 96%;
 
-    --primary: 217 91% 60%;
+    --primary: 24 95% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 70%;
+    --primary-hover: 24 95% 65%;
     
-    --success: 142 76% 36%;
+    --success: 158 64% 48%;
     --success-foreground: 0 0% 100%;
     
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 20 14% 10%;
     
-    --danger: 0 84% 60%;
+    --danger: 12 76% 55%;
     --danger-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 20 14% 18%;
+    --secondary-foreground: 40 33% 96%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 20 14% 18%;
+    --muted-foreground: 40 20% 65%;
 
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 158 64% 48%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 12 62% 40%;
+    --destructive-foreground: 40 33% 96%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
+    --border: 20 14% 22%;
+    --input: 20 14% 22%;
+    --ring: 24 95% 58%;
     
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 20 14% 8%;
+    --sidebar-foreground: 40 33% 96%;
+    --sidebar-primary: 24 95% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 20 14% 14%;
+    --sidebar-accent-foreground: 40 33% 96%;
+    --sidebar-border: 20 14% 14%;
+    --sidebar-ring: 24 95% 58%;
     
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 82% 52%;
+    --chart-1: 24 95% 58%;
+    --chart-2: 158 64% 48%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 340 82% 58%;
+    --chart-5: 280 65% 65%;
   }
 }
 
@@ -137,6 +143,25 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 600;
+  }
+}
+
+@layer utilities {
+  .gradient-festival {
+    background: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 50%, hsl(158 64% 52%) 100%);
+  }
+  
+  .text-gradient-festival {
+    background: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
