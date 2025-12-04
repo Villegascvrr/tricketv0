@@ -128,22 +128,39 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
     return recs.filter(r => r.priority === "high").length;
   };
 
+  // Check if demo mode
+  const isDemo = eventId?.startsWith("demo-") ?? false;
+
   useEffect(() => {
     fetchData();
   }, [eventId]);
 
+  // Generate realistic simulated trend data for demo mode
+  const generateSimulatedTrends = (totalSold: number, daysCount: number = 30) => {
+    const trends: number[] = [];
+    let cumulative = 0;
+    const dailyAvg = totalSold / daysCount;
+    
+    for (let i = 0; i < daysCount; i++) {
+      // Simulate realistic sales pattern: slow start, accelerating toward event
+      const daysToEvent = daysCount - i;
+      const accelerationFactor = 1 + (i / daysCount) * 1.5; // Sales increase closer to event
+      const weekendBoost = (i % 7 === 5 || i % 7 === 6) ? 1.3 : 1; // Weekend bump
+      const variance = 0.7 + Math.random() * 0.6; // 70%-130% variance
+      
+      const dailySales = Math.round(dailyAvg * accelerationFactor * weekendBoost * variance);
+      trends.push(dailySales);
+      cumulative += dailySales;
+    }
+    
+    // Normalize to match total
+    const scaleFactor = totalSold / cumulative;
+    return trends.map(t => Math.round(t * scaleFactor));
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch tickets
-      const { data: tickets, error } = await supabase
-        .from("tickets")
-        .select("price, sale_date, channel, zone_name, provider_name")
-        .eq("event_id", eventId)
-        .eq("status", "confirmed");
-
-      if (error) throw error;
-
       // Use festivalData as single source of truth
       const totalSold = festivalData.overview.entradasVendidas;
       const grossRevenue = festivalData.overview.ingresosTotales;
@@ -151,124 +168,204 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
 
       setKpis({ totalSold, occupancyRate, grossRevenue });
 
-      // Get last 7 days for trends
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
+      // Get last 30 days for trends (realistic sales window)
+      const last30Days = Array.from({ length: 30 }, (_, i) => {
         const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
+        date.setDate(date.getDate() - (29 - i));
         return date.toISOString().split("T")[0];
       });
 
-      // Sales over time
-      const salesByDay: { [key: string]: number } = {};
-      tickets?.forEach((ticket) => {
-        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        salesByDay[day] = (salesByDay[day] || 0) + 1;
-      });
+      const last7Days = last30Days.slice(-7);
 
-      const salesTimeData = Object.entries(salesByDay)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, count]) => ({
+      if (isDemo) {
+        // Generate realistic simulated data for demo mode
+        const simulatedDailySales = generateSimulatedTrends(totalSold, 30);
+        
+        // Sales over time (last 30 days)
+        const salesTimeData = last30Days.map((date, i) => ({
           date: new Date(date).toLocaleDateString("es-ES", {
             month: "short",
             day: "numeric",
           }),
-          ventas: count,
+          ventas: simulatedDailySales[i],
+          acumulado: simulatedDailySales.slice(0, i + 1).reduce((a, b) => a + b, 0),
         }));
+        setSalesOverTime(salesTimeData);
 
-      setSalesOverTime(salesTimeData);
+        // Simulate channel data based on realistic distribution
+        const channels = [
+          { canal: "Online", porcentaje: 45 },
+          { canal: "App Móvil", porcentaje: 25 },
+          { canal: "RRPP", porcentaje: 18 },
+          { canal: "Taquilla", porcentaje: 8 },
+          { canal: "Corporativo", porcentaje: 4 },
+        ];
+        
+        const channelDataArray = channels.map((ch, idx) => {
+          const entradas = Math.round(totalSold * (ch.porcentaje / 100));
+          const ingresos = Math.round(grossRevenue * (ch.porcentaje / 100));
+          // Generate trend for each channel
+          const channelTrend = last7Days.map((_, i) => 
+            Math.round(simulatedDailySales[23 + i] * (ch.porcentaje / 100) * (0.8 + Math.random() * 0.4))
+          );
+          return {
+            canal: ch.canal,
+            entradas,
+            ingresos,
+            porcentaje: ch.porcentaje.toFixed(1),
+            trend: channelTrend,
+          };
+        });
+        setChannelData(channelDataArray);
 
-      // Sales by CHANNEL (internal channel) with trends
-      const channelStats: {
-        [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
-      } = {};
-      tickets?.forEach((ticket) => {
-        const channel = ticket.channel || "Sin canal";
-        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        if (!channelStats[channel]) {
-          channelStats[channel] = { count: 0, revenue: 0, dailySales: {} };
-        }
-        channelStats[channel].count += 1;
-        channelStats[channel].revenue += Number(ticket.price);
-        channelStats[channel].dailySales[day] = (channelStats[channel].dailySales[day] || 0) + 1;
-      });
+        // Provider data with realistic trends
+        const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider, idx) => {
+          const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
+          const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
+          // Generate trend based on provider's share
+          const providerShare = provider.vendidas / totalSold;
+          const providerTrend = last7Days.map((_, i) => 
+            Math.round(simulatedDailySales[23 + i] * providerShare * (0.7 + Math.random() * 0.6))
+          );
 
-      const channelDataArray = Object.entries(channelStats).map(
-        ([channel, stats]) => ({
-          canal: channel,
-          entradas: stats.count,
-          ingresos: Math.round(stats.revenue),
-          porcentaje: ((stats.count / totalSold) * 100).toFixed(1),
-          trend: last7Days.map(day => stats.dailySales[day] || 0),
-        })
-      );
+          return {
+            ticketera: provider.nombre,
+            capacidad: provider.capacidad,
+            vendidas: provider.vendidas,
+            ocupacion: `${occupancy.toFixed(1)}%`,
+            restantes: remaining.toLocaleString(),
+            ingresos: provider.ingresos,
+            trend: providerTrend,
+          };
+        });
+        setProviderData(providerDataArray);
 
-      setChannelData(channelDataArray);
+        // Zone data with realistic trends
+        const zoneDataArray = festivalData.zones.map((zone) => {
+          const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
+          const zoneShare = zone.vendidas / totalSold;
+          const zoneTrend = last7Days.map((_, i) => 
+            Math.round(simulatedDailySales[23 + i] * zoneShare * (0.7 + Math.random() * 0.6))
+          );
 
-      // Sales by PROVIDER (ticketing platform) - FROM FESTIVALDATA
-      // ÚNICA FUENTE DE DATOS: festivalData.ticketingProviders
+          return {
+            zona: zone.zona,
+            vendidas: zone.vendidas,
+            aforo: zone.aforo,
+            ocupacion: porcentajeOcupacionZona.toFixed(1),
+            ingresos: zone.ingresos,
+            trend: zoneTrend,
+          };
+        });
+        setZoneData(zoneDataArray);
+      } else {
+        // Fetch real tickets from database
+        const { data: tickets, error } = await supabase
+          .from("tickets")
+          .select("price, sale_date, channel, zone_name, provider_name")
+          .eq("event_id", eventId)
+          .eq("status", "confirmed");
 
-      // Calculate trends for each provider
-      const providerStats: {
-        [key: string]: { dailySales: { [day: string]: number } };
-      } = {};
-      tickets?.forEach((ticket) => {
-        const provider = ticket.provider_name || "Sin ticketera";
-        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        if (!providerStats[provider]) {
-          providerStats[provider] = { dailySales: {} };
-        }
-        providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
-      });
+        if (error) throw error;
 
-      // Map festivalData.ticketingProviders to ProviderStats format
-      const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider) => {
-        const stats = providerStats[provider.nombre] || { dailySales: {} };
-        const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
-        const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
+        // Sales over time
+        const salesByDay: { [key: string]: number } = {};
+        tickets?.forEach((ticket) => {
+          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
+          salesByDay[day] = (salesByDay[day] || 0) + 1;
+        });
 
-        return {
-          ticketera: provider.nombre,
-          capacidad: provider.capacidad,
-          vendidas: provider.vendidas,
-          ocupacion: `${occupancy.toFixed(1)}%`,
-          restantes: remaining.toLocaleString(),
-          ingresos: provider.ingresos,
-          trend: last7Days.map(day => stats.dailySales[day] || 0),
-        };
-      });
+        const salesTimeData = Object.entries(salesByDay)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, count]) => ({
+            date: new Date(date).toLocaleDateString("es-ES", {
+              month: "short",
+              day: "numeric",
+            }),
+            ventas: count,
+          }));
+        setSalesOverTime(salesTimeData);
 
-      setProviderData(providerDataArray);
+        // Sales by CHANNEL
+        const channelStats: {
+          [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
+        } = {};
+        tickets?.forEach((ticket) => {
+          const channel = ticket.channel || "Sin canal";
+          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
+          if (!channelStats[channel]) {
+            channelStats[channel] = { count: 0, revenue: 0, dailySales: {} };
+          }
+          channelStats[channel].count += 1;
+          channelStats[channel].revenue += Number(ticket.price);
+          channelStats[channel].dailySales[day] = (channelStats[channel].dailySales[day] || 0) + 1;
+        });
 
-      // Sales by ZONE - FROM FESTIVALDATA
-      // ÚNICA FUENTE DE DATOS: festivalData.zones
-      
-      // Calculate trends for each zone from tickets (keep for sparkline)
-      const zoneStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
-      tickets?.forEach((ticket) => {
-        const zone = ticket.zone_name || "Sin zona";
-        const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-        if (!zoneStats[zone]) {
-          zoneStats[zone] = { dailySales: {} };
-        }
-        zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
-      });
+        const channelDataArray = Object.entries(channelStats).map(
+          ([channel, stats]) => ({
+            canal: channel,
+            entradas: stats.count,
+            ingresos: Math.round(stats.revenue),
+            porcentaje: ((stats.count / totalSold) * 100).toFixed(1),
+            trend: last7Days.map(day => stats.dailySales[day] || 0),
+          })
+        );
+        setChannelData(channelDataArray);
 
-      // Map festivalData.zones to zone data format
-      const zoneDataArray = festivalData.zones.map((zone) => {
-        const stats = zoneStats[zone.zona] || { dailySales: {} };
-        const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
+        // Provider stats
+        const providerStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
+        tickets?.forEach((ticket) => {
+          const provider = ticket.provider_name || "Sin ticketera";
+          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
+          if (!providerStats[provider]) {
+            providerStats[provider] = { dailySales: {} };
+          }
+          providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
+        });
 
-        return {
-          zona: zone.zona,
-          vendidas: zone.vendidas,
-          aforo: zone.aforo,
-          ocupacion: porcentajeOcupacionZona.toFixed(1),
-          ingresos: zone.ingresos,
-          trend: last7Days.map(day => stats.dailySales[day] || 0),
-        };
-      });
+        const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider) => {
+          const stats = providerStats[provider.nombre] || { dailySales: {} };
+          const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
+          const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
 
-      setZoneData(zoneDataArray);
+          return {
+            ticketera: provider.nombre,
+            capacidad: provider.capacidad,
+            vendidas: provider.vendidas,
+            ocupacion: `${occupancy.toFixed(1)}%`,
+            restantes: remaining.toLocaleString(),
+            ingresos: provider.ingresos,
+            trend: last7Days.map(day => stats.dailySales[day] || 0),
+          };
+        });
+        setProviderData(providerDataArray);
+
+        // Zone stats
+        const zoneStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
+        tickets?.forEach((ticket) => {
+          const zone = ticket.zone_name || "Sin zona";
+          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
+          if (!zoneStats[zone]) {
+            zoneStats[zone] = { dailySales: {} };
+          }
+          zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
+        });
+
+        const zoneDataArray = festivalData.zones.map((zone) => {
+          const stats = zoneStats[zone.zona] || { dailySales: {} };
+          const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
+
+          return {
+            zona: zone.zona,
+            vendidas: zone.vendidas,
+            aforo: zone.aforo,
+            ocupacion: porcentajeOcupacionZona.toFixed(1),
+            ingresos: zone.ingresos,
+            trend: last7Days.map(day => stats.dailySales[day] || 0),
+          };
+        });
+        setZoneData(zoneDataArray);
+      }
     } catch (error) {
       console.error("Error fetching event data:", error);
     } finally {
@@ -385,24 +482,110 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         </Card>
       </div>
 
-      {/* Sales over time chart */}
+      {/* Sales velocity & cumulative chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-3">Ventas Diarias (últimos 30 días)</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={salesOverTime}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fontSize: 9 }} interval={4} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
+              <Bar dataKey="ventas" fill="hsl(var(--primary))" name="Ventas diarias" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-3">Evolución Acumulada</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={salesOverTime}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fontSize: 9 }} interval={4} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 11 }} />
+              <Line
+                type="monotone"
+                dataKey="acumulado"
+                stroke="hsl(var(--success))"
+                strokeWidth={2}
+                dot={false}
+                name="Entradas acumuladas"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      {/* Revenue by ticket type estimate */}
       <Card className="p-4">
-        <h3 className="text-base font-semibold mb-3">Ventas en el tiempo</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={salesOverTime}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
-            <Tooltip />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Line
-              type="monotone"
-              dataKey="ventas"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <h3 className="text-base font-semibold mb-3">Distribución de Ingresos por Tipo de Entrada</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie
+                data={[
+                  { name: "General", value: Math.round(kpis.grossRevenue * 0.46), entradas: Math.round(kpis.totalSold * 0.50) },
+                  { name: "Grada Lateral", value: Math.round(kpis.grossRevenue * 0.18), entradas: Math.round(kpis.totalSold * 0.20) },
+                  { name: "VIP", value: Math.round(kpis.grossRevenue * 0.18), entradas: Math.round(kpis.totalSold * 0.12) },
+                  { name: "Grada Superior", value: Math.round(kpis.grossRevenue * 0.11), entradas: Math.round(kpis.totalSold * 0.12) },
+                  { name: "Acceso Preferente", value: Math.round(kpis.grossRevenue * 0.07), entradas: Math.round(kpis.totalSold * 0.06) },
+                ]}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                label={(entry) => `€${(entry.value / 1000).toFixed(0)}k`}
+                style={{ fontSize: 10 }}
+              >
+                {CHART_COLORS.map((color, index) => (
+                  <Cell key={`cell-${index}`} fill={color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ fontSize: 11 }} 
+                formatter={(value: number) => `€${value.toLocaleString()}`}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-1.5">Tipo</th>
+                  <th className="text-right py-1.5">Precio Medio</th>
+                  <th className="text-right py-1.5">Entradas</th>
+                  <th className="text-right py-1.5">Ingresos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { tipo: "General", precio: festivalData.precios.general, entradas: Math.round(kpis.totalSold * 0.50), ingresos: Math.round(kpis.grossRevenue * 0.46) },
+                  { tipo: "Grada Lateral", precio: 23, entradas: Math.round(kpis.totalSold * 0.20), ingresos: Math.round(kpis.grossRevenue * 0.18) },
+                  { tipo: "VIP", precio: festivalData.precios.vip, entradas: Math.round(kpis.totalSold * 0.12), ingresos: Math.round(kpis.grossRevenue * 0.18) },
+                  { tipo: "Grada Superior", precio: 23, entradas: Math.round(kpis.totalSold * 0.12), ingresos: Math.round(kpis.grossRevenue * 0.11) },
+                  { tipo: "Acceso Preferente", precio: 29.40, entradas: Math.round(kpis.totalSold * 0.06), ingresos: Math.round(kpis.grossRevenue * 0.07) },
+                ].map((row) => (
+                  <tr key={row.tipo} className="border-b">
+                    <td className="py-1.5 font-medium">{row.tipo}</td>
+                    <td className="text-right">€{row.precio.toFixed(2)}</td>
+                    <td className="text-right">{row.entradas.toLocaleString()}</td>
+                    <td className="text-right font-medium">
+                      {row.ingresos.toLocaleString("es-ES", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </Card>
 
       {/* Sales by PROVIDER (ticketing platform) */}
