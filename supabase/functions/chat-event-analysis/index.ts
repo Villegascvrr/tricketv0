@@ -86,7 +86,7 @@ serve(async (req) => {
   }
 
   try {
-    const { eventId, messages } = await req.json();
+    const { eventId, messages, localContext } = await req.json();
     
     if (!eventId || !messages || !Array.isArray(messages)) {
       throw new Error('Event ID and messages array are required');
@@ -96,163 +96,207 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch event data for context
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', eventId)
-      .single();
+    // Check if this is demo mode (local context provided)
+    const isDemoMode = eventId.startsWith('demo-') || !!localContext;
+    
+    let event: any = null;
+    let tickets: any[] = [];
+    let allocations: any[] = [];
+    let zones: any[] = [];
 
-    if (eventError) throw eventError;
+    if (!isDemoMode) {
+      // Fetch real event data
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', eventId)
+        .maybeSingle();
 
-    // Fetch tickets data
-    const { data: tickets, error: ticketsError } = await supabase
-      .from('tickets')
-      .select('*')
-      .eq('event_id', eventId);
+      if (eventError) throw eventError;
+      if (!eventData) throw new Error('Event not found');
+      
+      event = eventData;
 
-    if (ticketsError) throw ticketsError;
+      // Fetch tickets data
+      const { data: ticketsData, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('*')
+        .eq('event_id', eventId);
 
-    // Fetch provider allocations
-    const { data: allocations } = await supabase
-      .from('ticket_provider_allocations')
-      .select('*')
-      .eq('event_id', eventId);
+      if (ticketsError) throw ticketsError;
+      tickets = ticketsData || [];
 
-    // Fetch zones
-    const { data: zones } = await supabase
-      .from('zones')
-      .select('*')
-      .eq('event_id', eventId);
+      // Fetch provider allocations
+      const { data: allocationsData } = await supabase
+        .from('ticket_provider_allocations')
+        .select('*')
+        .eq('event_id', eventId);
+      allocations = allocationsData || [];
 
-    // Calculate metrics
-    const totalTicketsSold = tickets.length;
-    const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
-    const avgPrice = totalRevenue / (totalTicketsSold || 1);
-    const occupancyRate = event.total_capacity 
-      ? ((totalTicketsSold / event.total_capacity) * 100).toFixed(1)
-      : 'N/A';
+      // Fetch zones
+      const { data: zonesData } = await supabase
+        .from('zones')
+        .select('*')
+        .eq('event_id', eventId);
+      zones = zonesData || [];
+    } else {
+      // Demo mode - use hardcoded Primaverando data
+      event = {
+        name: 'Primaverando Festival 2025',
+        type: 'Festival',
+        venue: 'Live Sur Stadium, Estadio La Cartuja, Sevilla',
+        total_capacity: 20000,
+        start_date: '2025-03-29',
+        end_date: '2025-03-29',
+      };
+    }
 
-    // Sales by channel
-    const channelStats = tickets.reduce((acc, ticket) => {
-      const channel = ticket.channel || 'Unknown';
-      if (!acc[channel]) {
-        acc[channel] = { count: 0, revenue: 0 };
-      }
-      acc[channel].count++;
-      acc[channel].revenue += ticket.price || 0;
-      return acc;
-    }, {} as Record<string, { count: number; revenue: number }>);
+    // For demo mode, use localContext directly
+    let eventContext: any;
+    
+    if (isDemoMode && localContext) {
+      // Use the rich context provided from the client
+      eventContext = {
+        event: {
+          name: event.name,
+          type: event.type,
+          venue: event.venue,
+          capacity: event.total_capacity,
+          startDate: event.start_date,
+          endDate: event.end_date,
+        },
+        localContext: localContext, // Rich Primaverando data
+      };
+    } else {
+      // Calculate metrics from database data
+      const totalTicketsSold = tickets.length;
+      const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
+      const avgPrice = totalRevenue / (totalTicketsSold || 1);
+      const occupancyRate = event.total_capacity 
+        ? ((totalTicketsSold / event.total_capacity) * 100).toFixed(1)
+        : 'N/A';
 
-    // Sales by provider
-    const providerStats = tickets.reduce((acc, ticket) => {
-      const provider = ticket.provider_name || 'Unknown';
-      if (!acc[provider]) {
-        acc[provider] = { count: 0, revenue: 0, allocated: 0 };
-      }
-      acc[provider].count++;
-      acc[provider].revenue += ticket.price || 0;
-      return acc;
-    }, {} as Record<string, { count: number; revenue: number; allocated: number }>);
+      // Sales by channel
+      const channelStats = tickets.reduce((acc, ticket) => {
+        const channel = ticket.channel || 'Unknown';
+        if (!acc[channel]) {
+          acc[channel] = { count: 0, revenue: 0 };
+        }
+        acc[channel].count++;
+        acc[channel].revenue += ticket.price || 0;
+        return acc;
+      }, {} as Record<string, { count: number; revenue: number }>);
 
-    // Add allocation data
-    allocations?.forEach(alloc => {
-      if (providerStats[alloc.provider_name]) {
-        providerStats[alloc.provider_name].allocated = alloc.allocated_capacity;
-      }
-    });
+      // Sales by provider
+      const providerStats = tickets.reduce((acc, ticket) => {
+        const provider = ticket.provider_name || 'Unknown';
+        if (!acc[provider]) {
+          acc[provider] = { count: 0, revenue: 0, allocated: 0 };
+        }
+        acc[provider].count++;
+        acc[provider].revenue += ticket.price || 0;
+        return acc;
+      }, {} as Record<string, { count: number; revenue: number; allocated: number }>);
 
-    // Geographic distribution
-    const provinceStats = tickets.reduce((acc, ticket) => {
-      const province = ticket.buyer_province || 'Unknown';
-      acc[province] = (acc[province] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+      // Add allocation data
+      allocations?.forEach(alloc => {
+        if (providerStats[alloc.provider_name]) {
+          providerStats[alloc.provider_name].allocated = alloc.allocated_capacity;
+        }
+      });
 
-    // Age distribution
-    const ageRanges = tickets.reduce((acc, ticket) => {
-      if (ticket.buyer_age) {
-        let range = 'Unknown';
-        if (ticket.buyer_age < 18) range = '<18';
-        else if (ticket.buyer_age < 22) range = '18-21';
-        else if (ticket.buyer_age < 26) range = '22-25';
-        else if (ticket.buyer_age < 31) range = '26-30';
-        else range = '31+';
-        acc[range] = (acc[range] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+      // Geographic distribution
+      const provinceStats = tickets.reduce((acc, ticket) => {
+        const province = ticket.buyer_province || 'Unknown';
+        acc[province] = (acc[province] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-    // Zone stats
-    const zoneStats = tickets.reduce((acc, ticket) => {
-      const zone = ticket.zone_name || 'Unknown';
-      if (!acc[zone]) {
-        acc[zone] = { count: 0, revenue: 0 };
-      }
-      acc[zone].count++;
-      acc[zone].revenue += ticket.price || 0;
-      return acc;
-    }, {} as Record<string, { count: number; revenue: number }>);
+      // Age distribution
+      const ageRanges = tickets.reduce((acc, ticket) => {
+        if (ticket.buyer_age) {
+          let range = 'Unknown';
+          if (ticket.buyer_age < 18) range = '<18';
+          else if (ticket.buyer_age < 22) range = '18-21';
+          else if (ticket.buyer_age < 26) range = '22-25';
+          else if (ticket.buyer_age < 31) range = '26-30';
+          else range = '31+';
+          acc[range] = (acc[range] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<string, number>);
 
-    // Prepare context
-    const eventContext = {
-      event: {
-        name: event.name,
-        type: event.type,
-        venue: event.venue,
-        capacity: event.total_capacity,
-        startDate: event.start_date,
-        endDate: event.end_date,
-      },
-      sales: {
-        totalTickets: totalTicketsSold,
-        totalRevenue: totalRevenue.toFixed(2),
-        avgPrice: avgPrice.toFixed(2),
-        occupancyRate,
-      },
-      channels: Object.entries(channelStats).map(([name, stats]) => ({
-        name,
-        tickets: (stats as { count: number; revenue: number }).count,
-        revenue: (stats as { count: number; revenue: number }).revenue.toFixed(2),
-        percentage: (((stats as { count: number; revenue: number }).count / totalTicketsSold) * 100).toFixed(1),
-      })),
-      providers: Object.entries(providerStats).map(([name, stats]) => ({
-        name,
-        tickets: (stats as { count: number; revenue: number; allocated: number }).count,
-        revenue: (stats as { count: number; revenue: number; allocated: number }).revenue.toFixed(2),
-        allocated: (stats as { count: number; revenue: number; allocated: number }).allocated,
-        occupancyRate: (stats as { count: number; revenue: number; allocated: number }).allocated 
-          ? (((stats as { count: number; revenue: number; allocated: number }).count / (stats as { count: number; revenue: number; allocated: number }).allocated) * 100).toFixed(1) 
-          : null,
-      })),
-      geography: Object.entries(provinceStats)
-        .sort((a, b) => (b[1] as number) - (a[1] as number))
-        .slice(0, 10)
-        .map(([province, count]) => ({
-          province,
-          count,
-          percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
-        })),
-      demographics: {
-        ageRanges: Object.entries(ageRanges).map(([range, count]) => ({
-          range,
-          count,
-          percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
-        })),
-      },
-      zones: Object.entries(zoneStats).map(([name, stats]) => {
-        const zoneInfo = zones?.find(z => z.name === name);
-        return {
+      // Zone stats
+      const zoneStats = tickets.reduce((acc, ticket) => {
+        const zone = ticket.zone_name || 'Unknown';
+        if (!acc[zone]) {
+          acc[zone] = { count: 0, revenue: 0 };
+        }
+        acc[zone].count++;
+        acc[zone].revenue += ticket.price || 0;
+        return acc;
+      }, {} as Record<string, { count: number; revenue: number }>);
+
+      // Prepare context
+      eventContext = {
+        event: {
+          name: event.name,
+          type: event.type,
+          venue: event.venue,
+          capacity: event.total_capacity,
+          startDate: event.start_date,
+          endDate: event.end_date,
+        },
+        sales: {
+          totalTickets: totalTicketsSold,
+          totalRevenue: totalRevenue.toFixed(2),
+          avgPrice: avgPrice.toFixed(2),
+          occupancyRate,
+        },
+        channels: Object.entries(channelStats).map(([name, stats]) => ({
           name,
           tickets: (stats as { count: number; revenue: number }).count,
           revenue: (stats as { count: number; revenue: number }).revenue.toFixed(2),
-          capacity: zoneInfo?.capacity || null,
-          occupancyRate: zoneInfo?.capacity 
-            ? (((stats as { count: number; revenue: number }).count / zoneInfo.capacity) * 100).toFixed(1)
+          percentage: (((stats as { count: number; revenue: number }).count / totalTicketsSold) * 100).toFixed(1),
+        })),
+        providers: Object.entries(providerStats).map(([name, stats]) => ({
+          name,
+          tickets: (stats as { count: number; revenue: number; allocated: number }).count,
+          revenue: (stats as { count: number; revenue: number; allocated: number }).revenue.toFixed(2),
+          allocated: (stats as { count: number; revenue: number; allocated: number }).allocated,
+          occupancyRate: (stats as { count: number; revenue: number; allocated: number }).allocated 
+            ? (((stats as { count: number; revenue: number; allocated: number }).count / (stats as { count: number; revenue: number; allocated: number }).allocated) * 100).toFixed(1) 
             : null,
-        };
-      }),
-    };
+        })),
+        geography: Object.entries(provinceStats)
+          .sort((a, b) => (b[1] as number) - (a[1] as number))
+          .slice(0, 10)
+          .map(([province, count]) => ({
+            province,
+            count,
+            percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
+          })),
+        demographics: {
+          ageRanges: Object.entries(ageRanges).map(([range, count]) => ({
+            range,
+            count,
+            percentage: (((count as number) / totalTicketsSold) * 100).toFixed(1),
+          })),
+        },
+        zones: Object.entries(zoneStats).map(([name, stats]) => {
+          const zoneInfo = zones?.find(z => z.name === name);
+          return {
+            name,
+            tickets: (stats as { count: number; revenue: number }).count,
+            revenue: (stats as { count: number; revenue: number }).revenue.toFixed(2),
+            capacity: zoneInfo?.capacity || null,
+            occupancyRate: zoneInfo?.capacity 
+              ? (((stats as { count: number; revenue: number }).count / zoneInfo.capacity) * 100).toFixed(1)
+              : null,
+          };
+        }),
+      };
+    }
 
     // Call Lovable AI
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -260,8 +304,8 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Total tickets sold:', totalTicketsSold, 'Total revenue:', totalRevenue, 'Avg price:', avgPrice);
-    console.log('Provider stats:', JSON.stringify(eventContext.providers, null, 2));
+    console.log('Event context:', isDemoMode ? 'Demo mode with local context' : 'Real data mode');
+    console.log('Event name:', event.name);
 
     const systemPrompt = `Eres un analista senior especializado en festivales universitarios y ticketing de eventos musicales. Tienes acceso a datos en tiempo real del evento "${event.name}".
 

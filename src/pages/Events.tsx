@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { format, isBefore, isAfter, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { festivalData } from "@/data/festivalData";
 
 interface Event {
   id: string;
@@ -19,9 +20,23 @@ interface Event {
   total_capacity: number | null;
   tickets_count?: number;
   last_import?: string;
+  isDemo?: boolean;
 }
 
 type EventFilter = "all" | "active" | "upcoming" | "finished";
+
+// Demo event from festivalData
+const DEMO_EVENT: Event = {
+  id: "demo-primaverando-2025",
+  name: festivalData.nombre,
+  type: "Festival",
+  venue: festivalData.ubicacion,
+  start_date: "2025-03-29",
+  end_date: "2025-03-29",
+  total_capacity: festivalData.aforoTotal,
+  tickets_count: festivalData.overview.entradasVendidas,
+  isDemo: true,
+};
 
 const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -56,7 +71,7 @@ const Events = () => {
             .eq("event_id", event.id)
             .order("imported_at", { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           return {
             ...event,
@@ -66,9 +81,16 @@ const Events = () => {
         })
       );
 
-      setEvents(eventsWithCounts);
+      // If no events, show demo event
+      if (eventsWithCounts.length === 0) {
+        setEvents([DEMO_EVENT]);
+      } else {
+        setEvents(eventsWithCounts);
+      }
     } catch (error) {
       console.error("Error fetching events:", error);
+      // On error, show demo event
+      setEvents([DEMO_EVENT]);
     } finally {
       setLoading(false);
     }

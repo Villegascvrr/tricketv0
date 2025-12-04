@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ChatMessageRenderer from "./ChatMessageRenderer";
+import { festivalData, getAIContext } from "@/data/festivalData";
 
 interface Message {
   role: "user" | "assistant";
@@ -26,13 +27,14 @@ interface EventChatDrawerProps {
   eventName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isDemo?: boolean;
 }
 
-const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDrawerProps) => {
+const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = false }: EventChatDrawerProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `¡Hola! 👋 Soy tu asistente de análisis para ${eventName}. Puedo ayudarte a analizar datos, responder preguntas específicas y proporcionar insights sobre ventas, audiencia, canales y más. ¿En qué puedo ayudarte?`
+      content: `¡Hola! 👋 Soy tu asistente de análisis para **${eventName}**. ${isDemo ? '\n\n🎪 *Modo Demo* - Usando datos de ejemplo de Primaverando 2025.\n\n' : ''}Puedo ayudarte a analizar datos, responder preguntas específicas y proporcionar insights sobre ventas, audiencia, canales y más. ¿En qué puedo ayudarte?`
     }
   ]);
   const [input, setInput] = useState("");
@@ -56,6 +58,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
     '/demografia': 'Proporciona un análisis demográfico detallado: distribución por edades, provincias más representadas, ciudades principales, y perfil del comprador típico.',
     '/proyecciones': 'Genera proyecciones de ingresos hasta el final del evento basándote en la tendencia actual de ventas. Incluye escenarios optimista, realista y pesimista.',
     '/zonas': '¿Qué zonas tienen mejor y peor ocupación? Analiza precio vs demanda por zona y sugiere ajustes de precio o estrategias.',
+    '/competencia': 'Compara Primaverando con otros festivales de Sevilla como Icónica, Puro Latino Fest e Interestelar.',
     '/ayuda': 'Muéstrame la lista completa de comandos disponibles con ejemplos de uso y preguntas frecuentes que puedes responder.',
   };
 
@@ -85,6 +88,24 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
     try {
       abortControllerRef.current = new AbortController();
       
+      // Build request body - include local context for demo mode
+      const requestBody = isDemo 
+        ? {
+            eventId: "demo-primaverando-2025",
+            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+              role: m.role,
+              content: m.content
+            })),
+            localContext: getAIContext(), // Include rich Primaverando context
+          }
+        : {
+            eventId,
+            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          };
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-event-analysis`,
         {
@@ -93,13 +114,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({
-            eventId,
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
-              role: m.role,
-              content: m.content
-            }))
-          }),
+          body: JSON.stringify(requestBody),
           signal: abortControllerRef.current.signal,
         }
       );
@@ -190,6 +205,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
     { cmd: '/demografia', desc: 'Distribución demográfica', detail: 'Análisis demográfico detallado: distribución por edades, provincias más representadas, ciudades principales, y perfil del comprador típico.' },
     { cmd: '/proyecciones', desc: 'Proyecciones de ingresos', detail: 'Genera proyecciones de ingresos hasta el final del evento basándote en la tendencia actual de ventas. Incluye escenarios optimista, realista y pesimista.' },
     { cmd: '/zonas', desc: 'Ocupación por zonas', detail: '¿Qué zonas tienen mejor y peor ocupación? Analiza precio vs demanda por zona y sugiere ajustes de precio o estrategias.' },
+    { cmd: '/competencia', desc: 'Comparativa de festivales', detail: 'Compara Primaverando con otros festivales sevillanos como Icónica Santalucía Fest, Puro Latino Fest e Interestelar.' },
     { cmd: '/ayuda', desc: 'Lista de comandos', detail: 'Muestra la lista completa de comandos disponibles con ejemplos de uso y preguntas frecuentes.' },
   ];
 
