@@ -101,6 +101,73 @@ export const festivalData = {
     anioInicio: 2019,
     asistentesAnuales: '30.000-40.000 (Primaverando + Bienvenida)',
     posicionamiento: 'Festival universitario más grande de Andalucía'
+  },
+  // Análisis de problemas históricos y estrategias
+  problematicaOperativa: {
+    accesos: {
+      problema: 'Colapso sistemático de accesos',
+      detalle: 'Tiempos de espera de 90-180 minutos en horas punta. Validación de entradas, seguridad y canje de pulseras en único cuello de botella.',
+      causas: ['Fallo tecnológico en PDAs', 'Registro intrusivo unidireccional', 'Canje de pulseras manual'],
+      riesgo: 'Acumulación estática de masas, lipotimias, deshidratación antes de acceder'
+    },
+    agua: {
+      problema: 'Crisis hidráulica y escasez artificial',
+      detalle: 'Denuncias de FACUA por prácticas de escasez artificial para maximizar venta de bebidas.',
+      incidentes: ['Grifos de baños inhabilitados', 'Roturas de stock de agua en horas pico', 'Riesgo de golpes de calor']
+    },
+    sanitarios: {
+      problema: 'Saturación de infraestructuras sanitarias',
+      detalle: 'Ratio asistentes/inodoro en límite legal mínimo. Falta de equipos de limpieza itinerantes.',
+      consecuencia: 'Inodoros inutilizables a mitad del evento, focos de infección'
+    },
+    acustica: {
+      problema: 'Deficiencias acústicas y zonificación',
+      detalle: 'Solapamiento de frecuencias entre escenarios (sound bleed), zonas muertas y zonas calientes de presión sonora'
+    }
+  },
+  estrategiaComercial: {
+    yieldManagement: {
+      descripcion: 'Sistema de precios escalonados basado en urgencia y percepción de escasez',
+      fases: [
+        { nombre: 'Early Bird / Blind Tickets', precio: '15-20€', proposito: 'Generar hype y liquidez temprana' },
+        { nombre: 'Fase 1-2', precio: '19-24€', proposito: 'Escalada por anclaje cognitivo' },
+        { nombre: 'Fase Final / Taquilla', precio: 'Hasta 300% del inicial', proposito: 'Penalización por indecisión' }
+      ]
+    },
+    costesOcultos: {
+      descripcion: 'Drip Pricing - cargos revelados al final del proceso',
+      tipos: ['Gastos de gestión (10-15%)', 'Re-nominación (10-20€)', 'Seguro de no asistencia con exclusiones estrictas']
+    },
+    cashless: {
+      descripcion: 'Sistema de pulseras RFID con retención de capital',
+      problemas: ['Flotante financiero a coste cero', 'Breakage (saldo no reclamado)', 'Ventanas de devolución restrictivas (3-5 días)', 'Comisiones de reembolso']
+    }
+  },
+  incidentesHistoricos: [
+    { año: 2019, problema: 'Colapso en accesos (>2h espera)', respuesta: 'Ninguna comunicación oficial', resultado: 'Cientos de reclamaciones' },
+    { año: 2022, problema: 'Fallo sistema Cashless / Falta de agua', respuesta: 'Incidencia técnica puntual', resultado: 'Usuarios sin poder comprar bebida durante horas' },
+    { año: 2023, problema: 'Cancelación artista principal', respuesta: 'Sustituto de menor caché, negativa a devoluciones', resultado: 'Denuncias ante Consumo, daño reputacional severo' }
+  ],
+  recomendacionesMejora: {
+    paraOrganizacion: [
+      'Dimensionar accesos, barras y baños para aforo real, no mínimo legal',
+      'Eliminar tasas ocultas y simplificar estructura de precios',
+      'Formar personal en atención al cliente y desescalada de conflictos',
+      'Implementar múltiples perímetros de seguridad escalonados',
+      'Garantizar acceso a agua potable gratuita'
+    ],
+    paraConsumidor: [
+      'Evitar fases de precios inflados',
+      'Leer letra pequeña de condiciones de devolución',
+      'Documentar incidencias in situ para reclamaciones',
+      'Conocer derechos según Ley de Espectáculos Públicos'
+    ]
+  },
+  contextoMercado: {
+    burbuja: 'Forma parte de la "burbuja de festivales" del sur de España de la última década',
+    perfil: 'Población universitaria con demanda inelástica impulsada por FOMO y socialización post-pandémica',
+    churnRate: 'Alta rotación de clientes; depende de captar nuevas cohortes universitarias cada año',
+    riesgoRegulatorio: 'Expedientes sancionadores acumulados por Ayuntamiento de Sevilla y Junta de Andalucía'
   }
 };
 
@@ -119,7 +186,7 @@ export const calculateZoneOccupancy = (vendidas: number, aforo: number) => {
 
 // Contexto completo para IA
 export const getAIContext = () => {
-  const { overview, ticketingProviders, zones, audiencia, artistas2025, generos, precios, historico } = festivalData;
+  const { overview, ticketingProviders, zones, audiencia, artistas2025, generos, precios, historico, problematicaOperativa, estrategiaComercial, incidentesHistoricos, recomendacionesMejora, contextoMercado } = festivalData;
   
   return `
 ## CONTEXTO DEL EVENTO: ${festivalData.nombre}
@@ -175,5 +242,54 @@ ${generos.join(', ')}
 - Track record de descubrir artistas emergentes (Ana Mena, Rels B actuaron antes de ser famosos)
 - Dos festivales anuales: Primaverando (marzo) y Bienvenida (octubre)
 - Asistencia anual combinada: ${historico.asistentesAnuales}
+
+---
+
+## ANÁLISIS DE PROBLEMÁTICA Y ESTRATEGIAS
+
+### Problemática Operativa Identificada
+
+**1. Colapso de Accesos (Punto Crítico Cero)**
+- ${problematicaOperativa.accesos.detalle}
+- Causas: ${problematicaOperativa.accesos.causas.join(', ')}
+- Riesgo: ${problematicaOperativa.accesos.riesgo}
+
+**2. Crisis Hidráulica**
+- ${problematicaOperativa.agua.detalle}
+- Incidentes documentados: ${problematicaOperativa.agua.incidentes.join('; ')}
+
+**3. Infraestructuras Sanitarias**
+- ${problematicaOperativa.sanitarios.detalle}
+- Consecuencia: ${problematicaOperativa.sanitarios.consecuencia}
+
+**4. Deficiencias Acústicas**
+- ${problematicaOperativa.acustica.detalle}
+
+### Estrategia Comercial (Yield Management)
+
+**Sistema de Precios Escalonados:**
+${estrategiaComercial.yieldManagement.fases.map(f => `- ${f.nombre}: ${f.precio} (${f.proposito})`).join('\n')}
+
+**Costes Ocultos (Drip Pricing):**
+${estrategiaComercial.costesOcultos.tipos.map(t => `- ${t}`).join('\n')}
+
+**Sistema Cashless:**
+- ${estrategiaComercial.cashless.descripcion}
+- Problemas: ${estrategiaComercial.cashless.problemas.join('; ')}
+
+### Historial de Incidentes
+${incidentesHistoricos.map(i => `- **${i.año}:** ${i.problema} → Respuesta: "${i.respuesta}" → Resultado: ${i.resultado}`).join('\n')}
+
+### Contexto de Mercado
+- ${contextoMercado.burbuja}
+- Perfil consumidor: ${contextoMercado.perfil}
+- Retención: ${contextoMercado.churnRate}
+- Riesgo: ${contextoMercado.riesgoRegulatorio}
+
+### Recomendaciones de Mejora para la Organización
+${recomendacionesMejora.paraOrganizacion.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+### Puntos de Atención para Consumidores
+${recomendacionesMejora.paraConsumidor.map(r => `- ${r}`).join('\n')}
 `.trim();
 };

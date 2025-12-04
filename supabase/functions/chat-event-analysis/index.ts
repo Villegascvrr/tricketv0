@@ -32,25 +32,21 @@ const PRIMAVERANDO_CONTEXT = `
 ### Público Objetivo
 - Estudiantes universitarios (20-30 años)
 - Principalmente de Sevilla y Andalucía
-- Alcance: Todo el sur de España
+- Demanda inelástica impulsada por FOMO y socialización post-pandémica
 - 72% tienen teléfono registrado, 58% consentimiento marketing
+- Alta rotación de clientes (churn rate): depende de nuevas cohortes universitarias cada año
 
 ### Artistas 2025
 Villalobos, Henry Méndez, Q2, Alvama Ice, Danny Romero, Lucho RK, Barce
-
-### Track Record de Descubrimiento
-- Ana Mena actuó en 2022 antes de ser famosa
-- Rels B también actuó antes de alcanzar proyección nacional
-- El festival actúa como trampolín para nuevos talentos
 
 ### Géneros Musicales
 Música Urbana/Trap, Reggaetón, Pop Comercial, Electrónica/DJ sets, Flamenquito (fusión)
 
 ### Precios 2025
-- Anticipada: 19€ (con 1 consumición)
+- Anticipada (Early Bird): 15-20€ (blind tickets, venta a ciegas)
 - General: 24€ + gastos
 - VIP: 36,30€
-- Sistema de tramos: precio sube conforme se agotan entradas
+- Sistema de tramos: precio sube hasta 300% del inicial en fase final
 
 ### Logística
 - Ubicación: Live Sur Stadium, Estadio La Cartuja
@@ -62,22 +58,92 @@ Música Urbana/Trap, Reggaetón, Pop Comercial, Electrónica/DJ sets, Flamenquit
 ### Canales de Venta
 Fever, El Corte Inglés, Bclever, Tiqets, Web Oficial
 
-### Equipo
-- 10 personas core durante el año
-- Hasta 400 personas en evento (producción, bailarines, camareros, seguridad)
-
 ### Competidores en Sevilla
 - Icónica Santalucía Fest (Plaza de España, mayo-julio)
 - Puro Latino Fest (La Cartuja, julio)
 - Interestelar (CAAC, mayo)
 - Bienvenida Fest (su festival hermano en octubre)
 
-### Diferenciación
-- Enfoque específico en público universitario
-- Dos ediciones anuales (Primaverando + Bienvenida = 30.000-40.000 asistentes/año)
-- Conexión continua con comunidades universitarias
-- Modelo de artistas emergentes vs. superestrellas
-- Presencia constante en calendario universitario sevillano
+---
+
+## PROBLEMÁTICA OPERATIVA HISTÓRICA
+
+### 1. Colapso Sistemático de Accesos (Punto Crítico Cero)
+- Tiempos de espera de 90-180 minutos en horas punta
+- Validación de entradas, seguridad y canje de pulseras en único cuello de botella
+- Causas: Fallo tecnológico en PDAs, registro intrusivo unidireccional, canje manual de pulseras
+- Consecuencias: Lipotimias y deshidratación antes de acceder, acumulación estática de masas
+
+### 2. Crisis Hidráulica (Escasez Artificial)
+- Denuncias de FACUA por prácticas de escasez artificial
+- Grifos de baños inhabilitados para forzar compra de agua embotellada
+- Roturas de stock de agua en horas pico
+- Riesgo de golpes de calor
+
+### 3. Infraestructuras Sanitarias
+- Ratio asistentes/inodoro en límite legal mínimo, muy por debajo de estándares de confort
+- Falta de equipos de limpieza itinerantes
+- Inodoros inutilizables a mitad del evento por acumulación de residuos
+
+### 4. Deficiencias Acústicas
+- Solapamiento de frecuencias entre escenarios (sound bleed)
+- Zonas muertas (sonido inaudible) y zonas calientes (presión sonora excesiva)
+- Mala calibración de arrays de altavoces
+
+---
+
+## ESTRATEGIA COMERCIAL (YIELD MANAGEMENT)
+
+### Fases de Precio (Pricing Dinámico)
+1. **Early Bird (Blind Tickets)**: 15-20€ - Genera hype ("Agotado en 10 minutos"), capitalización temprana
+2. **Fase 1-2**: Escalada por anclaje cognitivo
+3. **Fase Final/Taquilla**: Hasta 300% del precio inicial
+
+### Costes Ocultos (Drip Pricing)
+- Gastos de gestión: 10-15% sobre precio base
+- Re-nominación: 10-20€ por cambio de nombre
+- Seguro de no asistencia: Cláusulas de exclusión muy estrictas
+
+### Sistema Cashless (Retención de Capital)
+- Pulseras RFID obligatorias
+- Flotante financiero a coste cero para la organización
+- Breakage: Ingresos por saldo no reclamado
+- Ventanas de devolución restrictivas (3-5 días)
+- Comisiones de reembolso que anulan pequeños saldos
+
+---
+
+## HISTORIAL DE INCIDENTES
+
+| Año | Problema | Respuesta | Resultado |
+|-----|----------|-----------|-----------|
+| 2019 | Colapso accesos (>2h espera) | Sin comunicación oficial | Cientos de reclamaciones |
+| 2022 | Fallo Cashless + Falta de agua | "Incidencia técnica puntual" | Usuarios sin bebida durante horas |
+| 2023 | Cancelación artista principal | Sustituto menor + negativa devoluciones | Denuncias Consumo, daño reputacional |
+
+---
+
+## RIESGOS Y RECOMENDACIONES
+
+### Riesgos Identificados
+- Expedientes sancionadores acumulados (Ayuntamiento Sevilla, Junta de Andalucía)
+- Erosión de lealtad de marca por alta rotación de clientes
+- Activismo de consumidores organizados documentando fallos
+- Posibles inhabilitaciones de licencias
+
+### Recomendaciones Estratégicas
+1. Dimensionar accesos, barras y baños para aforo real (no mínimo legal)
+2. Eliminar tasas ocultas y simplificar estructura de precios
+3. Formar personal en atención al cliente y desescalada
+4. Implementar múltiples perímetros de seguridad escalonados
+5. Garantizar acceso a agua potable gratuita
+6. Aumentar ratio de inodoros al estándar de confort de la industria
+
+### Para Comunicar a Consumidores
+- Evitar fases de precios inflados
+- Leer letra pequeña de condiciones de devolución
+- Documentar incidencias in situ para reclamaciones
+- Conocer derechos según Ley de Espectáculos Públicos
 `;
 
 serve(async (req) => {
