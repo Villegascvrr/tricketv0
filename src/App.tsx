@@ -45,10 +45,10 @@ const App = () => (
               {/* Auth route - public */}
               <Route path="/auth" element={<Auth />} />
 
-              {/* Redirect root to Festival Primavera Sound 2024 */}
+              {/* Redirect root to events list */}
               <Route path="/" element={
                 <ProtectedRoute>
-                  <Navigate to="/events/123e4567-e89b-12d3-a456-426614174000" replace />
+                  <Navigate to="/events" replace />
                 </ProtectedRoute>
               } />
               

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Brain, MessageCircle } from "lucide-react";
+import { ArrowLeft, Upload, Brain, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,8 @@ import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
+import { festivalData } from "@/data/festivalData";
+import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 
 
 interface Event {
@@ -27,7 +29,20 @@ interface Event {
   start_date: string;
   end_date: string;
   total_capacity: number | null;
+  isDemo?: boolean;
 }
+
+// Demo event from festivalData
+const DEMO_EVENT: Event = {
+  id: "demo-primaverando-2025",
+  name: festivalData.nombre,
+  type: "Festival",
+  venue: festivalData.ubicacion,
+  start_date: "2025-03-29",
+  end_date: "2025-03-29",
+  total_capacity: festivalData.aforoTotal,
+  isDemo: true,
+};
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -36,24 +51,32 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
-  // Fetch AI recommendations
+  // Generate local recommendations for demo mode
+  const localRecommendations = generateAIRecommendations();
+
+  // Fetch AI recommendations (only for non-demo events)
   const { data: aiData, isLoading: aiLoading, refetch: refetchRecommendations } = useQuery({
     queryKey: ['event-recommendations', id],
     queryFn: async () => {
-      if (!id) return null;
+      if (!id || isDemo) return null;
       const { data, error } = await supabase.functions.invoke('event-recommendations', {
         body: { eventId: id }
       });
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
-    staleTime: 0, // Always refetch to get latest recommendations
+    enabled: !!id && !isDemo,
+    staleTime: 0,
     refetchOnMount: true,
+    retry: false,
   });
 
-  const recommendations = aiData?.recommendations || [];
+  // Use local recommendations for demo, API recommendations for real events
+  const recommendations = isDemo 
+    ? localRecommendations 
+    : (aiData?.recommendations || []);
   const criticalCount = recommendations.filter((r: any) => r.priority === 'high').length;
 
   useEffect(() => {
@@ -63,18 +86,37 @@ const EventDetail = () => {
   const fetchEvent = async () => {
     if (!id) return;
 
+    // Check if this is a demo event
+    if (id.startsWith("demo-")) {
+      setEvent(DEMO_EVENT);
+      setIsDemo(true);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setIsDemo(false);
     try {
       const { data, error } = await supabase
         .from("events")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setEvent(data);
+      
+      if (data) {
+        setEvent(data);
+      } else {
+        // Event not found - show demo
+        setEvent(DEMO_EVENT);
+        setIsDemo(true);
+      }
     } catch (error) {
       console.error("Error fetching event:", error);
+      // On error, show demo event
+      setEvent(DEMO_EVENT);
+      setIsDemo(true);
     } finally {
       setLoading(false);
     }
@@ -124,6 +166,12 @@ const EventDetail = () => {
               <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">
                 {event.type}
               </span>
+              {isDemo && (
+                <span className="text-xs font-medium px-2 py-0.5 bg-warning/10 text-warning border border-warning/30 rounded-full flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Demo
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -259,6 +307,7 @@ const EventDetail = () => {
         eventName={event.name}
         open={chatOpen}
         onOpenChange={setChatOpen}
+        isDemo={isDemo}
       />
     </div>
   );
