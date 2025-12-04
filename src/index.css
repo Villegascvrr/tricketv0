@@ -1,144 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Primaverando Festival Design System
-   The largest university festival in Andalucía
-   Vibrant, youthful, urban music vibes
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Primaverando Festival Colors - Energetic Spring/Urban Vibes */
-    --background: 0 0% 98%;
-    --foreground: 270 50% 11%;
+    /* Dashboard professional colors */
+    --background: 216 28% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 270 50% 11%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 270 50% 11%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary: Vibrant coral/orange - Energetic, Spring */
-    --primary: 16 90% 55%;
+    /* Corporate blue palette */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 16 90% 45%;
+    --primary-hover: 217 91% 50%;
     
-    /* Festival gradient colors */
-    --festival-coral: 16 90% 55%;
-    --festival-magenta: 330 85% 55%;
-    --festival-violet: 270 70% 50%;
-    --festival-blue: 220 90% 55%;
-    
-    /* Success/positive metrics - Fresh green */
-    --success: 150 80% 40%;
+    /* Success/positive metrics */
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     
-    /* Warning metrics - Golden amber */
-    --warning: 40 95% 50%;
-    --warning-foreground: 0 0% 10%;
+    /* Warning metrics */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
     
     /* Danger/negative metrics */
-    --danger: 0 75% 55%;
+    --danger: 0 84% 60%;
     --danger-foreground: 0 0% 100%;
 
-    --secondary: 270 20% 96%;
-    --secondary-foreground: 270 50% 11%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 270 15% 94%;
-    --muted-foreground: 270 10% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 330 85% 55%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 270 20% 90%;
-    --input: 270 20% 90%;
-    --ring: 16 90% 55%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Sidebar - Dark urban night theme */
-    --sidebar-background: 270 45% 8%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 16 90% 55%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 35% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 270 35% 15%;
-    --sidebar-ring: 16 90% 55%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
     
-    /* Chart colors - Festival palette */
-    --chart-1: 16 90% 55%;
-    --chart-2: 150 80% 40%;
-    --chart-3: 40 95% 50%;
-    --chart-4: 330 85% 55%;
-    --chart-5: 270 70% 50%;
+    /* Chart colors */
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 82% 52%;
     
-    /* Custom shadows */
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08);
-    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.12);
-    --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.15);
-    --shadow-glow: 0 0 30px hsl(16 90% 55% / 0.3);
+    /* Custom shadows for depth */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 
   .dark {
-    --background: 270 45% 6%;
-    --foreground: 0 0% 98%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 270 40% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 270 40% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 16 90% 55%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 16 90% 65%;
+    --primary-hover: 217 91% 70%;
     
-    --success: 150 80% 45%;
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     
-    --warning: 40 95% 55%;
-    --warning-foreground: 0 0% 10%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
     
-    --danger: 0 75% 60%;
+    --danger: 0 84% 60%;
     --danger-foreground: 0 0% 100%;
 
-    --secondary: 270 35% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 270 35% 15%;
-    --muted-foreground: 270 15% 65%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 330 85% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 270 35% 18%;
-    --input: 270 35% 18%;
-    --ring: 16 90% 55%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
     
-    --sidebar-background: 270 45% 6%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 16 90% 55%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 35% 12%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 270 35% 15%;
-    --sidebar-ring: 16 90% 55%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
     
-    --chart-1: 16 90% 60%;
-    --chart-2: 150 80% 50%;
-    --chart-3: 40 95% 55%;
-    --chart-4: 330 85% 60%;
-    --chart-5: 270 70% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 82% 52%;
   }
 }
 
@@ -148,39 +137,6 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
-  }
-}
-
-@layer utilities {
-  .gradient-festival {
-    background: linear-gradient(135deg, 
-      hsl(var(--festival-coral)) 0%, 
-      hsl(var(--festival-magenta)) 50%, 
-      hsl(var(--festival-violet)) 100%
-    );
-  }
-  
-  .gradient-festival-text {
-    background: linear-gradient(135deg, 
-      hsl(var(--festival-coral)) 0%, 
-      hsl(var(--festival-magenta)) 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .glow-festival {
-    box-shadow: 0 0 40px hsl(var(--festival-coral) / 0.4),
-                0 0 80px hsl(var(--festival-magenta) / 0.2);
-  }
-  
-  .animate-pulse-slow {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    @apply bg-background text-foreground;
   }
 }
