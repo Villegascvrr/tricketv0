@@ -51,7 +51,9 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
+  
+  // Detect demo mode synchronously from URL to prevent race conditions
+  const isDemo = id?.startsWith("demo-") ?? false;
 
   // Generate local recommendations for demo mode
   const localRecommendations = generateAIRecommendations();
@@ -87,15 +89,13 @@ const EventDetail = () => {
     if (!id) return;
 
     // Check if this is a demo event
-    if (id.startsWith("demo-")) {
+    if (isDemo) {
       setEvent(DEMO_EVENT);
-      setIsDemo(true);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    setIsDemo(false);
     try {
       const { data, error } = await supabase
         .from("events")
@@ -108,15 +108,14 @@ const EventDetail = () => {
       if (data) {
         setEvent(data);
       } else {
-        // Event not found - show demo
-        setEvent(DEMO_EVENT);
-        setIsDemo(true);
+        // Event not found - redirect to demo
+        navigate("/events/demo-primaverando-2025");
+        return;
       }
     } catch (error) {
       console.error("Error fetching event:", error);
-      // On error, show demo event
-      setEvent(DEMO_EVENT);
-      setIsDemo(true);
+      // On error, redirect to demo event
+      navigate("/events/demo-primaverando-2025");
     } finally {
       setLoading(false);
     }
