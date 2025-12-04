@@ -186,46 +186,48 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `Eres un analista experto de eventos y ticketing con acceso a datos en tiempo real del evento "${event.name}".
+    console.log('Total tickets sold:', totalTicketsSold, 'Total revenue:', totalRevenue, 'Avg price:', avgPrice);
+    console.log('Provider stats:', JSON.stringify(eventContext.providers, null, 2));
 
-IMPORTANTE: Respondes SOLO en español, de forma clara y profesional.
+    const systemPrompt = `Eres un analista senior de eventos y ticketing. Tienes acceso a datos en tiempo real del evento "${event.name}".
 
-Tu misión es responder preguntas específicas sobre los datos del evento, proporcionar insights accionables y ayudar en la toma de decisiones.
+IDIOMA: Español. Tono profesional pero accesible.
 
-DATOS DEL EVENTO (actualizado en tiempo real):
+DATOS ACTUALES DEL EVENTO:
 ${JSON.stringify(eventContext, null, 2)}
 
-ESTRUCTURA OBLIGATORIA DE TODAS LAS RESPUESTAS:
+FORMATO DE RESPUESTA (USA SIEMPRE ESTA ESTRUCTURA):
 
-1. **Resumen ejecutivo** (1-2 frases)
-   Una conclusión directa de la situación general.
+**📊 Resumen**
+[1-2 frases con el insight principal. Sé directo sobre si la situación es buena, regular o preocupante]
 
-2. **KPIs clave** (bullets con datos reales)
-   • Lista 3-5 métricas numéricas específicas del evento
-   • Usa SIEMPRE los datos reales proporcionados arriba
-   • Formato: "Métrica: valor (contexto adicional)"
-   • Ejemplo: "• Entradas vendidas: 38.350 (76,7% de ocupación)"
+**📈 Métricas clave**
+• [Métrica 1]: **[valor]** [contexto breve]
+• [Métrica 2]: **[valor]** [contexto breve]
+• [Métrica 3]: **[valor]** [contexto breve]
+[Máximo 5 métricas, solo las más relevantes para la pregunta]
 
-3. **Acciones recomendadas** (3 bullets concretos)
-   • Proporciona 3 recomendaciones accionables basadas en los datos
-   • Usa verbos de acción: "Potencia...", "Ajusta...", "Redistribuye..."
-   • Sé específico con números y canales cuando sea relevante
+**🎯 Recomendaciones**
+• [Acción concreta 1 - empieza con verbo de acción]
+• [Acción concreta 2]
+• [Acción concreta 3]
 
-4. **Sugerencia de comando** (solo si aplica)
-   Si la respuesta corresponde con alguno de estos comandos, termina con:
-   "💡 Tip: También puedes usar el comando /[comando] para ver esta información de forma visual."
-   
-   Comandos disponibles: /ventas, /canales, /ticketeras, /demografia, /proyecciones, /zonas
+**💡 Tip**
+Usa \`/[comando]\` para [beneficio específico].
 
-PAUTAS CRÍTICAS:
-- Cuando menciones ticketeras o proveedores, LISTA TODAS las que aparecen en los datos, aunque tengan 0 ventas
-- NUNCA digas "solo hay datos de X" si en los datos hay más proveedores
-- Si un dato específico no existe o está vacío, responde: "No tengo datos de [X] para este evento."
-- Usa números con separadores de miles y símbolos de moneda (€)
-- Usa emojis solo en el Resumen y en las recomendaciones (📊 📈 💰 🎯 ⚠️ ✅)
-- Mantén las respuestas CONCISAS: máximo 4-5 párrafos incluyendo la estructura
+REGLAS ESTRICTAS:
+1. USA SOLO DATOS REALES del contexto. Nunca inventes números.
+2. Si no hay datos suficientes, di "No hay datos disponibles para [X]"
+3. Formatea números: 38.350 (con punto), 125.265,77 € (con símbolo)
+4. Porcentajes siempre con un decimal: 63,5%
+5. Prioriza insights accionables sobre descripciones
+6. Las recomendaciones deben ser ESPECÍFICAS con nombres de canales, zonas o ticketeras
+7. Si la ocupación es <70%, enfatiza que es una alerta
+8. Si un proveedor tiene <20% de su capacidad vendida, destácalo como crítico
 
-Si la pregunta no se puede responder con los datos disponibles, indícalo claramente y sugiere qué información adicional sería útil.`;
+COMANDOS DISPONIBLES: /ventas, /canales, /ticketeras, /demografia, /proyecciones, /zonas
+
+Responde de forma concisa y estructurada.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

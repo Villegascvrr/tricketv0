@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, X, Loader2, Sparkles, HelpCircle, ExternalLink } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
+import ChatMessageRenderer from "./ChatMessageRenderer";
 
 interface Message {
   role: "user" | "assistant";
@@ -40,7 +40,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
   const [showCommandsDialog, setShowCommandsDialog] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -228,25 +228,32 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange }: EventChatDr
                     <Sparkles className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                <div className="flex flex-col gap-2 max-w-[85%]">
+                <div className="flex flex-col gap-1 max-w-[85%]">
                   <div
                     className={cn(
-                      "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap",
+                      "rounded-2xl px-4 py-3",
                       message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
+                        ? "bg-primary text-primary-foreground text-sm"
+                        : "bg-muted/80 text-foreground border border-border/50"
                     )}
                   >
-                    {message.content || (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                    {message.content ? (
+                      message.role === "assistant" ? (
+                        <ChatMessageRenderer content={message.content} />
+                      ) : (
+                        <span className="text-sm">{message.content}</span>
+                      )
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Analizando datos...</span>
+                      </div>
                     )}
                   </div>
                   {message.role === "assistant" && message.content && (
-                    <div className="flex flex-col gap-2">
-                      <p className="text-[10px] text-muted-foreground px-1">
-                        Datos basados en el evento actual · última importación: 15/04/2024
-                      </p>
-                    </div>
+                    <p className="text-[10px] text-muted-foreground px-2">
+                      Datos en tiempo real del evento
+                    </p>
                   )}
                 </div>
                 {message.role === "user" && (
