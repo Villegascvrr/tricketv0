@@ -1,79 +1,100 @@
-// ÚNICA FUENTE DE DATOS - Festival Primavera Sound 2024
+// ÚNICA FUENTE DE DATOS - Primaverando Festival 2025
+// El festival universitario más grande de Andalucía
 // Todos los componentes deben importar y usar esta estructura
 
 export const festivalData = {
-  nombre: 'Festival Primavera Sound 2024',
-  aforoTotal: 62000,
+  nombre: 'Primaverando Festival 2025',
+  aforoTotal: 20000,
+  fecha: '29 de marzo de 2025',
+  ubicacion: 'Estadio de La Cartuja, Sevilla',
+  edicion: 6,
   overview: {
-    entradasVendidas: 39350,
-    ingresosTotales: 4099092, // euros
-    ocupacion: 0.635 // 63.5%
+    entradasVendidas: 15600,
+    ingresosTotales: 358800, // euros (estimado: 15600 * 23€ promedio)
+    ocupacion: 0.78 // 78%
   },
   ticketingProviders: [
     {
-      nombre: 'Ticketmaster',
-      capacidad: 30000,
-      vendidas: 23800,
-      ingresos: 2973592
+      nombre: 'Tiqets',
+      capacidad: 8000,
+      vendidas: 6800,
+      ingresos: 156400
     },
     {
-      nombre: 'Entradas.com',
-      capacidad: 12000,
-      vendidas: 4900,
-      ingresos: 367054
+      nombre: 'Fever',
+      capacidad: 5000,
+      vendidas: 3900,
+      ingresos: 89700
+    },
+    {
+      nombre: 'El Corte Inglés',
+      capacidad: 4000,
+      vendidas: 3200,
+      ingresos: 73600
     },
     {
       nombre: 'Bclever',
-      capacidad: 10000,
-      vendidas: 8800,
-      ingresos: 633226
-    },
-    {
-      nombre: 'Forvenues',
-      capacidad: 5000,
-      vendidas: 1850,
-      ingresos: 125220
+      capacidad: 3000,
+      vendidas: 1700,
+      ingresos: 39100
     }
   ],
   zones: [
-    { zona: 'Pista',        aforo: 25000, vendidas: 16200, ingresos: 1782000 },
-    { zona: 'Grada Alta',   aforo: 15000, vendidas: 7300,  ingresos: 657000  },
-    { zona: 'Lateral Este', aforo: 10000, vendidas: 5900,  ingresos: 590000  },
-    { zona: 'Lateral Oeste',aforo: 7000,  vendidas: 5600,  ingresos: 532000  },
-    { zona: 'VIP',          aforo: 5000,  vendidas: 4350,  ingresos: 783092  }
+    { zona: 'Pista General',    aforo: 12000, vendidas: 9600,  ingresos: 182400 },
+    { zona: 'Zona VIP',         aforo: 2000,  vendidas: 1700,  ingresos: 61200  },
+    { zona: 'Lateral Derecho',  aforo: 3000,  vendidas: 2200,  ingresos: 41800  },
+    { zona: 'Lateral Izquierdo',aforo: 3000,  vendidas: 2100,  ingresos: 39900  }
   ],
   // Datos de audiencia (base: 1.000 asistentes)
   audiencia: {
     totalAsistentes: 1000,
     contactStats: {
-      conEmail: 1000,        // 100%
-      conTelefono: 780,      // 78%
-      consentimientoMarketing: 610  // 61%
+      conEmail: 950,           // 95%
+      conTelefono: 820,        // 82%
+      consentimientoMarketing: 680  // 68%
     },
     provincias: [
-      { nombre: 'Madrid', asistentes: 230 },
-      { nombre: 'Barcelona', asistentes: 210 },
-      { nombre: 'Valencia', asistentes: 170 },
-      { nombre: 'Sevilla', asistentes: 140 },
-      { nombre: 'Zaragoza', asistentes: 120 },
-      { nombre: 'Bizkaia', asistentes: 90 },
-      { nombre: 'Girona', asistentes: 40 }
+      { nombre: 'Sevilla', asistentes: 420 },
+      { nombre: 'Cádiz', asistentes: 180 },
+      { nombre: 'Málaga', asistentes: 140 },
+      { nombre: 'Córdoba', asistentes: 90 },
+      { nombre: 'Huelva', asistentes: 70 },
+      { nombre: 'Granada', asistentes: 60 },
+      { nombre: 'Madrid', asistentes: 40 }
     ],
     ciudades: [
-      { nombre: 'Madrid', asistentes: 230 },
-      { nombre: 'Barcelona', asistentes: 210 },
-      { nombre: 'Valencia', asistentes: 170 },
-      { nombre: 'Sevilla', asistentes: 140 },
-      { nombre: 'Zaragoza', asistentes: 120 },
-      { nombre: 'Bilbao', asistentes: 90 },
-      { nombre: 'Girona', asistentes: 40 }
+      { nombre: 'Sevilla', asistentes: 380 },
+      { nombre: 'Dos Hermanas', asistentes: 95 },
+      { nombre: 'Cádiz', asistentes: 85 },
+      { nombre: 'Jerez', asistentes: 80 },
+      { nombre: 'Málaga', asistentes: 75 },
+      { nombre: 'Córdoba', asistentes: 70 },
+      { nombre: 'Alcalá de Guadaíra', asistentes: 55 }
     ],
     edades: [
-      { rango: '18-24', asistentes: 220 },
-      { rango: '25-34', asistentes: 380 },
-      { rango: '35-44', asistentes: 260 },
-      { rango: '45+', asistentes: 140 }
+      { rango: '18-24', asistentes: 520 },
+      { rango: '25-34', asistentes: 340 },
+      { rango: '35-44', asistentes: 100 },
+      { rango: '45+', asistentes: 40 }
     ]
+  },
+  // Artistas confirmados 2025
+  artistas: [
+    'Villalobos',
+    'Henry Méndez',
+    'Q2',
+    'Alvama Ice',
+    'Danny Romero',
+    'Lucho RK',
+    'Barce'
+  ],
+  // Info operacional
+  operacional: {
+    apertura: '19:00',
+    cierre: '02:00',
+    duracion: '7 horas',
+    equipoCore: 10,
+    equipoEvento: 400
   }
 };
 
