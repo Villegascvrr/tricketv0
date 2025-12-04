@@ -23,13 +23,27 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch event data
-    const { data: event, error: eventError } = await supabase
+    const { data: events, error: eventError } = await supabase
       .from('events')
       .select('*')
-      .eq('id', eventId)
-      .single();
+      .eq('id', eventId);
 
     if (eventError) throw eventError;
+    
+    if (!events || events.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Event not found',
+          message: `No se encontró el evento con ID: ${eventId}. Crea un evento primero o verifica el ID.`
+        }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    const event = events[0];
 
     // Fetch provider allocations first
     const { data: allocations, error: allocationsError } = await supabase
