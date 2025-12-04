@@ -144,104 +144,174 @@ const EventDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-8 py-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mb-2"
-            onClick={() => navigate("/events")}
-          >
-            <ArrowLeft className="h-3 w-3 mr-1" />
-            Volver a eventos
-          </Button>
-
-          {/* Línea 1: Título + Chip | Botones principales */}
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">
-                {event.name}
-              </h1>
-              <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                {event.type}
-              </span>
-              {isDemo && (
-                <span className="text-xs font-medium px-2 py-0.5 bg-warning/10 text-warning border border-warning/30 rounded-full flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  Demo
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* AI Chat Button - Primary */}
-              <Button 
-                onClick={() => setChatOpen(true)}
-                size="sm"
-                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium bg-primary hover:bg-primary/90 transition-colors"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                <span>Chat con IA</span>
-              </Button>
-
-              {/* AI Recommendations with Critical Badge - Primary */}
-              <Button 
-                onClick={() => setDrawerOpen(true)}
-                size="sm"
-                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium bg-primary hover:bg-primary/90 transition-colors relative"
-              >
-                <Brain className="h-3.5 w-3.5" />
-                <span>IA: {recommendations.length} recomendaciones</span>
-                {criticalCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="h-5 px-1.5 text-xs font-semibold rounded-full"
-                  >
-                    {criticalCount} críticas
-                  </Badge>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Línea 2: Subtítulo (lugar, fechas, aforo) | Botones secundarios */}
-          <div className="flex justify-between items-center">
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <span>{event.venue}</span>
-              <span>
-                {format(new Date(event.start_date), "d MMM yyyy", {
-                  locale: es,
-                })}
-                {event.start_date !== event.end_date &&
-                  ` - ${format(new Date(event.end_date), "d MMM yyyy", {
-                    locale: es,
-                  })}`}
-              </span>
-              {event.total_capacity && (
-                <span>Aforo: {event.total_capacity.toLocaleString()}</span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Ticket Provider Manager - Secondary */}
-              <TicketProviderManager
-                eventId={event.id}
-                totalCapacity={event.total_capacity}
-              />
-
-              {/* Import Data - Secondary */}
-              <Button 
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <Upload className="h-3.5 w-3.5" />
-                Importar Datos
-              </Button>
+      {/* Hero Header with Festival Image */}
+      {isDemo && (
+        <div className="relative h-48 md:h-64 overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1920&q=80')`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 gradient-festival opacity-30" />
+          
+          <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-8 pb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-3 text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10"
+              onClick={() => navigate("/events")}
+            >
+              <ArrowLeft className="h-3 w-3 mr-1" />
+              Volver a eventos
+            </Button>
+            
+            <div className="flex justify-between items-end">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground drop-shadow-sm">
+                    {event.name}
+                  </h1>
+                  <span className="text-xs font-semibold px-3 py-1 bg-primary text-primary-foreground rounded-full shadow-md">
+                    {event.type}
+                  </span>
+                  <span className="text-xs font-medium px-3 py-1 bg-accent text-accent-foreground rounded-full shadow-md flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Demo
+                  </span>
+                </div>
+                <div className="flex gap-4 text-sm text-foreground/80">
+                  <span className="font-medium">{event.venue}</span>
+                  <span>
+                    {format(new Date(event.start_date), "d MMM yyyy", { locale: es })}
+                  </span>
+                  {event.total_capacity && (
+                    <span>Aforo: {event.total_capacity.toLocaleString()}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={() => setChatOpen(true)}
+                  size="sm"
+                  className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-card text-foreground hover:bg-card/90 shadow-lg transition-all"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Chat IA
+                </Button>
+                <Button 
+                  onClick={() => setDrawerOpen(true)}
+                  size="sm"
+                  className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all"
+                >
+                  <Brain className="h-4 w-4" />
+                  {recommendations.length} Recomendaciones
+                  {criticalCount > 0 && (
+                    <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold rounded-full ml-1">
+                      {criticalCount}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Standard Header for non-demo events */}
+      {!isDemo && (
+        <div className="border-b border-border bg-card">
+          <div className="max-w-7xl mx-auto px-8 py-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-2"
+              onClick={() => navigate("/events")}
+            >
+              <ArrowLeft className="h-3 w-3 mr-1" />
+              Volver a eventos
+            </Button>
+
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">{event.name}</h1>
+                <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                  {event.type}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={() => setChatOpen(true)}
+                  size="sm"
+                  className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Chat con IA
+                </Button>
+                <Button 
+                  onClick={() => setDrawerOpen(true)}
+                  size="sm"
+                  className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium relative"
+                >
+                  <Brain className="h-3.5 w-3.5" />
+                  IA: {recommendations.length} recomendaciones
+                  {criticalCount > 0 && (
+                    <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold rounded-full">
+                      {criticalCount} críticas
+                    </Badge>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div className="flex gap-4 text-xs text-muted-foreground">
+                <span>{event.venue}</span>
+                <span>
+                  {format(new Date(event.start_date), "d MMM yyyy", { locale: es })}
+                  {event.start_date !== event.end_date &&
+                    ` - ${format(new Date(event.end_date), "d MMM yyyy", { locale: es })}`}
+                </span>
+                {event.total_capacity && (
+                  <span>Aforo: {event.total_capacity.toLocaleString()}</span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <TicketProviderManager eventId={event.id} totalCapacity={event.total_capacity} />
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Importar Datos
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Secondary actions bar for demo */}
+      {isDemo && (
+        <div className="border-b border-border bg-card/50">
+          <div className="max-w-7xl mx-auto px-8 py-3 flex justify-end gap-2">
+            <TicketProviderManager eventId={event.id} totalCapacity={event.total_capacity} />
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Importar Datos
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto p-6">
         <Tabs defaultValue="summary" className="space-y-6">
