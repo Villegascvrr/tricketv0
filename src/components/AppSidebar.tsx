@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, LayoutDashboard, Settings, Brain, FileText, Plug, Users, HelpCircle, Home, ChevronLeft, Menu } from "lucide-react";
+import { Calendar, LayoutDashboard, Settings, Brain, FileText, Plug, Users, HelpCircle, Home, ChevronLeft, Menu, LogOut, Sparkles } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TryTricketModal from "@/components/TryTricketModal";
-import { Sparkles } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 const mainItems = [{
   title: "Inicio",
   url: "/dashboard",
@@ -53,6 +53,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const [tryModalOpen, setTryModalOpen] = useState(false);
+  const { signOut, user } = useAuth();
 
   // Load saved state from localStorage on mount
   useEffect(() => {
@@ -160,10 +161,34 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        {!collapsed && <p className="text-xs text-sidebar-foreground/40 text-center">
+      <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
+        {user && (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                onClick={signOut}
+                className={cn(
+                  "w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                  collapsed && "justify-center"
+                )}
+              >
+                <LogOut className={cn("h-4 w-4", !collapsed && "mr-2")} />
+                {!collapsed && <span>Cerrar sesión</span>}
+              </Button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="z-50">
+                Cerrar sesión
+              </TooltipContent>
+            )}
+          </Tooltip>
+        )}
+        {!collapsed && (
+          <p className="text-xs text-sidebar-foreground/40 text-center">
             © 2024 Tricket Brain
-          </p>}
+          </p>
+        )}
       </SidebarFooter>
 
       {/* Try Tricket Modal */}
