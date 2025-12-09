@@ -1,7 +1,1 @@
-project_id = "tzbhyiijfxnmmtghllkw"
-
-[functions.event-recommendations]
-verify_jwt = true
-
-[functions.chat-event-analysis]
-verify_jwt = true
+project_id = "btljuiirgbnywlswsyyf"
