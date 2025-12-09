@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, LayoutDashboard, Settings, Brain, FileText, Plug, Users, HelpCircle, Home, ChevronLeft, Menu, LogOut, Sparkles } from "lucide-react";
+import { LayoutDashboard, Settings, Brain, FileText, Plug, Users, HelpCircle, ChevronLeft, Menu, LogOut, Sparkles, BarChart3, Users2, FileDown } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,14 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TryTricketModal from "@/components/TryTricketModal";
 import { useAuth } from "@/contexts/AuthContext";
+
 const mainItems = [{
-  title: "Inicio",
+  title: "Command Center",
   url: "/dashboard",
-  icon: Home
-}, {
-  title: "Eventos",
-  url: "/events",
-  icon: Calendar
+  icon: LayoutDashboard
 }, {
   title: "Panel IA",
   url: "/ai-panel",
@@ -30,6 +27,7 @@ const mainItems = [{
   url: "/integrations",
   icon: Plug
 }];
+
 const secondaryItems = [{
   title: "Equipo y permisos",
   url: "/team",
@@ -43,6 +41,7 @@ const secondaryItems = [{
   url: "/help",
   icon: HelpCircle
 }];
+
 export function AppSidebar() {
   const {
     state,
@@ -74,12 +73,11 @@ export function AppSidebar() {
       localStorage.setItem("sidebar-state", state);
     }
   }, [state, isMobile]);
+
   const isActive = (path: string) => {
-    if (path === "/events") {
-      return currentPath === "/events" || currentPath.startsWith("/events/");
-    }
     return currentPath === path;
   };
+
   const renderMenuItem = (item: typeof mainItems[0]) => {
     const active = isActive(item.url);
     return <SidebarMenuItem key={item.title}>
@@ -98,15 +96,16 @@ export function AppSidebar() {
         </Tooltip>
       </SidebarMenuItem>;
   };
+
   return <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-16" : "w-64")}>
       {/* Header with Logo and Toggle */}
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center justify-between">
           {!collapsed && <div className="flex-1">
               <h1 className="text-lg font-bold text-sidebar-foreground">
-                Tricket Brain
+                Primaverando
               </h1>
-              <p className="text-xs text-sidebar-foreground/60">Festival Business Inteligence</p>
+              <p className="text-xs text-sidebar-foreground/60">Command Center 2025</p>
             </div>}
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("h-8 w-8 shrink-0", collapsed && "mx-auto")}>
             {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -133,7 +132,7 @@ export function AppSidebar() {
         {/* Main Navigation */}
         <SidebarGroup>
           {!collapsed && <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
-              Principal
+              Festival
             </SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-2">
@@ -186,7 +185,7 @@ export function AppSidebar() {
         )}
         {!collapsed && (
           <p className="text-xs text-sidebar-foreground/40 text-center">
-            © 2024 Tricket Brain
+            © 2025 Primaverando Festival
           </p>
         )}
       </SidebarFooter>
