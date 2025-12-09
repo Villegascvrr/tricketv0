@@ -4,11 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import Events from "./pages/Events";
-import NewEvent from "./pages/NewEvent";
-import EventDetail from "./pages/EventDetail";
 import AIPanel from "./pages/AIPanel";
 import Templates from "./pages/Templates";
 import Integrations from "./pages/Integrations";
@@ -16,9 +12,7 @@ import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
 import AppSidebar from "./components/AppSidebar";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -42,44 +36,15 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Auth route - public */}
-              <Route path="/auth" element={<Auth />} />
-
               {/* Redirect root to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
-              {/* Dashboard */}
+              {/* Command Center - Main Dashboard */}
               <Route
                 path="/dashboard"
                 element={
                   <AppLayout>
                     <Dashboard />
-                  </AppLayout>
-                }
-              />
-
-              {/* Events */}
-              <Route
-                path="/events"
-                element={
-                  <AppLayout>
-                    <Events />
-                  </AppLayout>
-                }
-              />
-              <Route
-                path="/events/new"
-                element={
-                  <AppLayout>
-                    <NewEvent />
-                  </AppLayout>
-                }
-              />
-              <Route
-                path="/events/:id"
-                element={
-                  <AppLayout>
-                    <EventDetail />
                   </AppLayout>
                 }
               />
@@ -143,6 +108,9 @@ const App = () => (
                   </AppLayout>
                 }
               />
+
+              {/* Redirect old event routes to dashboard */}
+              <Route path="/events/*" element={<Navigate to="/dashboard" replace />} />
 
               {/* 404 Not Found - must be last */}
               <Route path="*" element={<NotFound />} />
