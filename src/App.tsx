@@ -10,7 +10,8 @@ import Audience from "./pages/Audience";
 import Marketing from "./pages/Marketing";
 import AIRecommendations from "./pages/AIRecommendations";
 import Historical from "./pages/Historical";
-import Operations from "./pages/Operations";
+import PreFestivalOperations from "./pages/PreFestivalOperations";
+import EventDayOperations from "./pages/EventDayOperations";
 import Team from "./pages/Team";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
@@ -103,15 +104,28 @@ const App = () => (
                 }
               />
 
-              {/* Operaciones del Festival */}
+              {/* Operaciones Pre-Festival */}
               <Route
-                path="/operations"
+                path="/operations/pre-festival"
                 element={
                   <AppLayout>
-                    <Operations />
+                    <PreFestivalOperations />
                   </AppLayout>
                 }
               />
+
+              {/* Operaciones Día del Festival */}
+              <Route
+                path="/operations/event-day"
+                element={
+                  <AppLayout>
+                    <EventDayOperations />
+                  </AppLayout>
+                }
+              />
+
+              {/* Redirect old operations route */}
+              <Route path="/operations" element={<Navigate to="/operations/pre-festival" replace />} />
 
               {/* Equipo & Permisos */}
               <Route
