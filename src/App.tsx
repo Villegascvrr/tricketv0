@@ -45,22 +45,16 @@ const App = () => (
               {/* Auth route - public */}
               <Route path="/auth" element={<Auth />} />
 
-              {/* Redirect root to events list */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Navigate to="/events" replace />
-                </ProtectedRoute>
-              } />
+              {/* Redirect root to dashboard */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
               {/* Dashboard */}
               <Route
                 path="/dashboard"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Dashboard />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
                 }
               />
 
@@ -68,31 +62,25 @@ const App = () => (
               <Route
                 path="/events"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Events />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Events />
+                  </AppLayout>
                 }
               />
               <Route
                 path="/events/new"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <NewEvent />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <NewEvent />
+                  </AppLayout>
                 }
               />
               <Route
                 path="/events/:id"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <EventDetail />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <EventDetail />
+                  </AppLayout>
                 }
               />
 
@@ -100,11 +88,9 @@ const App = () => (
               <Route
                 path="/ai-panel"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <AIPanel />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <AIPanel />
+                  </AppLayout>
                 }
               />
 
@@ -112,11 +98,9 @@ const App = () => (
               <Route
                 path="/templates"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Templates />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Templates />
+                  </AppLayout>
                 }
               />
 
@@ -124,11 +108,9 @@ const App = () => (
               <Route
                 path="/integrations"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Integrations />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Integrations />
+                  </AppLayout>
                 }
               />
 
@@ -136,11 +118,9 @@ const App = () => (
               <Route
                 path="/team"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Team />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Team />
+                  </AppLayout>
                 }
               />
 
@@ -148,11 +128,9 @@ const App = () => (
               <Route
                 path="/settings"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Settings />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Settings />
+                  </AppLayout>
                 }
               />
 
@@ -160,11 +138,9 @@ const App = () => (
               <Route
                 path="/help"
                 element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Help />
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Help />
+                  </AppLayout>
                 }
               />
 
