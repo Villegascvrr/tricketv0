@@ -5,10 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Dashboard from "./pages/Dashboard";
-import AIPanel from "./pages/AIPanel";
-import Templates from "./pages/Templates";
-import Integrations from "./pages/Integrations";
+import SalesForecasts from "./pages/SalesForecasts";
+import Audience from "./pages/Audience";
+import Marketing from "./pages/Marketing";
+import AIRecommendations from "./pages/AIRecommendations";
+import Historical from "./pages/Historical";
+import Operations from "./pages/Operations";
 import Team from "./pages/Team";
+import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
@@ -39,7 +43,7 @@ const App = () => (
               {/* Redirect root to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
-              {/* Command Center - Main Dashboard */}
+              {/* Dashboard - Command Center */}
               <Route
                 path="/dashboard"
                 element={
@@ -49,37 +53,67 @@ const App = () => (
                 }
               />
 
-              {/* AI Panel */}
+              {/* Ventas & Previsiones */}
               <Route
-                path="/ai-panel"
+                path="/sales"
                 element={
                   <AppLayout>
-                    <AIPanel />
+                    <SalesForecasts />
                   </AppLayout>
                 }
               />
 
-              {/* Templates */}
+              {/* Público y Audiencia */}
               <Route
-                path="/templates"
+                path="/audience"
                 element={
                   <AppLayout>
-                    <Templates />
+                    <Audience />
                   </AppLayout>
                 }
               />
 
-              {/* Integrations */}
+              {/* Marketing & Campañas */}
               <Route
-                path="/integrations"
+                path="/marketing"
                 element={
                   <AppLayout>
-                    <Integrations />
+                    <Marketing />
                   </AppLayout>
                 }
               />
 
-              {/* Team */}
+              {/* Recomendaciones IA */}
+              <Route
+                path="/ai-recommendations"
+                element={
+                  <AppLayout>
+                    <AIRecommendations />
+                  </AppLayout>
+                }
+              />
+
+              {/* Histórico & Comparativas */}
+              <Route
+                path="/historical"
+                element={
+                  <AppLayout>
+                    <Historical />
+                  </AppLayout>
+                }
+              />
+
+              {/* Operaciones del Festival */}
+              <Route
+                path="/operations"
+                element={
+                  <AppLayout>
+                    <Operations />
+                  </AppLayout>
+                }
+              />
+
+              {/* Equipo & Permisos */}
               <Route
                 path="/team"
                 element={
@@ -89,7 +123,17 @@ const App = () => (
                 }
               />
 
-              {/* Settings */}
+              {/* Integraciones */}
+              <Route
+                path="/integrations"
+                element={
+                  <AppLayout>
+                    <Integrations />
+                  </AppLayout>
+                }
+              />
+
+              {/* Configuración */}
               <Route
                 path="/settings"
                 element={
@@ -99,7 +143,7 @@ const App = () => (
                 }
               />
 
-              {/* Help */}
+              {/* Help - hidden from menu but accessible */}
               <Route
                 path="/help"
                 element={
@@ -109,10 +153,12 @@ const App = () => (
                 }
               />
 
-              {/* Redirect old event routes to dashboard */}
+              {/* Redirect old routes */}
               <Route path="/events/*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/ai-panel" element={<Navigate to="/ai-recommendations" replace />} />
+              <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
 
-              {/* 404 Not Found - must be last */}
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
