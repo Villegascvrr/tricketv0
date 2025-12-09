@@ -5,7 +5,6 @@ import {
   Brain, 
   Plug, 
   Users, 
-  HelpCircle, 
   ChevronLeft, 
   Menu, 
   LogOut, 
@@ -14,7 +13,9 @@ import {
   Users2,
   Megaphone,
   History,
-  Cog
+  HardHat,
+  Radio,
+  ChevronDown
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -28,6 +29,9 @@ import {
   SidebarMenu, 
   SidebarMenuButton, 
   SidebarMenuItem, 
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar, 
   SidebarHeader, 
   SidebarFooter 
@@ -35,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import TryTricketModal from "@/components/TryTricketModal";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -68,11 +73,21 @@ const mainItems = [
     title: "Histórico & Comparativas",
     url: "/historical",
     icon: History
+  }
+];
+
+const operationsItems = [
+  {
+    title: "Operaciones Pre-Festival",
+    url: "/operations/pre-festival",
+    icon: HardHat,
+    description: "Producción, proveedores, logística"
   },
   {
-    title: "Operaciones",
-    url: "/operations",
-    icon: Cog
+    title: "Operaciones Día del Festival",
+    url: "/operations/event-day",
+    icon: Radio,
+    description: "Control en vivo, incidencias"
   }
 ];
 
@@ -104,6 +119,9 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const [tryModalOpen, setTryModalOpen] = useState(false);
+  const [operationsOpen, setOperationsOpen] = useState(
+    currentPath.startsWith('/operations')
+  );
   const { signOut, user } = useAuth();
 
   useEffect(() => {
@@ -123,9 +141,17 @@ export function AppSidebar() {
     }
   }, [state, isMobile]);
 
+  useEffect(() => {
+    if (currentPath.startsWith('/operations')) {
+      setOperationsOpen(true);
+    }
+  }, [currentPath]);
+
   const isActive = (path: string) => {
     return currentPath === path;
   };
+
+  const isOperationsActive = currentPath.startsWith('/operations');
 
   const renderMenuItem = (item: typeof mainItems[0]) => {
     const active = isActive(item.url);
@@ -209,6 +235,56 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-2">
               {mainItems.map(renderMenuItem)}
+              
+              {/* Operations Collapsible */}
+              {!collapsed ? (
+                <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className={cn("h-10 w-full justify-between", isOperationsActive && "bg-sidebar-accent")}>
+                        <div className="flex items-center">
+                          <HardHat className="h-5 w-5 mr-2" />
+                          <span>Operaciones</span>
+                        </div>
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", operationsOpen && "rotate-180")} />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {operationsItems.map((item) => (
+                          <SidebarMenuSubItem key={item.url}>
+                            <SidebarMenuSubButton asChild className={cn(isActive(item.url) && "bg-sidebar-accent")}>
+                              <NavLink 
+                                to={item.url}
+                                className="hover:bg-sidebar-accent/50"
+                                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                              >
+                                <item.icon className="h-4 w-4 mr-2" />
+                                <span className="text-sm">{item.title.replace('Operaciones ', '')}</span>
+                              </NavLink>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              ) : (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild className={cn("h-10", isOperationsActive && "bg-sidebar-accent")}>
+                        <NavLink to="/operations/pre-festival" className="hover:bg-sidebar-accent/50">
+                          <HardHat className="h-5 w-5 mx-auto" />
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="z-50">
+                    Operaciones
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
