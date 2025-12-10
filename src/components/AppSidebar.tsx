@@ -15,7 +15,8 @@ import {
   History,
   HardHat,
   Radio,
-  ChevronDown
+  ChevronDown,
+  FlaskConical
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -68,6 +69,11 @@ const mainItems = [
     title: "Recomendaciones IA",
     url: "/ai-recommendations",
     icon: Brain
+  },
+  {
+    title: "Scenario Planner",
+    url: "/scenario-planner",
+    icon: FlaskConical
   },
   {
     title: "Histórico & Comparativas",
