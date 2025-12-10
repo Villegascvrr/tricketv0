@@ -16,6 +16,7 @@ import Team from "./pages/Team";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import ScenarioPlanner from "./pages/ScenarioPlanner";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/AppSidebar";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
@@ -100,6 +101,16 @@ const App = () => (
                 element={
                   <AppLayout>
                     <Historical />
+                  </AppLayout>
+                }
+              />
+
+              {/* Scenario Planner */}
+              <Route
+                path="/scenario-planner"
+                element={
+                  <AppLayout>
+                    <ScenarioPlanner />
                   </AppLayout>
                 }
               />
