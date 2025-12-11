@@ -13,6 +13,7 @@ import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
+import FestivalStatusOverview from "@/components/event/FestivalStatusOverview";
 import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 
@@ -114,7 +115,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Festival Status Overview */}
+        <FestivalStatusOverview />
+
         <Tabs defaultValue="summary" className="space-y-6">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="summary">Resumen</TabsTrigger>
