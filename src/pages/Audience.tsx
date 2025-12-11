@@ -124,16 +124,16 @@ const Audience = () => {
   const hasActiveFilters = selectedProvinces.length > 0 || selectedAges.length > 0 || filters.hasEmail || filters.hasPhone || filters.hasMarketingConsent;
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
         
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">
+          <h1 className="text-xl font-bold text-foreground mb-0.5">
             Público y Audiencia
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Perfil demográfico y análisis del público
           </p>
         </div>

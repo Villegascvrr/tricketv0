@@ -164,17 +164,17 @@ const EventDayOperations = () => {
   const totalRevenue = barStations.reduce((acc, b) => acc + b.revenue, 0);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Día del Festival" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
+            <h1 className="text-xl font-bold text-foreground mb-0.5">
               Operaciones en Vivo
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Centro de control - 29 de marzo de 2025
             </p>
           </div>

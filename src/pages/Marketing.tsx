@@ -185,22 +185,22 @@ const Marketing = () => {
   const avgCtr = activeCampaigns.reduce((acc, c) => acc + c.ctr, 0) / activeCampaigns.length;
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Marketing & Campañas" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
+            <h1 className="text-xl font-bold text-foreground mb-0.5">
               Marketing & Campañas
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Gestión de campañas y análisis de rendimiento
             </p>
           </div>
-          <Button className="gap-2">
-            <Megaphone className="h-4 w-4" />
+          <Button size="sm" className="gap-1.5 h-7 text-xs">
+            <Megaphone className="h-3.5 w-3.5" />
             Nueva Campaña
           </Button>
         </div>

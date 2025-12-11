@@ -254,17 +254,17 @@ const PreFestivalOperations = () => {
   const checklistCompleted = preProductionChecklist.filter(c => c.completed).length;
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Pre-Festival" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
+            <h1 className="text-xl font-bold text-foreground mb-0.5">
               Operaciones Pre-Festival
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Gestión de producción, proveedores y logística previa al evento
             </p>
           </div>

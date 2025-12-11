@@ -56,29 +56,29 @@ const ScenarioPlanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Scenario Planner" }]} />
         
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Sparkles className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 mb-0.5">
+              <div className="p-1.5 rounded-md bg-primary/10">
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground">
                 Scenario Planner
               </h1>
-              <Badge variant="secondary" className="ml-2">Beta</Badge>
+              <Badge variant="secondary" className="ml-1 text-[10px]">Beta</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Simula escenarios y visualiza el impacto en tus ventas y revenue
             </p>
           </div>
-          <Button variant="outline" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Resetear escenarios
+          <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
+            <RefreshCw className="h-3 w-3" />
+            Resetear
           </Button>
         </div>
 

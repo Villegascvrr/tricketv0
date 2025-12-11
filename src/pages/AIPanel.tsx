@@ -221,19 +221,19 @@ const AIPanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Centro de Alertas IA" }]} />
         
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <Brain className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Centro de Alertas IA</h1>
-              <p className="text-sm text-muted-foreground">Recomendaciones y alertas inteligentes</p>
+              <h1 className="text-xl font-bold text-foreground">Centro de Alertas IA</h1>
+              <p className="text-xs text-muted-foreground">Recomendaciones y alertas inteligentes</p>
             </div>
           </div>
         </div>

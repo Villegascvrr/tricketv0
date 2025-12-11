@@ -101,22 +101,22 @@ const SalesForecasts = () => {
   const daysRemaining = Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
+            <h1 className="text-xl font-bold text-foreground mb-0.5">
               Ventas & Previsiones
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Análisis de ventas y proyecciones
             </p>
           </div>
-          <Badge variant="outline" className="text-sm px-3 py-1">
-            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+          <Badge variant="outline" className="text-xs px-2 py-0.5">
+            <Calendar className="h-3 w-3 mr-1" />
             {daysRemaining} días para el festival
           </Badge>
         </div>

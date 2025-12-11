@@ -7,16 +7,16 @@ import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const Integrations = () => {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Integraciones" }]} />
         
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">
+          <h1 className="text-xl font-bold text-foreground mb-0.5">
             Integraciones
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Gestiona las conexiones con ticketeras y fuentes de datos externas
           </p>
         </div>

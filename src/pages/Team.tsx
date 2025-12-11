@@ -126,17 +126,17 @@ const Team = () => {
   const uniqueRoles = [...new Set(teamMembers.map(m => m.role))].length;
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Equipo & Permisos" }]} />
         
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-foreground">
               Equipo & Permisos
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Gestiona el equipo del festival y configura los permisos de acceso
             </p>
           </div>
