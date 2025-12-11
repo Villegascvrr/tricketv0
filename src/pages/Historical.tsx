@@ -134,22 +134,22 @@ const Historical = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">
+            <h1 className="text-xl font-bold text-foreground mb-0.5">
               Histórico & Comparativas
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Análisis comparativo entre ediciones
             </p>
           </div>
-          <Badge variant="outline" className="text-sm px-3 py-1">
-            <History className="h-3.5 w-3.5 mr-1.5" />
+          <Badge variant="outline" className="text-xs px-2 py-0.5">
+            <History className="h-3 w-3 mr-1" />
             4 ediciones (2022-2025)
           </Badge>
         </div>

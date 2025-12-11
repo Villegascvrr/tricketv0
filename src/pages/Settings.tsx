@@ -10,18 +10,18 @@ import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const Settings = () => {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-4xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Configuración" }]} />
         
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <SettingsIcon className="h-6 w-6 text-primary" />
+        <div className="flex items-center gap-2">
+          <SettingsIcon className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-foreground">
               Configuración
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Gestiona las preferencias globales de tu cuenta
             </p>
           </div>

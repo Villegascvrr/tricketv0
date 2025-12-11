@@ -40,8 +40,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header with Festival Image */}
-      <div className="relative h-48 md:h-64 overflow-hidden">
+      {/* Hero Header with Festival Image - Compact */}
+      <div className="relative h-36 md:h-44 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -51,18 +51,18 @@ const Dashboard = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 gradient-festival opacity-30" />
         
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-8 pb-6">
+        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-4">
           <div className="flex justify-between items-end">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground drop-shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground drop-shadow-sm">
                   {event.name}
                 </h1>
-                <span className="text-xs font-semibold px-3 py-1 bg-primary text-primary-foreground rounded-full shadow-md">
+                <span className="text-[10px] font-semibold px-2 py-0.5 bg-primary text-primary-foreground rounded-full shadow-md">
                   Command Center
                 </span>
               </div>
-              <div className="flex gap-4 text-sm text-foreground/80">
+              <div className="flex gap-3 text-xs text-foreground/80">
                 <span className="font-medium">{event.venue}</span>
                 <span>
                   {format(new Date(event.start_date), "d MMM yyyy", { locale: es })}
@@ -77,20 +77,20 @@ const Dashboard = () => {
               <Button 
                 onClick={() => setChatOpen(true)}
                 size="sm"
-                className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-card text-foreground hover:bg-card/90 shadow-lg transition-all"
+                className="h-7 px-3 gap-1.5 rounded-full text-xs font-medium bg-card text-foreground hover:bg-card/90 shadow-lg transition-all"
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-3.5 w-3.5" />
                 Chat IA
               </Button>
               <Button 
                 onClick={() => setDrawerOpen(true)}
                 size="sm"
-                className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all"
+                className="h-7 px-3 gap-1.5 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all"
               >
-                <Brain className="h-4 w-4" />
+                <Brain className="h-3.5 w-3.5" />
                 {recommendations.length} Recomendaciones
                 {criticalCount > 0 && (
-                  <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold rounded-full ml-1">
+                  <Badge variant="destructive" className="h-4 px-1 text-[10px] font-semibold rounded-full ml-1">
                     {criticalCount}
                   </Badge>
                 )}
@@ -100,32 +100,32 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Secondary actions bar */}
+      {/* Secondary actions bar - Compact */}
       <div className="border-b border-border bg-card/50">
-        <div className="max-w-7xl mx-auto px-8 py-3 flex justify-end gap-2">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex justify-end gap-2">
           <TicketProviderManager eventId={event.id} totalCapacity={event.total_capacity} />
           <Button 
             variant="outline"
             size="sm"
-            className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
+            className="h-7 px-2.5 gap-1 rounded-full text-[10px] font-medium"
           >
-            <Upload className="h-3.5 w-3.5" />
-            Importar Datos
+            <Upload className="h-3 w-3" />
+            Importar
           </Button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 space-y-4">
         {/* Festival Status Overview */}
         <FestivalStatusOverview />
 
-        <Tabs defaultValue="summary" className="space-y-6">
-          <TabsList className="bg-card border border-border">
-            <TabsTrigger value="summary">Resumen</TabsTrigger>
-            <TabsTrigger value="executive">Panel Ejecutivo</TabsTrigger>
-            <TabsTrigger value="audience">Audiencia</TabsTrigger>
-            <TabsTrigger value="recommendations">Recomendaciones IA</TabsTrigger>
-            <TabsTrigger value="export">Exportar</TabsTrigger>
+        <Tabs defaultValue="summary" className="space-y-4">
+          <TabsList className="bg-card border border-border h-8">
+            <TabsTrigger value="summary" className="text-xs h-7">Resumen</TabsTrigger>
+            <TabsTrigger value="executive" className="text-xs h-7">Panel Ejecutivo</TabsTrigger>
+            <TabsTrigger value="audience" className="text-xs h-7">Audiencia</TabsTrigger>
+            <TabsTrigger value="recommendations" className="text-xs h-7">Recomendaciones IA</TabsTrigger>
+            <TabsTrigger value="export" className="text-xs h-7">Exportar</TabsTrigger>
           </TabsList>
 
           <TabsContent value="summary">
