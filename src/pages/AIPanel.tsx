@@ -9,6 +9,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 type AlertStatus = "pending" | "in_progress" | "completed";
 type AlertPriority = "critical" | "high" | "medium";
@@ -222,11 +223,13 @@ const AIPanel = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Centro de Alertas IA" }]} />
+        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="h-6 w-6 text-primary" />
+              <Brain className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Centro de Alertas IA</h1>

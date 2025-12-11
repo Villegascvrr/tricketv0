@@ -36,6 +36,7 @@ import {
   Bar,
   Legend
 } from "recharts";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Campaign performance data
 const campaignPerformanceData = [
@@ -186,14 +187,16 @@ const Marketing = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Marketing & Campañas" }]} />
+        
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="text-2xl font-bold text-foreground mb-1">
               Marketing & Campañas
             </h1>
-            <p className="text-muted-foreground">
-              Gestión de campañas y análisis de rendimiento para Primaverando 2025
+            <p className="text-sm text-muted-foreground">
+              Gestión de campañas y análisis de rendimiento
             </p>
           </div>
           <Button className="gap-2">

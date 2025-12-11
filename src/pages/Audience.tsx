@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const Audience = () => {
   const { audiencia } = festivalData;
@@ -123,15 +124,17 @@ const Audience = () => {
   const hasActiveFilters = selectedProvinces.length > 0 || selectedAges.length > 0 || filters.hasEmail || filters.hasPhone || filters.hasMarketingConsent;
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
+        
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-1">
             Público y Audiencia
           </h1>
-          <p className="text-muted-foreground">
-            Perfil demográfico y análisis del público del Primaverando 2025
+          <p className="text-sm text-muted-foreground">
+            Perfil demográfico y análisis del público
           </p>
         </div>
 
