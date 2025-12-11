@@ -33,6 +33,7 @@ import {
   Check,
   X
 } from "lucide-react";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Team members data
 const teamMembers = [
@@ -127,6 +128,8 @@ const Team = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Equipo & Permisos" }]} />
+        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

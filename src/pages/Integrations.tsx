@@ -3,17 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Plug, CheckCircle2, XCircle } from "lucide-react";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const Integrations = () => {
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Integraciones" }]} />
+        
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-1">
             Integraciones
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Gestiona las conexiones con ticketeras y fuentes de datos externas
           </p>
         </div>

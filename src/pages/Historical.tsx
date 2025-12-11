@@ -30,6 +30,7 @@ import {
   PolarRadiusAxis,
   Radar
 } from "recharts";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Historical data by edition
 const editionSummary = [
@@ -135,14 +136,16 @@ const Historical = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
+        
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="text-2xl font-bold text-foreground mb-1">
               Histórico & Comparativas
             </h1>
-            <p className="text-muted-foreground">
-              Análisis comparativo entre ediciones del Primaverando
+            <p className="text-sm text-muted-foreground">
+              Análisis comparativo entre ediciones
             </p>
           </div>
           <Badge variant="outline" className="text-sm px-3 py-1">

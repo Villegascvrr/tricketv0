@@ -19,6 +19,7 @@ import {
   ComposedChart
 } from "recharts";
 import { festivalData } from "@/data/festivalData";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Generate simulated daily sales data
 const generateDailySalesData = () => {
@@ -102,14 +103,16 @@ const SalesForecasts = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
+        
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="text-2xl font-bold text-foreground mb-1">
               Ventas & Previsiones
             </h1>
-            <p className="text-muted-foreground">
-              Análisis de ventas y proyecciones del Primaverando 2025
+            <p className="text-sm text-muted-foreground">
+              Análisis de ventas y proyecciones
             </p>
           </div>
           <Badge variant="outline" className="text-sm px-3 py-1">

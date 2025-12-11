@@ -25,6 +25,7 @@ import {
   XCircle,
   ArrowRight
 } from "lucide-react";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Vendors
 const vendors = [
@@ -255,18 +256,15 @@ const PreFestivalOperations = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Pre-Festival" }]} />
+        
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <span>Operaciones</span>
-              <ArrowRight className="h-3 w-3" />
-              <span className="text-foreground">Pre-Festival</span>
-            </div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="text-2xl font-bold text-foreground mb-1">
               Operaciones Pre-Festival
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Gestión de producción, proveedores y logística previa al evento
             </p>
           </div>

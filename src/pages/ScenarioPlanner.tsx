@@ -14,6 +14,7 @@ import {
   Sparkles,
   RefreshCw
 } from "lucide-react";
+import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 const ScenarioPlanner = () => {
   // Pricing scenario
@@ -55,21 +56,23 @@ const ScenarioPlanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <PageBreadcrumb items={[{ label: "Scenario Planner" }]} />
+        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-1">
               <div className="p-2 rounded-lg bg-primary/10">
-                <Sparkles className="h-6 w-6 text-primary" />
+                <Sparkles className="h-5 w-5 text-primary" />
               </div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-2xl font-bold text-foreground">
                 Scenario Planner
               </h1>
               <Badge variant="secondary" className="ml-2">Beta</Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Simula escenarios y visualiza el impacto en tus ventas y revenue
             </p>
           </div>
