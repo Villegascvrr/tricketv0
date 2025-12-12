@@ -169,44 +169,40 @@ const EventDayOperations = () => {
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Día del Festival" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center mb-1">
           <div>
-            <h1 className="text-xl font-bold text-foreground mb-0.5">
-              Operaciones en Vivo
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Centro de control - 29 de marzo de 2025
-            </p>
+            <h1 className="text-lg font-bold text-foreground">Operaciones en Vivo</h1>
+            <p className="text-xs text-muted-foreground">Centro de control - 29 de marzo de 2025</p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
-              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+            <Badge variant="secondary" className="gap-1.5 text-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
               En Directo
             </Badge>
-            <Button variant="destructive" size="sm" className="gap-1.5">
-              <Phone className="h-3.5 w-3.5" />
+            <Button variant="destructive" size="sm" className="gap-1.5 h-7 text-xs">
+              <Phone className="h-3 w-3" />
               Emergencias
             </Button>
           </div>
         </div>
 
         {/* Live Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {liveStats.map((stat, index) => (
-            <Card key={index} className="border-2">
-              <CardContent className="pt-4">
+            <Card key={index}>
+              <CardContent className="pt-4 pb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="h-5 w-5 text-primary" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <stat.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-xs text-success font-medium">{stat.trend}</span>
+                  <span className="text-[10px] text-success font-medium">{stat.trend}</span>
                 </div>
                 <p className="text-2xl font-bold">{stat.value}</p>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-0.5">
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  {stat.max && <p className="text-xs text-muted-foreground">/ {stat.max}</p>}
+                  {stat.max && <p className="text-[10px] text-muted-foreground">/ {stat.max}</p>}
                 </div>
-                {stat.percentage && <Progress value={stat.percentage} className="h-1.5 mt-2" />}
+                {stat.percentage && <Progress value={stat.percentage} className="h-1 mt-2" />}
               </CardContent>
             </Card>
           ))}

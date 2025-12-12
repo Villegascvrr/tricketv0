@@ -139,82 +139,66 @@ const Historical = () => {
         <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center mb-1">
           <div>
-            <h1 className="text-xl font-bold text-foreground mb-0.5">
-              Histórico & Comparativas
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Análisis comparativo entre ediciones
-            </p>
+            <h1 className="text-lg font-bold text-foreground">Histórico & Comparativas</h1>
+            <p className="text-xs text-muted-foreground">Análisis comparativo entre ediciones</p>
           </div>
-          <Badge variant="outline" className="text-xs px-2 py-0.5">
-            <History className="h-3 w-3 mr-1" />
-            4 ediciones (2022-2025)
+          <Badge variant="secondary" className="text-xs gap-1.5">
+            <History className="h-3 w-3" />
+            4 ediciones
           </Badge>
         </div>
 
         {/* Edition KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Histórico</p>
-                  <p className="text-2xl font-bold">
-                    {editionSummary.reduce((acc, e) => acc + e.tickets, 0).toLocaleString('es-ES')}
-                  </p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Entradas vendidas total</p>
+              <p className="text-2xl font-bold">
+                {editionSummary.reduce((acc, e) => acc + e.tickets, 0).toLocaleString('es-ES')}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">Total histórico</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Crecimiento Medio</p>
-                  <p className="text-2xl font-bold">+23%</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-success" />
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-success/10">
+                  <TrendingUp className="h-4 w-4 text-success" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Año sobre año</p>
+              <p className="text-2xl font-bold">+23%</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Crecimiento medio</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Mejor Edición</p>
-                  <p className="text-2xl font-bold">2024</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-accent/50 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-accent-foreground" />
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-accent/20">
+                  <Calendar className="h-4 w-4 text-accent-foreground" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">42.800 asistentes</p>
+              <p className="text-2xl font-bold">2024</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Mejor edición</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Ingresos Totales</p>
-                  <p className="text-2xl font-bold">€1.68M</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
-                  <Euro className="h-5 w-5 text-secondary-foreground" />
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-secondary">
+                  <Euro className="h-4 w-4 text-secondary-foreground" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Acumulado 4 ediciones</p>
+              <p className="text-2xl font-bold">€1.68M</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Ingresos totales</p>
             </CardContent>
           </Card>
         </div>

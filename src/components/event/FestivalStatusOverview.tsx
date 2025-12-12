@@ -96,10 +96,10 @@ const FestivalStatusOverview = () => {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 px-4 pt-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold">Estado General del Festival</CardTitle>
-          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full ${overallConfig.bg}`}>
+          <CardTitle className="text-sm font-semibold text-foreground">Estado General del Festival</CardTitle>
+          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${overallConfig.bg}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${overallConfig.dot} animate-pulse`} />
             <span className={`text-[10px] font-medium ${overallConfig.color}`}>
               {overallStatus === "good" ? "Óptimo" : overallStatus === "warning" ? "Atención" : "Crítico"}
@@ -107,7 +107,7 @@ const FestivalStatusOverview = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="px-4 pb-3 pt-0">
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
           {statusItems.map((item) => {
             const config = getStatusConfig(item.status);
@@ -116,21 +116,21 @@ const FestivalStatusOverview = () => {
             return (
               <div 
                 key={item.label} 
-                className={`flex items-center gap-2 p-2 rounded-md border ${
-                  item.status === "critical" ? "border-danger/30 bg-danger/5" :
-                  item.status === "warning" ? "border-warning/30 bg-warning/5" :
-                  "border-border bg-card"
+                className={`flex items-center gap-2 p-2 rounded-md border transition-colors ${
+                  item.status === "critical" ? "border-danger/40 bg-danger/5" :
+                  item.status === "warning" ? "border-warning/40 bg-warning/5" :
+                  "border-border/50 bg-card hover:bg-muted/30"
                 }`}
               >
-                <div className={`p-1 rounded ${config.bg}`}>
-                  <ItemIcon className={`h-3 w-3 ${config.color}`} />
+                <div className={`p-1.5 rounded-md ${config.bg}`}>
+                  <ItemIcon className={`h-3.5 w-3.5 ${config.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-medium truncate">{item.label}</span>
-                    <div className={`w-1 h-1 rounded-full ${config.dot}`} />
+                    <span className="text-[11px] font-medium text-foreground truncate">{item.label}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${config.dot}`} />
                   </div>
-                  <p className="text-[9px] text-muted-foreground truncate">{item.detail}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{item.detail}</p>
                 </div>
               </div>
             );
