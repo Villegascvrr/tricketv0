@@ -15,15 +15,13 @@ const Settings = () => {
         <PageBreadcrumb items={[{ label: "Configuración" }]} />
         
         {/* Header */}
-        <div className="flex items-center gap-2">
-          <SettingsIcon className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-3 mb-1">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <SettingsIcon className="h-4 w-4 text-primary" />
+          </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">
-              Configuración
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Gestiona las preferencias globales de tu cuenta
-            </p>
+            <h1 className="text-lg font-bold text-foreground">Configuración</h1>
+            <p className="text-xs text-muted-foreground">Gestiona las preferencias globales de tu cuenta</p>
           </div>
         </div>
 

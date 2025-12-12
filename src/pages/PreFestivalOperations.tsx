@@ -259,82 +259,68 @@ const PreFestivalOperations = () => {
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Pre-Festival" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center mb-1">
           <div>
-            <h1 className="text-xl font-bold text-foreground mb-0.5">
-              Operaciones Pre-Festival
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Gestión de producción, proveedores y logística previa al evento
-            </p>
+            <h1 className="text-lg font-bold text-foreground">Operaciones Pre-Festival</h1>
+            <p className="text-xs text-muted-foreground">Gestión de producción, proveedores y logística previa al evento</p>
           </div>
-          <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
-            <Calendar className="h-3.5 w-3.5" />
+          <Badge variant="secondary" className="gap-1.5 text-xs">
+            <Calendar className="h-3 w-3" />
             112 días para el festival
           </Badge>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="border-2">
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Staff Confirmado</p>
-                  <p className="text-2xl font-bold">{totalStaffConfirmed}/{totalStaffRequired}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <Progress value={(totalStaffConfirmed / totalStaffRequired) * 100} className="h-1.5 mt-2" />
+              <p className="text-2xl font-bold">{totalStaffConfirmed}/{totalStaffRequired}</p>
+              <Progress value={(totalStaffConfirmed / totalStaffRequired) * 100} className="h-1 mt-2" />
+              <p className="text-xs text-muted-foreground mt-1">Staff confirmado</p>
             </CardContent>
           </Card>
           
-          <Card className="border-2">
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Presupuesto Ejecutado</p>
-                  <p className="text-2xl font-bold">€{(totalPaid / 1000).toFixed(0)}K</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <Euro className="h-5 w-5 text-success" />
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-success/10">
+                  <Euro className="h-4 w-4 text-success" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                de €{(totalBudget / 1000).toFixed(0)}K total ({((totalPaid / totalBudget) * 100).toFixed(0)}%)
+              <p className="text-2xl font-bold">€{(totalPaid / 1000).toFixed(0)}K</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                de €{(totalBudget / 1000).toFixed(0)}K ({((totalPaid / totalBudget) * 100).toFixed(0)}%)
               </p>
             </CardContent>
           </Card>
           
-          <Card className="border-2">
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Checklist Pre-Prod</p>
-                  <p className="text-2xl font-bold">{checklistCompleted}/{preProductionChecklist.length}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-accent/50 flex items-center justify-center">
-                  <ClipboardList className="h-5 w-5 text-accent-foreground" />
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-accent/20">
+                  <ClipboardList className="h-4 w-4 text-accent-foreground" />
                 </div>
               </div>
-              <Progress value={(checklistCompleted / preProductionChecklist.length) * 100} className="h-1.5 mt-2" />
+              <p className="text-2xl font-bold">{checklistCompleted}/{preProductionChecklist.length}</p>
+              <Progress value={(checklistCompleted / preProductionChecklist.length) * 100} className="h-1 mt-2" />
+              <p className="text-xs text-muted-foreground mt-1">Checklist pre-prod</p>
             </CardContent>
           </Card>
           
-          <Card className="border-2 border-warning/30">
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Bloqueos Activos</p>
-                  <p className="text-2xl font-bold text-warning">{preEventIssues.filter(i => i.status !== 'resolved').length}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-warning" />
+          <Card className="border-warning/30">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <AlertCircle className="h-4 w-4 text-warning" />
                 </div>
               </div>
-              <p className="text-xs text-warning mt-2">Requieren atención</p>
+              <p className="text-2xl font-bold text-warning">{preEventIssues.filter(i => i.status !== 'resolved').length}</p>
+              <p className="text-xs text-warning mt-1">Bloqueos activos</p>
             </CardContent>
           </Card>
         </div>

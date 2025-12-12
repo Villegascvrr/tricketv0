@@ -131,26 +131,20 @@ const Team = () => {
         <PageBreadcrumb items={[{ label: "Equipo & Permisos" }]} />
         
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">
-              Equipo & Permisos
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Gestiona el equipo del festival y configura los permisos de acceso
-            </p>
-          </div>
+        <div className="mb-1">
+          <h1 className="text-lg font-bold text-foreground">Equipo & Permisos</h1>
+          <p className="text-xs text-muted-foreground">Gestiona el equipo del festival y configura los permisos de acceso</p>
         </div>
 
         {/* Tabs for main sections */}
-        <Tabs defaultValue="members" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="members" className="gap-2">
-              <Users className="h-4 w-4" />
+        <Tabs defaultValue="members" className="space-y-4">
+          <TabsList className="grid w-full max-w-sm grid-cols-2">
+            <TabsTrigger value="members" className="gap-1.5 text-xs">
+              <Users className="h-3.5 w-3.5" />
               Miembros del equipo
             </TabsTrigger>
-            <TabsTrigger value="roles" className="gap-2">
-              <Shield className="h-4 w-4" />
+            <TabsTrigger value="roles" className="gap-1.5 text-xs">
+              <Shield className="h-3.5 w-3.5" />
               Roles y permisos
             </TabsTrigger>
           </TabsList>
@@ -158,50 +152,50 @@ const Team = () => {
           {/* Members Tab */}
           <TabsContent value="members" className="space-y-4">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total miembros</p>
-                    <p className="text-2xl font-bold">{teamMembers.length}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                </div>
+                  <p className="text-2xl font-bold">{teamMembers.length}</p>
+                  <p className="text-xs text-muted-foreground">Total miembros</p>
+                </CardContent>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Activos</p>
-                    <p className="text-2xl font-bold text-emerald-500">{activeMembers}</p>
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-success/10">
+                      <Check className="h-4 w-4 text-success" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-emerald-500/10">
-                    <Check className="h-5 w-5 text-emerald-500" />
-                  </div>
-                </div>
+                  <p className="text-2xl font-bold text-success">{activeMembers}</p>
+                  <p className="text-xs text-muted-foreground">Activos</p>
+                </CardContent>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Nuevos este mes</p>
-                    <p className="text-2xl font-bold text-blue-500">+2</p>
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-accent/20">
+                      <UserPlus className="h-4 w-4 text-accent-foreground" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-blue-500/10">
-                    <UserPlus className="h-5 w-5 text-blue-500" />
-                  </div>
-                </div>
+                  <p className="text-2xl font-bold text-accent-foreground">+2</p>
+                  <p className="text-xs text-muted-foreground">Nuevos este mes</p>
+                </CardContent>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Roles activos</p>
-                    <p className="text-2xl font-bold text-purple-500">{uniqueRoles}</p>
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-secondary">
+                      <Shield className="h-4 w-4 text-secondary-foreground" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-purple-500/10">
-                    <Shield className="h-5 w-5 text-purple-500" />
-                  </div>
-                </div>
+                  <p className="text-2xl font-bold">{uniqueRoles}</p>
+                  <p className="text-xs text-muted-foreground">Roles activos</p>
+                </CardContent>
               </Card>
             </div>
 

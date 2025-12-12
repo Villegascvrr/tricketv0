@@ -9,33 +9,33 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export interface BreadcrumbItem {
+export interface BreadcrumbItemType {
   label: string;
   href?: string;
 }
 
 interface PageBreadcrumbProps {
-  items: BreadcrumbItem[];
+  items: BreadcrumbItemType[];
 }
 
 const PageBreadcrumb = ({ items }: PageBreadcrumbProps) => {
   return (
-    <Breadcrumb className="mb-4">
-      <BreadcrumbList>
+    <Breadcrumb className="mb-3">
+      <BreadcrumbList className="text-xs">
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to="/dashboard" className="flex items-center gap-1.5 text-xs">
-              <Home className="h-3.5 w-3.5" />
-              Inicio
+            <Link to="/dashboard" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="h-3 w-3" />
+              <span>Inicio</span>
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         
-        <BreadcrumbSeparator />
+        <BreadcrumbSeparator className="text-muted-foreground/50" />
         
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to="/dashboard" className="text-xs">
+            <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
               Primaverando 2025
             </Link>
           </BreadcrumbLink>
@@ -43,15 +43,15 @@ const PageBreadcrumb = ({ items }: PageBreadcrumbProps) => {
 
         {items.map((item, index) => (
           <span key={index} className="contents">
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="text-muted-foreground/50" />
             <BreadcrumbItem>
               {index === items.length - 1 ? (
-                <BreadcrumbPage className="text-xs font-medium">
+                <BreadcrumbPage className="font-medium text-foreground">
                   {item.label}
                 </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link to={item.href || "#"} className="text-xs">
+                  <Link to={item.href || "#"} className="text-muted-foreground hover:text-foreground transition-colors">
                     {item.label}
                   </Link>
                 </BreadcrumbLink>

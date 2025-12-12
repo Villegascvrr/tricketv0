@@ -12,19 +12,15 @@ const Integrations = () => {
         <PageBreadcrumb items={[{ label: "Integraciones" }]} />
         
         {/* Header */}
-        <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5">
-            Integraciones
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Gestiona las conexiones con ticketeras y fuentes de datos externas
-          </p>
+        <div className="mb-1">
+          <h1 className="text-lg font-bold text-foreground">Integraciones</h1>
+          <p className="text-xs text-muted-foreground">Gestiona las conexiones con ticketeras y fuentes de datos externas</p>
         </div>
 
         {/* Ticketing Providers */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Ticketeras</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Ticketeras</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               {
                 name: "Ticketmaster",
@@ -99,8 +95,8 @@ const Integrations = () => {
 
         {/* Marketing & Ads Integrations */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Marketing & Publicidad</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Marketing & Publicidad</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -174,8 +170,8 @@ const Integrations = () => {
 
         {/* Email Marketing */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Email Marketing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Email Marketing</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -246,8 +242,8 @@ const Integrations = () => {
 
         {/* UTM & Tracking */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Tracking & Atribución</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Tracking & Atribución</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -307,8 +303,8 @@ const Integrations = () => {
 
         {/* Webhooks */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Otras Integraciones</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Otras Integraciones</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">

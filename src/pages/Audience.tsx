@@ -129,96 +129,88 @@ const Audience = () => {
         <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
         
         {/* Header */}
-        <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5">
-            Público y Audiencia
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Perfil demográfico y análisis del público
-          </p>
+        <div className="mb-1">
+          <h1 className="text-lg font-bold text-foreground">Público y Audiencia</h1>
+          <p className="text-xs text-muted-foreground">Perfil demográfico y análisis del público</p>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription>Asistentes Únicos</CardDescription>
-                <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{festivalData.overview.entradasVendidas.toLocaleString('es-ES')}</div>
-              <p className="text-xs text-muted-foreground mt-1">Compradores únicos</p>
+              <div className="text-2xl font-bold">{festivalData.overview.entradasVendidas.toLocaleString('es-ES')}</div>
+              <p className="text-xs text-muted-foreground mt-0.5">Asistentes únicos</p>
             </CardContent>
           </Card>
 
-          <Card className="border-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription>Edad Media</CardDescription>
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-accent/20">
+                  <UserCheck className="h-4 w-4 text-accent-foreground" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{avgAge} años</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-2xl font-bold">{avgAge} años</div>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {((ageData[0].value + ageData[1].value) / totalSample * 100).toFixed(0)}% entre 18-25
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription>Origen Principal</CardDescription>
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-secondary">
+                  <MapPin className="h-4 w-4 text-secondary-foreground" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{audiencia.provincias[0].nombre}</div>
-              <p className="text-xs text-muted-foreground mt-1">{provinceData[0].percent}% del público</p>
+              <div className="text-2xl font-bold">{audiencia.provincias[0].nombre}</div>
+              <p className="text-xs text-muted-foreground mt-0.5">{provinceData[0].percent}% del público</p>
             </CardContent>
           </Card>
 
-          <Card className="border-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription>Recurrentes</CardDescription>
-                <Heart className="h-4 w-4 text-muted-foreground" />
+          <Card>
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 rounded-lg bg-success/10">
+                  <Heart className="h-4 w-4 text-success" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">38%</div>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">+12% vs 2024</p>
+              <div className="text-2xl font-bold">38%</div>
+              <p className="text-xs text-success mt-0.5">+12% vs 2024</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Charts Row 1: Province and City */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Province Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
                 Distribución por Provincia
               </CardTitle>
-              <CardDescription>Origen geográfico de los asistentes</CardDescription>
+              <CardDescription className="text-xs">Origen geográfico de los asistentes</CardDescription>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={provinceData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" className="text-xs" />
-                  <YAxis dataKey="name" type="category" width={80} className="text-xs" />
+            <CardContent className="pt-0">
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={provinceData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip 
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-popover border rounded-lg p-2 shadow-lg">
+                          <div className="bg-popover border rounded-md p-2 shadow-lg text-xs">
                             <p className="font-medium">{payload[0].payload.name}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground">
                               {payload[0].value} asistentes ({payload[0].payload.percent}%)
                             </p>
                           </div>
