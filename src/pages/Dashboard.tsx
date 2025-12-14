@@ -14,6 +14,7 @@ import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer"
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
 import FestivalStatusOverview from "@/components/event/FestivalStatusOverview";
+import { TodayQuickView } from "@/components/event/TodayQuickView";
 import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 
@@ -116,6 +117,12 @@ const Dashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 space-y-4">
+        {/* Today's Quick View - 2 minute check-in */}
+        <TodayQuickView 
+          onOpenRecommendations={() => setDrawerOpen(true)} 
+          onOpenChat={() => setChatOpen(true)} 
+        />
+
         {/* Festival Status Overview */}
         <FestivalStatusOverview />
 
