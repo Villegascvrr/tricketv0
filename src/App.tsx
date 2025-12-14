@@ -17,6 +17,7 @@ import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import ScenarioPlanner from "./pages/ScenarioPlanner";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/AppSidebar";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
@@ -164,6 +165,16 @@ const App = () => (
                 element={
                   <AppLayout>
                     <Settings />
+                  </AppLayout>
+                }
+              />
+
+              {/* Mi Perfil */}
+              <Route
+                path="/profile"
+                element={
+                  <AppLayout>
+                    <Profile />
                   </AppLayout>
                 }
               />
