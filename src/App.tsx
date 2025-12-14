@@ -20,6 +20,7 @@ import ScenarioPlanner from "./pages/ScenarioPlanner";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/AppSidebar";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -28,7 +29,7 @@ const queryClient = new QueryClient();
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider defaultOpen={true}>
     <AppSidebar />
-    <main className="flex-1 min-w-0 overflow-auto">{children}</main>
+    <ScrollToTop>{children}</ScrollToTop>
   </SidebarProvider>
 );
 
