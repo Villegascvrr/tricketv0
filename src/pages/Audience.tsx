@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Users, 
   MapPin, 
@@ -16,6 +17,7 @@ import {
   Ticket,
   Euro,
   ChevronRight,
+  ChevronDown,
   Sparkles
 } from "lucide-react";
 import { festivalData } from "@/data/festivalData";
@@ -155,6 +157,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 const Audience = () => {
   const { audiencia, overview } = festivalData;
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  const [segmentsOpen, setSegmentsOpen] = useState(false);
   
   const totalAsistentes = overview.entradasVendidas;
 
@@ -258,26 +261,33 @@ const Audience = () => {
           </Card>
         </div>
 
-        {/* Actionable Segments - Main Section */}
-        <Card className="border-2 border-primary/20">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" />
-                  Segmentos Accionables
-                </CardTitle>
-                <CardDescription className="text-[11px]">Grupos definidos con acción concreta y potencial medible</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">Alto</Badge>
-                <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/30">Medio</Badge>
-                <Badge variant="outline" className="text-[10px] bg-muted text-muted-foreground">Bajo</Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+        {/* Actionable Segments - Collapsible Section */}
+        <Collapsible open={segmentsOpen} onOpenChange={setSegmentsOpen}>
+          <Card className="border-2 border-primary/20">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${segmentsOpen ? 'rotate-0' : '-rotate-90'}`} />
+                    <div>
+                      <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-primary" />
+                        Segmentos Accionables
+                      </CardTitle>
+                      <CardDescription className="text-[11px]">Grupos definidos con acción concreta y potencial medible</CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">Alto</Badge>
+                    <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/30">Medio</Badge>
+                    <Badge variant="outline" className="text-[10px] bg-muted text-muted-foreground">Bajo</Badge>
+                  </div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="space-y-2">
               {actionableSegments.map((segment) => {
                 const IconComponent = segment.icon;
                 const isSelected = selectedSegment === segment.id;
@@ -378,7 +388,9 @@ const Audience = () => {
               })}
             </div>
           </CardContent>
-        </Card>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
 
         {/* Charts Row - Province and Age */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
