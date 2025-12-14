@@ -87,18 +87,20 @@ const mainItems = [
 
 const operationsItems = [
   {
-    title: "Operaciones Pre-Festival",
+    title: "Pre-Festival",
     url: "/operations/pre-festival",
     icon: HardHat,
-    description: "Producción, proveedores, logística"
+    description: "Tareas y preparación"
   },
   {
-    title: "Operaciones Día del Festival",
+    title: "Día del Festival",
     url: "/operations/event-day",
     icon: Radio,
-    description: "Control en vivo, incidencias"
+    description: "Control en vivo"
   }
 ];
+
+// Operations items moved above mainItems
 
 const secondaryItems = [
   {
