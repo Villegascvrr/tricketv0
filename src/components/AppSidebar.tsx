@@ -70,7 +70,7 @@ const mainItemsAfterOps = [
     icon: Users2
   },
   {
-    title: "Marketing & Campañas",
+    title: "Marketing",
     url: "/marketing",
     icon: Megaphone
   },
@@ -85,7 +85,7 @@ const mainItemsAfterOps = [
     icon: FlaskConical
   },
   {
-    title: "Histórico & Comparativas",
+    title: "Histórico",
     url: "/historical",
     icon: History
   }
@@ -110,7 +110,7 @@ const operationsItems = [
 
 const secondaryItems = [
   {
-    title: "Equipo & Permisos",
+    title: "Equipo",
     url: "/team",
     icon: Users
   }, 
@@ -208,7 +208,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-52")}>
+    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-56")}>
       <SidebarHeader className="border-b border-sidebar-border px-3 py-2">
         <div className="flex items-center justify-between">
           {!collapsed && (
