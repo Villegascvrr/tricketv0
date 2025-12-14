@@ -2,63 +2,195 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { useState, useMemo } from "react";
 import { 
   TrendingUp, 
   TrendingDown, 
-  DollarSign, 
+  Euro, 
   Megaphone, 
   Calendar, 
   Target,
   ArrowRight,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Ticket,
+  Users,
+  Layers,
+  Zap,
+  BarChart3,
+  CheckCircle2,
+  AlertTriangle
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { festivalData } from "@/data/festivalData";
 
 const ScenarioPlanner = () => {
-  // Pricing scenario
-  const [priceChange, setPriceChange] = useState([0]);
-  const basePrice = 55;
-  const baseTickets = 12500;
-  
-  // Campaign scenario
-  const [campaignBudget, setCampaignBudget] = useState([5000]);
-  const [campaignDuration, setCampaignDuration] = useState([7]);
-  
-  // Prediction scenario
-  const [daysRemaining, setDaysRemaining] = useState([30]);
-  const [currentSales, setCurrentSales] = useState([8500]);
-  const targetSales = 15000;
+  // Base data from festival
+  const { overview, aforoTotal, precios, zones } = festivalData;
+  const currentTickets = overview.entradasVendidas;
+  const currentRevenue = overview.ingresosTotales;
+  const currentOccupancy = overview.ocupacion * 100;
 
-  // Calculate impacts (simulated)
-  const priceImpact = {
-    newPrice: basePrice * (1 + priceChange[0] / 100),
-    ticketChange: Math.round(baseTickets * (-0.8 * priceChange[0] / 100)),
-    revenueChange: Math.round(basePrice * baseTickets * (priceChange[0] / 100) * (1 - 0.3 * Math.abs(priceChange[0]) / 100)),
-    elasticity: priceChange[0] > 0 ? "negativa" : "positiva"
+  // Festival date calculations
+  const festivalDate = new Date('2025-03-29');
+  const today = new Date();
+  const daysRemaining = Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  // ========== PRICE ADJUSTMENTS BY TICKET TYPE ==========
+  const [generalPriceChange, setGeneralPriceChange] = useState([0]);
+  const [vipPriceChange, setVipPriceChange] = useState([0]);
+  const [earlyBirdPriceChange, setEarlyBirdPriceChange] = useState([0]);
+
+  // ========== CAMPAIGN ACTIVATION ==========
+  const [campaigns, setCampaigns] = useState({
+    blackFriday: false,
+    lastMinute: false,
+    influencer: false,
+    localMedia: false
+  });
+
+  // ========== PHASE RELEASE ==========
+  const [newPhase, setNewPhase] = useState({
+    active: false,
+    tickets: 1000,
+    price: precios.general
+  });
+  const [phaseTickets, setPhaseTickets] = useState([1000]);
+
+  // ========== ZONE CAPACITY INCREASE ==========
+  const [zoneCapacityIncrease, setZoneCapacityIncrease] = useState({
+    pista: 0,
+    gradas: 0,
+    vip: 0
+  });
+  const [pistaIncrease, setPistaIncrease] = useState([0]);
+  const [gradasIncrease, setGradasIncrease] = useState([0]);
+  const [vipIncrease, setVipIncrease] = useState([0]);
+
+  // ========== IMPACT CALCULATIONS ==========
+  const impactCalculations = useMemo(() => {
+    // Price elasticity simulation (simplified)
+    const generalElasticity = -0.8; // 1% price increase = 0.8% demand decrease
+    const vipElasticity = -0.5; // VIP is less elastic
+    const earlyBirdElasticity = -1.2; // Early bird is more elastic
+
+    // Current ticket distribution (estimated)
+    const generalTickets = Math.floor(currentTickets * 0.7);
+    const vipTickets = Math.floor(currentTickets * 0.12);
+    const earlyBirdTickets = Math.floor(currentTickets * 0.18);
+
+    // Price impact on sales
+    const generalTicketDelta = Math.round(generalTickets * generalElasticity * (generalPriceChange[0] / 100) * 0.3);
+    const vipTicketDelta = Math.round(vipTickets * vipElasticity * (vipPriceChange[0] / 100) * 0.3);
+    const earlyBirdTicketDelta = Math.round(earlyBirdTickets * earlyBirdElasticity * (earlyBirdPriceChange[0] / 100) * 0.3);
+    
+    // Price impact on revenue
+    const newGeneralPrice = precios.general * (1 + generalPriceChange[0] / 100);
+    const newVipPrice = precios.vip * (1 + vipPriceChange[0] / 100);
+    const newEarlyBirdPrice = precios.anticipada * (1 + earlyBirdPriceChange[0] / 100);
+
+    const priceRevenueDelta = 
+      (generalTickets + generalTicketDelta) * newGeneralPrice - generalTickets * precios.general +
+      (vipTickets + vipTicketDelta) * newVipPrice - vipTickets * precios.vip +
+      (earlyBirdTickets + earlyBirdTicketDelta) * newEarlyBirdPrice - earlyBirdTickets * precios.anticipada;
+
+    const priceTicketDelta = generalTicketDelta + vipTicketDelta + earlyBirdTicketDelta;
+
+    // Campaign impact
+    const campaignImpacts = {
+      blackFriday: { tickets: 450, revenue: 450 * 52, cost: 2000 },
+      lastMinute: { tickets: 280, revenue: 280 * 60, cost: 1500 },
+      influencer: { tickets: 180, revenue: 180 * 55, cost: 3500 },
+      localMedia: { tickets: 120, revenue: 120 * 55, cost: 800 }
+    };
+
+    let campaignTicketDelta = 0;
+    let campaignRevenueDelta = 0;
+    let campaignCost = 0;
+
+    Object.entries(campaigns).forEach(([key, active]) => {
+      if (active) {
+        const impact = campaignImpacts[key as keyof typeof campaignImpacts];
+        campaignTicketDelta += impact.tickets;
+        campaignRevenueDelta += impact.revenue;
+        campaignCost += impact.cost;
+      }
+    });
+
+    // Phase release impact
+    const phaseTicketDelta = newPhase.active ? phaseTickets[0] : 0;
+    const phaseRevenueDelta = phaseTicketDelta * precios.general;
+    const phaseCapacityDelta = phaseTicketDelta; // New phase adds to available capacity
+
+    // Zone capacity impact (only affects available inventory, not immediate sales)
+    const totalZoneIncrease = pistaIncrease[0] + gradasIncrease[0] + vipIncrease[0];
+    // Assume 30% of new capacity sells in remaining time
+    const zoneTicketDelta = Math.round(totalZoneIncrease * 0.3);
+    const zoneRevenueDelta = zoneTicketDelta * precios.general;
+
+    // TOTALS
+    const totalTicketDelta = priceTicketDelta + campaignTicketDelta + phaseTicketDelta + zoneTicketDelta;
+    const totalRevenueDelta = priceRevenueDelta + campaignRevenueDelta + phaseRevenueDelta + zoneRevenueDelta - campaignCost;
+    const newTotalCapacity = aforoTotal + phaseCapacityDelta + totalZoneIncrease;
+    const newTotalTickets = currentTickets + totalTicketDelta;
+    const newOccupancy = (newTotalTickets / newTotalCapacity) * 100;
+
+    return {
+      price: {
+        ticketDelta: priceTicketDelta,
+        revenueDelta: priceRevenueDelta,
+        newPrices: { general: newGeneralPrice, vip: newVipPrice, earlyBird: newEarlyBirdPrice }
+      },
+      campaigns: {
+        ticketDelta: campaignTicketDelta,
+        revenueDelta: campaignRevenueDelta,
+        cost: campaignCost,
+        netRevenue: campaignRevenueDelta - campaignCost
+      },
+      phase: {
+        ticketDelta: phaseTicketDelta,
+        revenueDelta: phaseRevenueDelta,
+        capacityDelta: phaseCapacityDelta
+      },
+      zones: {
+        ticketDelta: zoneTicketDelta,
+        revenueDelta: zoneRevenueDelta,
+        capacityDelta: totalZoneIncrease
+      },
+      totals: {
+        ticketDelta: totalTicketDelta,
+        revenueDelta: totalRevenueDelta,
+        newTickets: newTotalTickets,
+        newRevenue: currentRevenue + totalRevenueDelta,
+        newCapacity: newTotalCapacity,
+        newOccupancy: newOccupancy,
+        occupancyDelta: newOccupancy - currentOccupancy
+      }
+    };
+  }, [generalPriceChange, vipPriceChange, earlyBirdPriceChange, campaigns, newPhase.active, phaseTickets, pistaIncrease, gradasIncrease, vipIncrease, currentTickets, currentRevenue, currentOccupancy, aforoTotal, precios]);
+
+  const resetAll = () => {
+    setGeneralPriceChange([0]);
+    setVipPriceChange([0]);
+    setEarlyBirdPriceChange([0]);
+    setCampaigns({ blackFriday: false, lastMinute: false, influencer: false, localMedia: false });
+    setNewPhase({ active: false, tickets: 1000, price: precios.general });
+    setPhaseTickets([1000]);
+    setPistaIncrease([0]);
+    setGradasIncrease([0]);
+    setVipIncrease([0]);
   };
 
-  const campaignImpact = {
-    estimatedReach: Math.round(campaignBudget[0] * 150),
-    estimatedClicks: Math.round(campaignBudget[0] * 8),
-    estimatedConversions: Math.round(campaignBudget[0] * 0.12 * campaignDuration[0] / 7),
-    estimatedRevenue: Math.round(campaignBudget[0] * 0.12 * campaignDuration[0] / 7 * basePrice),
-    roi: ((campaignBudget[0] * 0.12 * campaignDuration[0] / 7 * basePrice) / campaignBudget[0] * 100 - 100).toFixed(0)
-  };
-
-  const predictionImpact = {
-    dailyRate: Math.round(currentSales[0] / (60 - daysRemaining[0])),
-    projectedFinal: Math.round(currentSales[0] + (currentSales[0] / (60 - daysRemaining[0])) * daysRemaining[0]),
-    gapToTarget: targetSales - Math.round(currentSales[0] + (currentSales[0] / (60 - daysRemaining[0])) * daysRemaining[0]),
-    requiredDailyRate: Math.round((targetSales - currentSales[0]) / daysRemaining[0]),
-    probability: Math.min(95, Math.max(5, Math.round(100 - Math.abs(targetSales - (currentSales[0] + (currentSales[0] / (60 - daysRemaining[0])) * daysRemaining[0])) / targetSales * 100)))
-  };
+  const hasChanges = generalPriceChange[0] !== 0 || vipPriceChange[0] !== 0 || earlyBirdPriceChange[0] !== 0 ||
+    Object.values(campaigns).some(v => v) || newPhase.active ||
+    pistaIncrease[0] > 0 || gradasIncrease[0] > 0 || vipIncrease[0] > 0;
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-4">
-        <PageBreadcrumb items={[{ label: "Scenario Planner" }]} />
+        <PageBreadcrumb items={[{ label: "Simulador de Escenarios" }]} />
         
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -68,394 +200,523 @@ const ScenarioPlanner = () => {
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
               <h1 className="text-xl font-bold text-foreground">
-                Scenario Planner
+                Simulador de Escenarios
               </h1>
-              <Badge variant="secondary" className="ml-1 text-[10px]">Beta</Badge>
+              <Badge variant="outline" className="ml-1 text-[10px]">Primaverando 2025</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Simula escenarios y visualiza el impacto en tus ventas y revenue
+              Simula cambios en precios, campañas, fases y aforo. Visualiza el impacto antes de decidir.
             </p>
           </div>
-          <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1.5 h-7 text-xs"
+            onClick={resetAll}
+            disabled={!hasChanges}
+          >
             <RefreshCw className="h-3 w-3" />
             Resetear
           </Button>
         </div>
 
-        {/* Pricing Scenario */}
-        <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-          <CardHeader>
+        {/* Impact Summary - Always visible */}
+        <Card className={`border-2 ${hasChanges ? 'border-primary bg-gradient-to-br from-primary/5 to-primary/10' : 'border-muted'}`}>
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-emerald-500/10">
-                  <DollarSign className="h-6 w-6 text-emerald-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl">Ajuste de Precios</CardTitle>
-                  <CardDescription>
-                    ¿Qué pasaría si modificamos el precio medio de entrada?
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant={priceChange[0] > 0 ? "default" : priceChange[0] < 0 ? "secondary" : "outline"}>
-                {priceChange[0] > 0 ? "+" : ""}{priceChange[0]}%
-              </Badge>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                Impacto Estimado del Escenario
+              </CardTitle>
+              {hasChanges && (
+                <Badge variant="default" className="text-[10px]">
+                  {Object.values(campaigns).filter(v => v).length + (newPhase.active ? 1 : 0) + 
+                   (generalPriceChange[0] !== 0 ? 1 : 0) + (vipPriceChange[0] !== 0 ? 1 : 0) + (earlyBirdPriceChange[0] !== 0 ? 1 : 0) +
+                   (pistaIncrease[0] > 0 ? 1 : 0) + (gradasIncrease[0] > 0 ? 1 : 0) + (vipIncrease[0] > 0 ? 1 : 0)} cambios activos
+                </Badge>
+              )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Variación de precio</span>
-                <span className="font-medium">{priceChange[0] > 0 ? "+" : ""}{priceChange[0]}%</span>
+          <CardContent>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+              {/* Current vs Projected */}
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Ventas Actuales</p>
+                <p className="text-lg font-bold">{currentTickets.toLocaleString('es-ES')}</p>
               </div>
-              <Slider
-                value={priceChange}
-                onValueChange={setPriceChange}
-                min={-30}
-                max={30}
-                step={5}
-                className="py-4"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>-30%</span>
-                <span>0%</span>
-                <span>+30%</span>
+              <div className={`p-3 rounded-lg text-center ${impactCalculations.totals.ticketDelta >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Δ Ventas</p>
+                <p className={`text-lg font-bold ${impactCalculations.totals.ticketDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {impactCalculations.totals.ticketDelta >= 0 ? '+' : ''}{impactCalculations.totals.ticketDelta.toLocaleString('es-ES')}
+                </p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4">
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Precio actual</p>
-                <p className="text-2xl font-bold">€{basePrice}</p>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Ingresos Actuales</p>
+                <p className="text-lg font-bold">€{(currentRevenue / 1000).toFixed(0)}K</p>
               </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Nuevo precio</p>
-                <p className="text-2xl font-bold text-primary">€{priceImpact.newPrice.toFixed(0)}</p>
+              <div className={`p-3 rounded-lg text-center ${impactCalculations.totals.revenueDelta >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Δ Ingresos</p>
+                <p className={`text-lg font-bold ${impactCalculations.totals.revenueDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {impactCalculations.totals.revenueDelta >= 0 ? '+' : ''}€{(impactCalculations.totals.revenueDelta / 1000).toFixed(1)}K
+                </p>
               </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Δ Entradas vendidas</p>
-                <div className="flex items-center justify-center gap-1">
-                  {priceImpact.ticketChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
-                  )}
-                  <p className={`text-2xl font-bold ${priceImpact.ticketChange >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                    {priceImpact.ticketChange >= 0 ? "+" : ""}{priceImpact.ticketChange}
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Ocupación Actual</p>
+                <p className="text-lg font-bold">{currentOccupancy.toFixed(1)}%</p>
               </div>
-              <div className="p-4 rounded-xl bg-primary/10 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Δ Revenue estimado</p>
-                <div className="flex items-center justify-center gap-1">
-                  {priceImpact.revenueChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
-                  )}
-                  <p className={`text-2xl font-bold ${priceImpact.revenueChange >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                    {priceImpact.revenueChange >= 0 ? "+" : ""}€{priceImpact.revenueChange.toLocaleString()}
-                  </p>
-                </div>
+              <div className={`p-3 rounded-lg text-center ${impactCalculations.totals.occupancyDelta >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Δ Ocupación</p>
+                <p className={`text-lg font-bold ${impactCalculations.totals.occupancyDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {impactCalculations.totals.occupancyDelta >= 0 ? '+' : ''}{impactCalculations.totals.occupancyDelta.toFixed(1)}%
+                </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-amber-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Insight del modelo</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    La elasticidad precio-demanda estimada es <strong>{priceImpact.elasticity}</strong>. 
-                    {priceChange[0] > 10 
-                      ? " Un incremento superior al 10% podría reducir significativamente la conversión." 
-                      : priceChange[0] < -10 
-                        ? " Una bajada agresiva de precio puede no compensarse con volumen adicional."
-                        : " Este rango de ajuste se considera óptimo para el evento."}
-                  </p>
+            {hasChanges && (
+              <div className="mt-4 p-3 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Proyección Final</span>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Entradas totales</p>
+                    <p className="text-xl font-bold">{impactCalculations.totals.newTickets.toLocaleString('es-ES')}</p>
+                    <Progress value={(impactCalculations.totals.newTickets / impactCalculations.totals.newCapacity) * 100} className="h-1.5 mt-1" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ingresos totales</p>
+                    <p className="text-xl font-bold">€{(impactCalculations.totals.newRevenue / 1000).toFixed(0)}K</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ocupación final</p>
+                    <p className="text-xl font-bold">{impactCalculations.totals.newOccupancy.toFixed(1)}%</p>
+                    <p className="text-[10px] text-muted-foreground">de {impactCalculations.totals.newCapacity.toLocaleString('es-ES')} aforo</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Campaign Scenario */}
-        <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-500/10">
-                  <Megaphone className="h-6 w-6 text-blue-500" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* PRICE ADJUSTMENTS */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                  <Euro className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Lanzamiento de Campaña</CardTitle>
-                  <CardDescription>
-                    ¿Cuántas ventas generaría una nueva campaña de marketing?
-                  </CardDescription>
+                  <CardTitle className="text-sm">Ajuste de Precios</CardTitle>
+                  <CardDescription className="text-[11px]">Por tipo de entrada</CardDescription>
                 </div>
               </div>
-              <Badge variant="outline">
-                €{campaignBudget[0].toLocaleString()} · {campaignDuration[0]} días
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* General */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Presupuesto de campaña</span>
-                  <span className="font-medium">€{campaignBudget[0].toLocaleString()}</span>
+                  <div className="flex items-center gap-2">
+                    <Ticket className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>General</span>
+                    <span className="text-xs text-muted-foreground">(€{precios.general})</span>
+                  </div>
+                  <Badge variant={generalPriceChange[0] !== 0 ? "default" : "outline"} className="text-[10px]">
+                    {generalPriceChange[0] > 0 ? '+' : ''}{generalPriceChange[0]}% → €{impactCalculations.price.newPrices.general.toFixed(0)}
+                  </Badge>
                 </div>
                 <Slider
-                  value={campaignBudget}
-                  onValueChange={setCampaignBudget}
-                  min={1000}
-                  max={20000}
-                  step={500}
-                  className="py-4"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>€1.000</span>
-                  <span>€10.000</span>
-                  <span>€20.000</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Duración</span>
-                  <span className="font-medium">{campaignDuration[0]} días</span>
-                </div>
-                <Slider
-                  value={campaignDuration}
-                  onValueChange={setCampaignDuration}
-                  min={3}
+                  value={generalPriceChange}
+                  onValueChange={setGeneralPriceChange}
+                  min={-20}
                   max={30}
-                  step={1}
-                  className="py-4"
+                  step={5}
+                  className="py-2"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>3 días</span>
-                  <span>15 días</span>
-                  <span>30 días</span>
-                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-center gap-4 py-4">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Inversión</p>
-                <p className="text-lg font-bold">€{campaignBudget[0].toLocaleString()}</p>
-              </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Alcance estimado</p>
-                <p className="text-lg font-bold">{campaignImpact.estimatedReach.toLocaleString()}</p>
-              </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Conversiones</p>
-                <p className="text-lg font-bold text-primary">{campaignImpact.estimatedConversions}</p>
-              </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Revenue generado</p>
-                <p className="text-lg font-bold text-emerald-500">€{campaignImpact.estimatedRevenue.toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">CPM estimado</p>
-                <p className="text-xl font-bold">€6.67</p>
-              </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">CTR esperado</p>
-                <p className="text-xl font-bold">1.2%</p>
-              </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Tasa conversión</p>
-                <p className="text-xl font-bold">2.1%</p>
-              </div>
-              <div className="p-4 rounded-xl bg-emerald-500/10 text-center">
-                <p className="text-xs text-muted-foreground mb-1">ROI estimado</p>
-                <p className={`text-xl font-bold ${Number(campaignImpact.roi) > 0 ? "text-emerald-500" : "text-red-500"}`}>
-                  {campaignImpact.roi}%
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-blue-500 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Recomendación</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {Number(campaignImpact.roi) > 100 
-                      ? "Este escenario muestra un ROI muy positivo. Considera aumentar la inversión." 
-                      : Number(campaignImpact.roi) > 0 
-                        ? "El retorno es positivo pero moderado. Optimiza creativos para mejorar conversión."
-                        : "El ROI es negativo. Reduce presupuesto o mejora el targeting."}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Prediction Scenario */}
-        <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-purple-500/10">
-                  <Target className="h-6 w-6 text-purple-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl">Predicción de Ventas</CardTitle>
-                  <CardDescription>
-                    ¿Alcanzaremos el objetivo con el ritmo actual?
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant={predictionImpact.probability >= 70 ? "default" : predictionImpact.probability >= 40 ? "secondary" : "destructive"}>
-                {predictionImpact.probability}% probabilidad
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+              {/* VIP */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Días restantes</span>
-                  <span className="font-medium">{daysRemaining[0]} días</span>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    <span>VIP</span>
+                    <span className="text-xs text-muted-foreground">(€{precios.vip})</span>
+                  </div>
+                  <Badge variant={vipPriceChange[0] !== 0 ? "default" : "outline"} className="text-[10px]">
+                    {vipPriceChange[0] > 0 ? '+' : ''}{vipPriceChange[0]}% → €{impactCalculations.price.newPrices.vip.toFixed(0)}
+                  </Badge>
                 </div>
                 <Slider
-                  value={daysRemaining}
-                  onValueChange={setDaysRemaining}
-                  min={1}
-                  max={60}
-                  step={1}
-                  className="py-4"
+                  value={vipPriceChange}
+                  onValueChange={setVipPriceChange}
+                  min={-20}
+                  max={30}
+                  step={5}
+                  className="py-2"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>1 día</span>
-                  <span>30 días</span>
-                  <span>60 días</span>
+              </div>
+
+              {/* Early Bird */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-3.5 w-3.5 text-blue-500" />
+                    <span>Anticipada</span>
+                    <span className="text-xs text-muted-foreground">(€{precios.anticipada})</span>
+                  </div>
+                  <Badge variant={earlyBirdPriceChange[0] !== 0 ? "default" : "outline"} className="text-[10px]">
+                    {earlyBirdPriceChange[0] > 0 ? '+' : ''}{earlyBirdPriceChange[0]}% → €{impactCalculations.price.newPrices.earlyBird.toFixed(0)}
+                  </Badge>
+                </div>
+                <Slider
+                  value={earlyBirdPriceChange}
+                  onValueChange={setEarlyBirdPriceChange}
+                  min={-20}
+                  max={30}
+                  step={5}
+                  className="py-2"
+                />
+              </div>
+
+              {/* Price Impact Summary */}
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Impacto en ventas</span>
+                  <span className={`font-medium ${impactCalculations.price.ticketDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {impactCalculations.price.ticketDelta >= 0 ? '+' : ''}{impactCalculations.price.ticketDelta} entradas
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Impacto en ingresos</span>
+                  <span className={`font-medium ${impactCalculations.price.revenueDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {impactCalculations.price.revenueDelta >= 0 ? '+' : ''}€{impactCalculations.price.revenueDelta.toLocaleString('es-ES')}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CAMPAIGN ACTIVATION */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-blue-500/10">
+                  <Megaphone className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm">Activar Campañas</CardTitle>
+                  <CardDescription className="text-[11px]">Selecciona las campañas a simular</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Black Friday */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={campaigns.blackFriday}
+                    onCheckedChange={(checked) => setCampaigns(prev => ({ ...prev, blackFriday: checked }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Black Friday Flash</p>
+                    <p className="text-[11px] text-muted-foreground">-15% durante 48h · €2.000 inversión</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-success">+450</p>
+                  <p className="text-[10px] text-muted-foreground">entradas est.</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Last Minute */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={campaigns.lastMinute}
+                    onCheckedChange={(checked) => setCampaigns(prev => ({ ...prev, lastMinute: checked }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Last Minute Push</p>
+                    <p className="text-[11px] text-muted-foreground">Última semana · €1.500 inversión</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-success">+280</p>
+                  <p className="text-[10px] text-muted-foreground">entradas est.</p>
+                </div>
+              </div>
+
+              {/* Influencer */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={campaigns.influencer}
+                    onCheckedChange={(checked) => setCampaigns(prev => ({ ...prev, influencer: checked }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Influencer Collab</p>
+                    <p className="text-[11px] text-muted-foreground">3 influencers locales · €3.500</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-success">+180</p>
+                  <p className="text-[10px] text-muted-foreground">entradas est.</p>
+                </div>
+              </div>
+
+              {/* Local Media */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={campaigns.localMedia}
+                    onCheckedChange={(checked) => setCampaigns(prev => ({ ...prev, localMedia: checked }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Medios Locales</p>
+                    <p className="text-[11px] text-muted-foreground">Radio + prensa Sevilla · €800</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-success">+120</p>
+                  <p className="text-[10px] text-muted-foreground">entradas est.</p>
+                </div>
+              </div>
+
+              {/* Campaign Impact Summary */}
+              <div className="pt-2 border-t">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Ventas actuales</span>
-                  <span className="font-medium">{currentSales[0].toLocaleString()} entradas</span>
+                  <span className="text-muted-foreground">Ventas adicionales</span>
+                  <span className="font-medium text-success">+{impactCalculations.campaigns.ticketDelta} entradas</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Inversión total</span>
+                  <span className="font-medium">€{impactCalculations.campaigns.cost.toLocaleString('es-ES')}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Revenue neto</span>
+                  <span className={`font-medium ${impactCalculations.campaigns.netRevenue >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {impactCalculations.campaigns.netRevenue >= 0 ? '+' : ''}€{impactCalculations.campaigns.netRevenue.toLocaleString('es-ES')}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* PHASE RELEASE */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Layers className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm">Liberar Nueva Fase</CardTitle>
+                  <CardDescription className="text-[11px]">Añadir entradas adicionales al mercado</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={newPhase.active}
+                    onCheckedChange={(checked) => setNewPhase(prev => ({ ...prev, active: checked }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Activar Fase 3</p>
+                    <p className="text-[11px] text-muted-foreground">Liberar nuevas entradas a precio estándar</p>
+                  </div>
+                </div>
+                {newPhase.active && (
+                  <Badge variant="default" className="text-[10px]">Activo</Badge>
+                )}
+              </div>
+
+              {newPhase.active && (
+                <div className="space-y-3 p-3 rounded-lg border bg-card">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Entradas a liberar</span>
+                      <span className="font-medium">{phaseTickets[0].toLocaleString('es-ES')}</span>
+                    </div>
+                    <Slider
+                      value={phaseTickets}
+                      onValueChange={setPhaseTickets}
+                      min={500}
+                      max={3000}
+                      step={100}
+                      className="py-2"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>500</span>
+                      <span>1.500</span>
+                      <span>3.000</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Precio por entrada</span>
+                      <span className="font-medium">€{precios.general}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Ingresos potenciales</span>
+                      <span className="font-medium text-success">+€{(phaseTickets[0] * precios.general).toLocaleString('es-ES')}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!newPhase.active && (
+                <div className="p-3 rounded-lg border border-dashed text-center">
+                  <p className="text-sm text-muted-foreground">Activa para simular liberación de entradas</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ZONE CAPACITY */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-amber-500/10">
+                  <Users className="h-4 w-4 text-amber-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm">Ampliar Aforo por Zona</CardTitle>
+                  <CardDescription className="text-[11px]">Aumentar capacidad en zonas específicas</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Pista */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Pista</span>
+                    <span className="text-xs text-muted-foreground">(actual: {zones[0].aforo.toLocaleString('es-ES')})</span>
+                  </div>
+                  <Badge variant={pistaIncrease[0] > 0 ? "default" : "outline"} className="text-[10px]">
+                    +{pistaIncrease[0].toLocaleString('es-ES')}
+                  </Badge>
                 </div>
                 <Slider
-                  value={currentSales}
-                  onValueChange={setCurrentSales}
-                  min={1000}
-                  max={14000}
+                  value={pistaIncrease}
+                  onValueChange={setPistaIncrease}
+                  min={0}
+                  max={2000}
                   step={100}
-                  className="py-4"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>1.000</span>
-                  <span>7.500</span>
-                  <span>14.000</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Visual progress */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progreso hacia objetivo</span>
-                <span className="font-medium">{currentSales[0].toLocaleString()} / {targetSales.toLocaleString()}</span>
-              </div>
-              <div className="h-4 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-300"
-                  style={{ width: `${Math.min(100, (currentSales[0] / targetSales) * 100)}%` }}
+                  className="py-2"
                 />
               </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0</span>
-                <span className="text-primary font-medium">Actual: {((currentSales[0] / targetSales) * 100).toFixed(0)}%</span>
-                <span>Objetivo: {targetSales.toLocaleString()}</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Ritmo actual</p>
-                <p className="text-xl font-bold">{predictionImpact.dailyRate}/día</p>
+              {/* Gradas */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Gradas</span>
+                    <span className="text-xs text-muted-foreground">(actual: {zones[1].aforo.toLocaleString('es-ES')})</span>
+                  </div>
+                  <Badge variant={gradasIncrease[0] > 0 ? "default" : "outline"} className="text-[10px]">
+                    +{gradasIncrease[0].toLocaleString('es-ES')}
+                  </Badge>
+                </div>
+                <Slider
+                  value={gradasIncrease}
+                  onValueChange={setGradasIncrease}
+                  min={0}
+                  max={1500}
+                  step={100}
+                  className="py-2"
+                />
               </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Proyección final</p>
-                <p className={`text-xl font-bold ${predictionImpact.projectedFinal >= targetSales ? "text-emerald-500" : "text-amber-500"}`}>
-                  {predictionImpact.projectedFinal.toLocaleString()}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-muted/50 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Gap vs objetivo</p>
-                <p className={`text-xl font-bold ${predictionImpact.gapToTarget <= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                  {predictionImpact.gapToTarget <= 0 ? "+" : ""}{Math.abs(predictionImpact.gapToTarget).toLocaleString()}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-purple-500/10 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Ritmo necesario</p>
-                <p className={`text-xl font-bold ${predictionImpact.requiredDailyRate <= predictionImpact.dailyRate ? "text-emerald-500" : "text-amber-500"}`}>
-                  {predictionImpact.requiredDailyRate}/día
-                </p>
-              </div>
-            </div>
 
-            <div className={`p-4 rounded-xl border ${
-              predictionImpact.probability >= 70 
-                ? "bg-emerald-500/10 border-emerald-500/20" 
-                : predictionImpact.probability >= 40 
-                  ? "bg-amber-500/10 border-amber-500/20"
-                  : "bg-red-500/10 border-red-500/20"
-            }`}>
-              <div className="flex items-start gap-3">
-                <Calendar className={`h-5 w-5 mt-0.5 ${
-                  predictionImpact.probability >= 70 
-                    ? "text-emerald-500" 
-                    : predictionImpact.probability >= 40 
-                      ? "text-amber-500"
-                      : "text-red-500"
-                }`} />
-                <div>
-                  <p className={`text-sm font-medium ${
-                    predictionImpact.probability >= 70 
-                      ? "text-emerald-700 dark:text-emerald-400" 
-                      : predictionImpact.probability >= 40 
-                        ? "text-amber-700 dark:text-amber-400"
-                        : "text-red-700 dark:text-red-400"
-                  }`}>
-                    {predictionImpact.probability >= 70 
-                      ? "En camino al objetivo" 
-                      : predictionImpact.probability >= 40 
-                        ? "Objetivo en riesgo"
-                        : "Objetivo comprometido"}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {predictionImpact.probability >= 70 
-                      ? `Con el ritmo actual de ${predictionImpact.dailyRate} ventas/día, superarás el objetivo en ${Math.round((predictionImpact.projectedFinal - targetSales) / predictionImpact.dailyRate)} días antes.`
-                      : predictionImpact.probability >= 40 
-                        ? `Necesitas aumentar el ritmo a ${predictionImpact.requiredDailyRate} ventas/día (+${Math.round((predictionImpact.requiredDailyRate - predictionImpact.dailyRate) / predictionImpact.dailyRate * 100)}%).`
-                        : `El gap de ${Math.abs(predictionImpact.gapToTarget).toLocaleString()} entradas requiere acciones urgentes de marketing.`}
-                  </p>
+              {/* VIP */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Zona VIP</span>
+                    <span className="text-xs text-muted-foreground">(actual: {zones[2].aforo.toLocaleString('es-ES')})</span>
+                  </div>
+                  <Badge variant={vipIncrease[0] > 0 ? "default" : "outline"} className="text-[10px]">
+                    +{vipIncrease[0].toLocaleString('es-ES')}
+                  </Badge>
+                </div>
+                <Slider
+                  value={vipIncrease}
+                  onValueChange={setVipIncrease}
+                  min={0}
+                  max={500}
+                  step={50}
+                  className="py-2"
+                />
+              </div>
+
+              {/* Zone Impact Summary */}
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Incremento de aforo</span>
+                  <span className="font-medium">+{impactCalculations.zones.capacityDelta.toLocaleString('es-ES')}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Ventas estimadas (30%)</span>
+                  <span className="font-medium text-success">+{impactCalculations.zones.ticketDelta} entradas</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Ingresos adicionales</span>
+                  <span className="font-medium text-success">+€{impactCalculations.zones.revenueDelta.toLocaleString('es-ES')}</span>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Decision Helper */}
+        {hasChanges && (
+          <Card className="border-2 border-dashed border-primary/30">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-4">
+                <div className={`p-2 rounded-lg ${impactCalculations.totals.occupancyDelta >= 5 ? 'bg-success/10' : impactCalculations.totals.occupancyDelta >= 0 ? 'bg-amber-500/10' : 'bg-destructive/10'}`}>
+                  {impactCalculations.totals.occupancyDelta >= 5 ? (
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  ) : impactCalculations.totals.occupancyDelta >= 0 ? (
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-destructive" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-1">
+                    {impactCalculations.totals.occupancyDelta >= 5 
+                      ? "Escenario positivo" 
+                      : impactCalculations.totals.occupancyDelta >= 0 
+                        ? "Escenario moderado"
+                        : "Escenario negativo"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {impactCalculations.totals.occupancyDelta >= 5 
+                      ? `Este escenario incrementaría la ocupación en ${impactCalculations.totals.occupancyDelta.toFixed(1)}% y generaría €${(impactCalculations.totals.revenueDelta / 1000).toFixed(1)}K adicionales.`
+                      : impactCalculations.totals.occupancyDelta >= 0 
+                        ? `Los cambios propuestos tendrían un impacto limitado. Considera activar más palancas.`
+                        : `Este escenario reduciría ventas. Revisa los ajustes de precio o activa campañas compensatorias.`}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Quedan</p>
+                  <p className="text-lg font-bold text-primary">{daysRemaining} días</p>
+                  <p className="text-[10px] text-muted-foreground">para el festival</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Footer */}
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <p className="text-sm text-muted-foreground">
-            Las proyecciones se basan en datos históricos y modelos estadísticos. Los resultados reales pueden variar.
+        <div className="flex items-center justify-center pt-2">
+          <p className="text-xs text-muted-foreground text-center">
+            Las proyecciones son estimaciones basadas en elasticidad de demanda y datos históricos. Resultados reales pueden variar.
           </p>
         </div>
       </div>
