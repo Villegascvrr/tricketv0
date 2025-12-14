@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Target, Calendar, Users, Euro, BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Calendar, Users, Euro, BarChart3, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Zap, Calculator } from "lucide-react";
 import { 
   AreaChart, 
   Area, 
@@ -99,6 +99,53 @@ const SalesForecasts = () => {
   const festivalDate = new Date('2025-03-29');
   const today = new Date();
   const daysRemaining = Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // ========== DECISION CALCULATIONS ==========
+  // Target for today calculation (linear projection from sales start)
+  const salesStartDate = new Date('2024-11-01');
+  const totalSalesDays = Math.ceil((festivalDate.getTime() - salesStartDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceLaunch = Math.ceil((today.getTime() - salesStartDate.getTime()) / (1000 * 60 * 60 * 24));
+  const targetOccupancy = 0.85; // 85% target
+  const targetTickets = Math.floor(aforoTotal * targetOccupancy);
+  
+  // Expected tickets sold by today (linear projection)
+  const expectedTicketsToday = Math.floor((daysSinceLaunch / totalSalesDays) * targetTickets);
+  const gapVsTarget = ticketsSold - expectedTicketsToday;
+  const gapPercentage = ((ticketsSold - expectedTicketsToday) / expectedTicketsToday) * 100;
+  
+  // Required daily pace
+  const ticketsNeededToReachTarget = targetTickets - ticketsSold;
+  const requiredDailyPace = Math.ceil(ticketsNeededToReachTarget / daysRemaining);
+  const currentDailyAverage = Math.floor(ticketsSold / daysSinceLaunch);
+  const paceRatio = requiredDailyPace / currentDailyAverage;
+  
+  // Scenarios calculation
+  const scenarios = useMemo(() => {
+    const conservativeRate = currentDailyAverage * 0.8; // 20% lower than current
+    const realisticRate = currentDailyAverage; // Same as current
+    const optimisticRate = currentDailyAverage * 1.3; // 30% higher than current
+    
+    return {
+      conservative: {
+        dailyRate: Math.floor(conservativeRate),
+        finalTickets: ticketsSold + Math.floor(conservativeRate * daysRemaining),
+        finalOccupancy: ((ticketsSold + Math.floor(conservativeRate * daysRemaining)) / aforoTotal) * 100,
+        reachesTarget: (ticketsSold + Math.floor(conservativeRate * daysRemaining)) >= targetTickets
+      },
+      realistic: {
+        dailyRate: Math.floor(realisticRate),
+        finalTickets: ticketsSold + Math.floor(realisticRate * daysRemaining),
+        finalOccupancy: ((ticketsSold + Math.floor(realisticRate * daysRemaining)) / aforoTotal) * 100,
+        reachesTarget: (ticketsSold + Math.floor(realisticRate * daysRemaining)) >= targetTickets
+      },
+      optimistic: {
+        dailyRate: Math.floor(optimisticRate),
+        finalTickets: ticketsSold + Math.floor(optimisticRate * daysRemaining),
+        finalOccupancy: ((ticketsSold + Math.floor(optimisticRate * daysRemaining)) / aforoTotal) * 100,
+        reachesTarget: (ticketsSold + Math.floor(optimisticRate * daysRemaining)) >= targetTickets
+      }
+    };
+  }, [currentDailyAverage, daysRemaining, ticketsSold, aforoTotal, targetTickets]);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -187,6 +234,194 @@ const SalesForecasts = () => {
                 <Progress value={occupancy} className="h-3" />
                 <p className="text-xs text-muted-foreground">
                   Quedan <span className="font-medium text-foreground">{ticketsRemaining.toLocaleString('es-ES')}</span> entradas disponibles
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* DECISION BLOCKS - New Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+          {/* Target for Today */}
+          <Card className="border-l-4 border-l-primary">
+            <CardContent className="pt-3">
+              <div className="flex items-start justify-between mb-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Target className="h-4 w-4 text-primary" />
+                </div>
+                <Badge variant="outline" className="text-[10px]">Día {daysSinceLaunch}</Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Objetivo a hoy</p>
+              <p className="text-2xl font-bold">{expectedTicketsToday.toLocaleString('es-ES')}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Proyección lineal para {(targetOccupancy * 100).toFixed(0)}% de aforo
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Gap vs Target */}
+          <Card className={`border-l-4 ${gapVsTarget >= 0 ? 'border-l-success' : 'border-l-destructive'}`}>
+            <CardContent className="pt-3">
+              <div className="flex items-start justify-between mb-2">
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${gapVsTarget >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
+                  {gapVsTarget >= 0 ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                  )}
+                </div>
+                <Badge variant={gapVsTarget >= 0 ? "success" : "destructive"} className="text-[10px]">
+                  {gapVsTarget >= 0 ? 'Por encima' : 'Por debajo'}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Gap vs Objetivo</p>
+              <p className={`text-2xl font-bold ${gapVsTarget >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {gapVsTarget >= 0 ? '+' : ''}{gapVsTarget.toLocaleString('es-ES')}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {gapPercentage >= 0 ? '+' : ''}{gapPercentage.toFixed(1)}% respecto a proyección
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Required Daily Pace */}
+          <Card className={`border-l-4 ${paceRatio <= 1 ? 'border-l-success' : paceRatio <= 1.5 ? 'border-l-warning' : 'border-l-destructive'}`}>
+            <CardContent className="pt-3">
+              <div className="flex items-start justify-between mb-2">
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${paceRatio <= 1 ? 'bg-success/10' : paceRatio <= 1.5 ? 'bg-warning/10' : 'bg-destructive/10'}`}>
+                  <Zap className="h-4 w-4" />
+                </div>
+                <Badge variant="outline" className="text-[10px]">
+                  Actual: {currentDailyAverage}/día
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Ritmo Necesario</p>
+              <p className="text-2xl font-bold">{requiredDailyPace.toLocaleString('es-ES')}<span className="text-sm font-normal text-muted-foreground">/día</span></p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {paceRatio <= 1 ? '✓ Alcanzable con ritmo actual' : 
+                 paceRatio <= 1.5 ? `Requiere +${((paceRatio - 1) * 100).toFixed(0)}% más ritmo` :
+                 `⚠ Requiere ${paceRatio.toFixed(1)}x el ritmo actual`}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Quick Status */}
+          <Card className="border-l-4 border-l-accent">
+            <CardContent className="pt-3">
+              <div className="flex items-start justify-between mb-2">
+                <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <Calculator className="h-4 w-4 text-accent-foreground" />
+                </div>
+                <Badge variant="outline" className="text-[10px]">{daysRemaining} días</Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Faltan por vender</p>
+              <p className="text-2xl font-bold">{ticketsNeededToReachTarget.toLocaleString('es-ES')}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Para alcanzar 85% ({targetTickets.toLocaleString('es-ES')} entradas)
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Scenarios Block */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                  Escenarios de Cierre
+                </CardTitle>
+                <CardDescription>Proyección final basada en diferentes ritmos de venta</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                Base: {currentDailyAverage} entradas/día
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Conservative */}
+              <div className={`p-4 rounded-lg border-2 ${scenarios.conservative.reachesTarget ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Conservador</span>
+                  <Badge variant={scenarios.conservative.reachesTarget ? "success" : "destructive"} className="text-[10px]">
+                    {scenarios.conservative.reachesTarget ? 'Alcanza objetivo' : 'No alcanza'}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ritmo diario</span>
+                    <span className="font-semibold">{scenarios.conservative.dailyRate}/día</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Entradas finales</span>
+                    <span className="font-semibold">{scenarios.conservative.finalTickets.toLocaleString('es-ES')}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ocupación final</span>
+                    <span className="text-lg font-bold">{scenarios.conservative.finalOccupancy.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <Progress value={scenarios.conservative.finalOccupancy} className="h-2 mt-3" />
+                <p className="text-[10px] text-muted-foreground mt-2 italic">
+                  -20% respecto a ritmo actual
+                </p>
+              </div>
+
+              {/* Realistic */}
+              <div className={`p-4 rounded-lg border-2 ring-2 ring-primary/20 ${scenarios.realistic.reachesTarget ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium uppercase tracking-wide text-primary">Realista ★</span>
+                  <Badge variant={scenarios.realistic.reachesTarget ? "success" : "secondary"} className="text-[10px]">
+                    {scenarios.realistic.reachesTarget ? 'Alcanza objetivo' : 'Ajustado'}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ritmo diario</span>
+                    <span className="font-semibold">{scenarios.realistic.dailyRate}/día</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Entradas finales</span>
+                    <span className="font-semibold">{scenarios.realistic.finalTickets.toLocaleString('es-ES')}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ocupación final</span>
+                    <span className="text-lg font-bold">{scenarios.realistic.finalOccupancy.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <Progress value={scenarios.realistic.finalOccupancy} className="h-2 mt-3" />
+                <p className="text-[10px] text-muted-foreground mt-2 italic">
+                  Mantiene ritmo actual
+                </p>
+              </div>
+
+              {/* Optimistic */}
+              <div className={`p-4 rounded-lg border-2 ${scenarios.optimistic.reachesTarget ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Optimista</span>
+                  <Badge variant="success" className="text-[10px]">
+                    Alcanza objetivo
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ritmo diario</span>
+                    <span className="font-semibold">{scenarios.optimistic.dailyRate}/día</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Entradas finales</span>
+                    <span className="font-semibold">{scenarios.optimistic.finalTickets.toLocaleString('es-ES')}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-muted-foreground">Ocupación final</span>
+                    <span className="text-lg font-bold">{scenarios.optimistic.finalOccupancy.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <Progress value={Math.min(scenarios.optimistic.finalOccupancy, 100)} className="h-2 mt-3" />
+                <p className="text-[10px] text-muted-foreground mt-2 italic">
+                  +30% respecto a ritmo actual
                 </p>
               </div>
             </div>
