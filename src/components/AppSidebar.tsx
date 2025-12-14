@@ -208,7 +208,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-56")}>
+    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-64")}>
       <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
         <div className="flex items-center justify-between">
           {!collapsed && (
