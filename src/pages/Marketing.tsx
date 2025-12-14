@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMarketingCampaigns, MarketingCampaign } from "@/hooks/useMarketingCampaigns";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,118 +62,6 @@ const campaignPerformanceData = [
   { date: '22 Nov', reach: 125000, clicks: 4200, conversions: 185 },
   { date: '29 Nov', reach: 98000, clicks: 3100, conversions: 124 },
   { date: '6 Dic', reach: 85000, clicks: 2800, conversions: 112 },
-];
-
-// Enhanced campaigns with operational data
-const campaignsData = [
-  {
-    id: 1,
-    name: 'Black Friday - Early Bird',
-    type: 'paid',
-    platform: 'instagram',
-    status: 'completed',
-    startDate: '2024-11-22',
-    endDate: '2024-11-30',
-    budget: 2500,
-    spent: 2480,
-    reach: 185000,
-    clicks: 5200,
-    ticketsSold: 892,
-    estimatedRevenue: 22300,
-    ctr: 2.8,
-    observation: 'Mejor campaña hasta la fecha. El timing de Black Friday fue clave. Replicar estrategia en Navidad.',
-    teamNotes: 'Creativos de aftermovie funcionaron mejor que imágenes estáticas. CTR 40% superior.'
-  },
-  {
-    id: 2,
-    name: 'Retargeting Universitarios',
-    type: 'paid',
-    platform: 'facebook',
-    status: 'active',
-    startDate: '2024-12-01',
-    endDate: '2024-12-15',
-    budget: 1500,
-    spent: 920,
-    reach: 95000,
-    clicks: 2800,
-    ticketsSold: 312,
-    estimatedRevenue: 7800,
-    ctr: 2.9,
-    observation: 'Segmento universitario responde bien. Considerar ampliar presupuesto.',
-    teamNotes: 'Audiencia 18-24 Sevilla convierte mejor que Málaga/Cádiz.'
-  },
-  {
-    id: 3,
-    name: 'Cartel Reveal Orgánico',
-    type: 'organic',
-    platform: 'instagram',
-    status: 'active',
-    startDate: '2024-12-05',
-    endDate: null,
-    budget: 0,
-    spent: 0,
-    reach: 42000,
-    clicks: 1250,
-    ticketsSold: 145,
-    estimatedRevenue: 3625,
-    ctr: 3.0,
-    observation: 'Buen engagement orgánico. Stories funcionando mejor que posts.',
-    teamNotes: 'El reveal de Henry Méndez generó pico de tráfico. Planificar reveal de segundo cabeza de cartel.'
-  },
-  {
-    id: 4,
-    name: 'Newsletter Diciembre',
-    type: 'email',
-    platform: 'email',
-    status: 'completed',
-    startDate: '2024-12-01',
-    endDate: '2024-12-01',
-    budget: 0,
-    spent: 0,
-    reach: 28500,
-    clicks: 4200,
-    ticketsSold: 168,
-    estimatedRevenue: 4200,
-    ctr: 14.7,
-    observation: 'Open rate del 32%, por encima de la media del sector.',
-    teamNotes: 'Asunto "Últimas plazas Early Bird" tuvo mejor apertura que "Novedades Primaverando".'
-  },
-  {
-    id: 5,
-    name: 'Campaña Pre-Lanzamiento',
-    type: 'paid',
-    platform: 'instagram',
-    status: 'completed',
-    startDate: '2024-10-15',
-    endDate: '2024-10-31',
-    budget: 1800,
-    spent: 1800,
-    reach: 120000,
-    clicks: 3600,
-    ticketsSold: 520,
-    estimatedRevenue: 9880,
-    ctr: 3.0,
-    observation: 'Fase de expectación cumplió objetivos. Generó base de leads para retargeting.',
-    teamNotes: 'Teaser con cuenta atrás funcionó bien. Lista de espera alcanzó 4.200 emails.'
-  },
-  {
-    id: 6,
-    name: 'Influencers Locales',
-    type: 'influencer',
-    platform: 'instagram',
-    status: 'active',
-    startDate: '2024-12-10',
-    endDate: '2024-12-20',
-    budget: 3500,
-    spent: 2100,
-    reach: 78000,
-    clicks: 1890,
-    ticketsSold: 95,
-    estimatedRevenue: 2375,
-    ctr: 2.4,
-    observation: 'ROI más bajo que paid ads. Evaluar si continuar o reasignar presupuesto.',
-    teamNotes: '@sevillaniando mejor conversion que @andaluciamola. Código descuento "INFLUENCER15" activo.'
-  }
 ];
 
 // Top performing posts
@@ -237,8 +127,8 @@ const getPlatformIcon = (platform: string) => {
 };
 
 const Marketing = () => {
-  const [expandedCampaign, setExpandedCampaign] = useState<number | null>(null);
-  const [campaigns, setCampaigns] = useState(campaignsData);
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
+  const { campaigns, isLoading, addCampaign, isAdding } = useMarketingCampaigns();
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
@@ -251,15 +141,15 @@ const Marketing = () => {
     teamNotes: ''
   });
   
-  const totalReach = campaigns.reduce((acc, c) => acc + c.reach, 0);
-  const totalTicketsSold = campaigns.reduce((acc, c) => acc + c.ticketsSold, 0);
-  const totalSpent = campaigns.reduce((acc, c) => acc + c.spent, 0);
-  const totalRevenue = campaigns.reduce((acc, c) => acc + c.estimatedRevenue, 0);
-  const avgCtr = campaigns.reduce((acc, c) => acc + c.ctr, 0) / campaigns.length;
+  const totalReach = campaigns.reduce((acc, c) => acc + (c.reach || 0), 0);
+  const totalTicketsSold = campaigns.reduce((acc, c) => acc + (c.tickets_sold || 0), 0);
+  const totalSpent = campaigns.reduce((acc, c) => acc + Number(c.spent || 0), 0);
+  const totalRevenue = campaigns.reduce((acc, c) => acc + Number(c.estimated_revenue || 0), 0);
+  const avgCtr = campaigns.length > 0 ? campaigns.reduce((acc, c) => acc + Number(c.ctr || 0), 0) / campaigns.length : 0;
   const activeCampaignsCount = campaigns.filter(c => c.status === 'active').length;
   const completedCampaignsCount = campaigns.filter(c => c.status === 'completed').length;
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
     if (!newCampaign.name || !newCampaign.startDate) {
       toast({
         title: "Campos requeridos",
@@ -269,43 +159,52 @@ const Marketing = () => {
       return;
     }
 
-    const campaign = {
-      id: campaigns.length + 1,
+    const success = await addCampaign({
       name: newCampaign.name,
       type: newCampaign.type,
       platform: newCampaign.platform,
-      status: 'active' as const,
-      startDate: newCampaign.startDate,
-      endDate: newCampaign.endDate || null,
+      status: 'active',
+      start_date: newCampaign.startDate,
+      end_date: newCampaign.endDate || null,
       budget: newCampaign.budget,
       spent: 0,
       reach: 0,
       clicks: 0,
-      ticketsSold: 0,
-      estimatedRevenue: 0,
+      tickets_sold: 0,
+      estimated_revenue: 0,
       ctr: 0,
-      observation: newCampaign.observation,
-      teamNotes: newCampaign.teamNotes
-    };
-
-    setCampaigns([campaign, ...campaigns]);
-    setIsNewCampaignOpen(false);
-    setNewCampaign({
-      name: '',
-      type: 'paid',
-      platform: 'instagram',
-      budget: 0,
-      startDate: '',
-      endDate: '',
-      observation: '',
-      teamNotes: ''
+      observation: newCampaign.observation || null,
+      team_notes: newCampaign.teamNotes || null,
     });
 
-    toast({
-      title: "Campaña creada",
-      description: `"${campaign.name}" añadida correctamente`
-    });
+    if (success) {
+      setIsNewCampaignOpen(false);
+      setNewCampaign({
+        name: '',
+        type: 'paid',
+        platform: 'instagram',
+        budget: 0,
+        startDate: '',
+        endDate: '',
+        observation: '',
+        teamNotes: ''
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+          </div>
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -642,8 +541,8 @@ const Marketing = () => {
             <CardContent className="space-y-2">
               {campaigns.map((campaign) => {
                 const isExpanded = expandedCampaign === campaign.id;
-                const startDateFormatted = new Date(campaign.startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-                const endDateFormatted = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
+                const startDateFormatted = new Date(campaign.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                const endDateFormatted = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
                 
                 return (
                   <div 
@@ -693,11 +592,11 @@ const Marketing = () => {
                           {/* Quick Stats */}
                           <div className="hidden md:flex items-center gap-4 text-right">
                             <div>
-                              <p className="text-sm font-semibold">{campaign.ticketsSold}</p>
+                              <p className="text-sm font-semibold">{campaign.tickets_sold}</p>
                               <p className="text-[10px] text-muted-foreground">entradas</p>
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-success">€{campaign.estimatedRevenue.toLocaleString('es-ES')}</p>
+                              <p className="text-sm font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
                               <p className="text-[10px] text-muted-foreground">ingresos</p>
                             </div>
                           </div>
@@ -714,11 +613,11 @@ const Marketing = () => {
                         {/* Metrics Grid */}
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                           <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">{(campaign.reach / 1000).toFixed(0)}K</p>
+                            <p className="text-lg font-semibold">{((campaign.reach || 0) / 1000).toFixed(0)}K</p>
                             <p className="text-[10px] text-muted-foreground">Alcance</p>
                           </div>
                           <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">{campaign.clicks.toLocaleString('es-ES')}</p>
+                            <p className="text-lg font-semibold">{(campaign.clicks || 0).toLocaleString('es-ES')}</p>
                             <p className="text-[10px] text-muted-foreground">Clics</p>
                           </div>
                           <div className="p-2 rounded-lg bg-background text-center">
@@ -726,51 +625,55 @@ const Marketing = () => {
                             <p className="text-[10px] text-muted-foreground">CTR</p>
                           </div>
                           <div className="p-2 rounded-lg bg-success/10 text-center">
-                            <p className="text-lg font-semibold text-success">{campaign.ticketsSold}</p>
+                            <p className="text-lg font-semibold text-success">{campaign.tickets_sold}</p>
                             <p className="text-[10px] text-muted-foreground">Entradas</p>
                           </div>
                           <div className="p-2 rounded-lg bg-success/10 text-center">
-                            <p className="text-lg font-semibold text-success">€{campaign.estimatedRevenue.toLocaleString('es-ES')}</p>
+                            <p className="text-lg font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
                             <p className="text-[10px] text-muted-foreground">Ingresos Est.</p>
                           </div>
                           <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">€{campaign.spent > 0 ? (campaign.spent / campaign.ticketsSold).toFixed(2) : '0'}</p>
+                            <p className="text-lg font-semibold">€{Number(campaign.spent) > 0 && campaign.tickets_sold > 0 ? (Number(campaign.spent) / campaign.tickets_sold).toFixed(2) : '0'}</p>
                             <p className="text-[10px] text-muted-foreground">CPA</p>
                           </div>
                         </div>
                         
                         {/* Budget Progress (if paid) */}
-                        {campaign.budget > 0 && (
+                        {Number(campaign.budget) > 0 && (
                           <div className="p-2 rounded-lg bg-background">
                             <div className="flex justify-between text-xs mb-1">
                               <span className="text-muted-foreground">Presupuesto</span>
-                              <span className="font-medium">€{campaign.spent.toLocaleString('es-ES')} / €{campaign.budget.toLocaleString('es-ES')}</span>
+                              <span className="font-medium">€{Number(campaign.spent).toLocaleString('es-ES')} / €{Number(campaign.budget).toLocaleString('es-ES')}</span>
                             </div>
-                            <Progress value={(campaign.spent / campaign.budget) * 100} className="h-1.5" />
+                            <Progress value={(Number(campaign.spent) / Number(campaign.budget)) * 100} className="h-1.5" />
                           </div>
                         )}
                         
                         {/* Observation */}
-                        <div className="p-3 rounded-lg border bg-background">
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                            <div>
-                              <p className="text-xs font-medium text-primary mb-1">Observación</p>
-                              <p className="text-sm text-foreground">{campaign.observation}</p>
+                        {campaign.observation && (
+                          <div className="p-3 rounded-lg border bg-background">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-xs font-medium text-primary mb-1">Observación</p>
+                                <p className="text-sm text-foreground">{campaign.observation}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                         
                         {/* Team Notes */}
-                        <div className="p-3 rounded-lg border bg-muted/30">
-                          <div className="flex items-start gap-2">
-                            <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1">Notas del equipo</p>
-                              <p className="text-sm text-muted-foreground">{campaign.teamNotes}</p>
+                        {campaign.team_notes && (
+                          <div className="p-3 rounded-lg border bg-muted/30">
+                            <div className="flex items-start gap-2">
+                              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground mb-1">Notas del equipo</p>
+                                <p className="text-sm text-muted-foreground">{campaign.team_notes}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>

@@ -83,6 +83,69 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          clicks: number | null
+          created_at: string
+          ctr: number | null
+          end_date: string | null
+          estimated_revenue: number | null
+          id: string
+          name: string
+          observation: string | null
+          platform: string
+          reach: number | null
+          spent: number | null
+          start_date: string
+          status: string
+          team_notes: string | null
+          tickets_sold: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          clicks?: number | null
+          created_at?: string
+          ctr?: number | null
+          end_date?: string | null
+          estimated_revenue?: number | null
+          id?: string
+          name: string
+          observation?: string | null
+          platform?: string
+          reach?: number | null
+          spent?: number | null
+          start_date: string
+          status?: string
+          team_notes?: string | null
+          tickets_sold?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          clicks?: number | null
+          created_at?: string
+          ctr?: number | null
+          end_date?: string | null
+          estimated_revenue?: number | null
+          id?: string
+          name?: string
+          observation?: string | null
+          platform?: string
+          reach?: number | null
+          spent?: number | null
+          start_date?: string
+          status?: string
+          team_notes?: string | null
+          tickets_sold?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pre_festival_attachments: {
         Row: {
           created_at: string
