@@ -38,9 +38,9 @@ const Dashboard = () => {
   const event = PRIMAVERANDO_EVENT;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full">
       {/* Hero Header - Limpio y profesional */}
-      <div className="relative h-32 md:h-40 overflow-hidden">
+      <div className="relative h-32 md:h-40 overflow-hidden w-full">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -49,7 +49,7 @@ const Dashboard = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
         
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-4">
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-4">
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
@@ -93,7 +93,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 space-y-4">
+      <div className="p-4 space-y-4">
         {/* Today's Quick View - 2 minute check-in */}
         <TodayQuickView 
           onOpenRecommendations={() => setDrawerOpen(true)} 
