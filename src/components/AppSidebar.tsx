@@ -186,14 +186,14 @@ export function AppSidebar() {
       <SidebarMenuItem key={item.title}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
-            <SidebarMenuButton asChild className={cn("h-10", active && "bg-sidebar-accent")}>
+            <SidebarMenuButton asChild className={cn("h-8", active && "bg-sidebar-accent")}>
               <NavLink 
                 to={item.url} 
                 className="hover:bg-sidebar-accent/50" 
                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
               >
-                <item.icon className={cn("h-5 w-5", collapsed ? "mx-auto" : "")} />
-                {!collapsed && <span>{item.title}</span>}
+                <item.icon className={cn("h-4 w-4", collapsed ? "mx-auto" : "")} />
+                {!collapsed && <span className="text-sm">{item.title}</span>}
               </NavLink>
             </SidebarMenuButton>
           </TooltipTrigger>
@@ -208,41 +208,42 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-16" : "w-64")}>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
+    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-56")}>
+      <SidebarHeader className="border-b border-sidebar-border p-3">
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex-1">
-              <h1 className="text-lg font-bold text-sidebar-foreground">
+              <h1 className="text-base font-bold text-sidebar-foreground leading-tight">
                 Primaverando
               </h1>
-              <p className="text-xs text-sidebar-foreground/60">Command Center 2025</p>
+              <p className="text-[10px] text-sidebar-foreground/60">Command Center 2025</p>
             </div>
           )}
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar} 
-            className={cn("h-8 w-8 shrink-0", collapsed && "mx-auto")}
+            className={cn("h-7 w-7 shrink-0", collapsed && "mx-auto")}
           >
             {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
-        <div className={cn("px-3 py-4", collapsed && "px-2")}>
+      <SidebarContent className="overflow-y-auto">
+        <div className={cn("px-2 py-2 space-y-1", collapsed && "px-1")}>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button 
                 onClick={() => setTryModalOpen(true)} 
+                size="sm"
                 className={cn(
-                  "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200", 
-                  collapsed ? "h-10 w-10 p-0" : "h-10"
+                  "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-sm", 
+                  collapsed ? "h-8 w-8 p-0" : "h-8"
                 )}
               >
-                <Sparkles className={cn("h-5 w-5", !collapsed && "mr-2")} />
-                {!collapsed && <span className="font-semibold">Probar gratis</span>}
+                <Sparkles className={cn("h-4 w-4", !collapsed && "mr-1.5")} />
+                {!collapsed && <span className="text-xs font-semibold">Probar gratis</span>}
               </Button>
             </TooltipTrigger>
             {collapsed && (
@@ -252,19 +253,19 @@ export function AppSidebar() {
             )}
           </Tooltip>
           
-          {/* AI Chat Button */}
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button 
                 onClick={() => setChatOpen(true)} 
                 variant="outline"
+                size="sm"
                 className={cn(
-                  "w-full mt-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200", 
-                  collapsed ? "h-10 w-10 p-0" : "h-10"
+                  "w-full border-primary/30 hover:bg-primary/10 hover:border-primary/50", 
+                  collapsed ? "h-8 w-8 p-0" : "h-8"
                 )}
               >
-                <MessageCircle className={cn("h-5 w-5 text-primary", !collapsed && "mr-2")} />
-                {!collapsed && <span className="font-medium text-primary">Chat con IA</span>}
+                <MessageCircle className={cn("h-4 w-4 text-primary", !collapsed && "mr-1.5")} />
+                {!collapsed && <span className="text-xs font-medium text-primary">Chat con IA</span>}
               </Button>
             </TooltipTrigger>
             {collapsed && (
@@ -275,41 +276,41 @@ export function AppSidebar() {
           </Tooltip>
         </div>
 
-        <SidebarGroup>
+        <SidebarGroup className="py-1">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
+            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-1">
               Festival
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 px-2">
+            <SidebarMenu className="space-y-0.5 px-2">
               {mainItems.map(renderMenuItem)}
               
-              {/* Operations Collapsible - Second position */}
+              {/* Operations Collapsible */}
               {!collapsed ? (
                 <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className={cn("h-10 w-full justify-between", isOperationsActive && "bg-sidebar-accent")}>
+                      <SidebarMenuButton className={cn("h-8 w-full justify-between", isOperationsActive && "bg-sidebar-accent")}>
                         <div className="flex items-center">
-                          <HardHat className="h-5 w-5 mr-2" />
-                          <span>Operaciones</span>
+                          <HardHat className="h-4 w-4 mr-2" />
+                          <span className="text-sm">Operaciones</span>
                         </div>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", operationsOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-3 w-3 transition-transform", operationsOpen && "rotate-180")} />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <SidebarMenuSub>
+                      <SidebarMenuSub className="ml-4 pl-2 border-l border-sidebar-border">
                         {operationsItems.map((item) => (
                           <SidebarMenuSubItem key={item.url}>
-                            <SidebarMenuSubButton asChild className={cn(isActive(item.url) && "bg-sidebar-accent")}>
+                            <SidebarMenuSubButton asChild className={cn("h-7", isActive(item.url) && "bg-sidebar-accent")}>
                               <NavLink 
                                 to={item.url}
                                 className="hover:bg-sidebar-accent/50"
                                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                               >
-                                <item.icon className="h-4 w-4 mr-2" />
-                                <span className="text-sm">{item.title}</span>
+                                <item.icon className="h-3.5 w-3.5 mr-2" />
+                                <span className="text-xs">{item.title}</span>
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -322,9 +323,9 @@ export function AppSidebar() {
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild className={cn("h-10", isOperationsActive && "bg-sidebar-accent")}>
+                      <SidebarMenuButton asChild className={cn("h-8", isOperationsActive && "bg-sidebar-accent")}>
                         <NavLink to="/operations/pre-festival" className="hover:bg-sidebar-accent/50">
-                          <HardHat className="h-5 w-5 mx-auto" />
+                          <HardHat className="h-4 w-4 mx-auto" />
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -335,92 +336,86 @@ export function AppSidebar() {
                 </Tooltip>
               )}
               
-              {/* Rest of main items */}
               {mainItemsAfterOps.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <div className="px-4 py-2">
-          <Separator />
-        </div>
+        <Separator className="mx-3 my-1" />
 
-        <SidebarGroup>
+        <SidebarGroup className="py-1">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs text-sidebar-foreground/60 px-4">
+            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-1">
               Administración
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 px-2">
+            <SidebarMenu className="space-y-0.5 px-2">
               {secondaryItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
-        {user && (
-          <DropdownMenu>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
+      <SidebarFooter className="p-2 border-t border-sidebar-border">
+        <DropdownMenu>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start hover:bg-sidebar-accent/50 h-auto py-1.5",
+                    collapsed && "justify-center px-0"
+                  )}
+                >
+                  <div 
                     className={cn(
-                      "w-full justify-start hover:bg-sidebar-accent/50 h-auto py-2",
-                      collapsed && "justify-center"
+                      "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0",
+                      !collapsed && "mr-2"
                     )}
+                    style={{ 
+                      backgroundColor: festivalRole?.bg_color || 'hsl(var(--primary))',
+                      color: festivalRole?.color || 'hsl(var(--primary-foreground))'
+                    }}
                   >
-                    <div 
-                      className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
-                        !collapsed && "mr-3"
-                      )}
-                      style={{ 
-                        backgroundColor: festivalRole?.bg_color || 'hsl(var(--muted))',
-                        color: festivalRole?.color || 'hsl(var(--muted-foreground))'
-                      }}
-                    >
-                      {getInitials(profile?.full_name)}
+                    {getInitials(profile?.full_name || (user ? null : 'Demo User'))}
+                  </div>
+                  {!collapsed && (
+                    <div className="flex-1 text-left overflow-hidden">
+                      <p className="text-xs font-medium text-sidebar-foreground truncate">
+                        {profile?.full_name || (user ? 'Usuario' : 'Demo User')}
+                      </p>
+                      <p className="text-[10px] text-sidebar-foreground/60 truncate">
+                        {festivalRole?.name || user?.email || 'Director Festival'}
+                      </p>
                     </div>
-                    {!collapsed && (
-                      <div className="flex-1 text-left overflow-hidden">
-                        <p className="text-sm font-medium text-sidebar-foreground truncate">
-                          {profile?.full_name || 'Usuario'}
-                        </p>
-                        <p className="text-xs text-sidebar-foreground/60 truncate">
-                          {festivalRole?.name || user.email}
-                        </p>
-                      </div>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right" className="z-50">
-                  {profile?.full_name || user.email}
-                </TooltipContent>
-              )}
-            </Tooltip>
-            <DropdownMenuContent side="top" align="start" className="w-56">
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                <User className="h-4 w-4 mr-2" />
-                Ver mi perfil
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="text-destructive">
-                <LogOut className="h-4 w-4 mr-2" />
-                Cerrar sesión
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        {!collapsed && (
-          <p className="text-xs text-sidebar-foreground/40 text-center">
-            © 2025 Primaverando Festival
-          </p>
-        )}
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="z-50">
+                {profile?.full_name || user?.email || 'Mi Perfil'}
+              </TooltipContent>
+            )}
+          </Tooltip>
+          <DropdownMenuContent side="top" align="start" className="w-48 bg-popover border border-border shadow-lg z-50">
+            <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+              <User className="h-4 w-4 mr-2" />
+              Ver mi perfil
+            </DropdownMenuItem>
+            {user && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Cerrar sesión
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
 
       <TryTricketModal open={tryModalOpen} onOpenChange={setTryModalOpen} />
