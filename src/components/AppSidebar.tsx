@@ -186,14 +186,14 @@ export function AppSidebar() {
       <SidebarMenuItem key={item.title}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
-            <SidebarMenuButton asChild className={cn("h-8", active && "bg-sidebar-accent")}>
+            <SidebarMenuButton asChild className={cn("min-h-8 h-auto py-1.5", active && "bg-sidebar-accent")}>
               <NavLink 
                 to={item.url} 
-                className="hover:bg-sidebar-accent/50" 
+                className="hover:bg-sidebar-accent/50 items-start" 
                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
               >
-                <item.icon className={cn("h-4 w-4", collapsed ? "mx-auto" : "")} />
-                {!collapsed && <span className="text-[13px]">{item.title}</span>}
+                <item.icon className={cn("h-4 w-4 shrink-0 mt-0.5", collapsed ? "mx-auto" : "")} />
+                {!collapsed && <span className="text-[13px] whitespace-normal leading-tight">{item.title}</span>}
               </NavLink>
             </SidebarMenuButton>
           </TooltipTrigger>
@@ -208,7 +208,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-64")}>
+    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-56")}>
       <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
         <div className="flex items-center justify-between">
           {!collapsed && (
