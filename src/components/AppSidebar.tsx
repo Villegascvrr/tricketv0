@@ -17,10 +17,11 @@ import {
   Radio,
   ChevronDown,
   FlaskConical,
-  MessageCircle
+  MessageCircle,
+  User
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   Sidebar, 
@@ -42,9 +43,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import TryTricketModal from "@/components/TryTricketModal";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { festivalData } from "@/data/festivalData";
 
 const mainItems = [
@@ -130,6 +133,7 @@ export function AppSidebar() {
     isMobile
   } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const [tryModalOpen, setTryModalOpen] = useState(false);
@@ -138,6 +142,14 @@ export function AppSidebar() {
     currentPath.startsWith('/operations')
   );
   const { signOut, user } = useAuth();
+  const { profile, teamMemberInfo } = useUserProfile();
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return user?.email?.charAt(0).toUpperCase() || 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const festivalRole = teamMemberInfo?.festival_role;
 
   useEffect(() => {
     const savedState = localStorage.getItem("sidebar-state");
@@ -349,26 +361,60 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
         {user && (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                onClick={signOut}
-                className={cn(
-                  "w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
-                  collapsed && "justify-center"
-                )}
-              >
-                <LogOut className={cn("h-4 w-4", !collapsed && "mr-2")} />
-                {!collapsed && <span>Cerrar sesión</span>}
-              </Button>
-            </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent side="right" className="z-50">
+          <DropdownMenu>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start hover:bg-sidebar-accent/50 h-auto py-2",
+                      collapsed && "justify-center"
+                    )}
+                  >
+                    <div 
+                      className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
+                        !collapsed && "mr-3"
+                      )}
+                      style={{ 
+                        backgroundColor: festivalRole?.bg_color || 'hsl(var(--muted))',
+                        color: festivalRole?.color || 'hsl(var(--muted-foreground))'
+                      }}
+                    >
+                      {getInitials(profile?.full_name)}
+                    </div>
+                    {!collapsed && (
+                      <div className="flex-1 text-left overflow-hidden">
+                        <p className="text-sm font-medium text-sidebar-foreground truncate">
+                          {profile?.full_name || 'Usuario'}
+                        </p>
+                        <p className="text-xs text-sidebar-foreground/60 truncate">
+                          {festivalRole?.name || user.email}
+                        </p>
+                      </div>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right" className="z-50">
+                  {profile?.full_name || user.email}
+                </TooltipContent>
+              )}
+            </Tooltip>
+            <DropdownMenuContent side="top" align="start" className="w-56">
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <User className="h-4 w-4 mr-2" />
+                Ver mi perfil
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
                 Cerrar sesión
-              </TooltipContent>
-            )}
-          </Tooltip>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
         {!collapsed && (
           <p className="text-xs text-sidebar-foreground/40 text-center">
