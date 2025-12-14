@@ -17,96 +17,38 @@ import {
   Crown,
   Ticket,
   Megaphone,
-  Clapperboard,
-  DoorOpen,
-  Wrench,
-  Wine,
+  ClipboardList,
+  Shield,
+  BarChart3,
   TrendingUp,
   Settings,
   Plug,
   HardHat,
   Radio,
   Truck,
-  Shield,
   Eye,
   Edit,
   Check,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { useTeamMembers, FestivalRole } from "@/hooks/useTeamMembers";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
 
-// Team members data
-const teamMembers = [
-  { name: "María García", role: "Director del Festival", email: "maria.garcia@primaverando.es", phone: "+34 612 345 678", status: "active", lastActivity: "Hace 2 horas" },
-  { name: "Juan Pérez", role: "Ticketing Manager", email: "juan.perez@primaverando.es", phone: "+34 623 456 789", status: "active", lastActivity: "Hace 30 min" },
-  { name: "Ana Martínez", role: "Marketing Manager", email: "ana.martinez@primaverando.es", phone: "+34 634 567 890", status: "active", lastActivity: "Hace 1 hora" },
-  { name: "Carlos López", role: "Jefe de Producción", email: "carlos.lopez@primaverando.es", phone: "+34 645 678 901", status: "active", lastActivity: "Hace 15 min" },
-  { name: "Laura Sánchez", role: "Coordinador de Accesos", email: "laura.sanchez@primaverando.es", phone: "+34 656 789 012", status: "active", lastActivity: "Ayer" },
-  { name: "Pedro Ruiz", role: "Staff de Operaciones", email: "pedro.ruiz@primaverando.es", phone: "+34 667 890 123", status: "inactive", lastActivity: "Hace 3 días" },
-  { name: "Elena Torres", role: "Equipo de Barras", email: "elena.torres@primaverando.es", phone: "+34 678 901 234", status: "active", lastActivity: "Hace 4 horas" },
-];
+// Icon mapping for festival roles
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Crown,
+  Ticket,
+  Megaphone,
+  ClipboardList,
+  Shield,
+  Users,
+  BarChart3,
+};
 
-// Festival roles with permissions
-const festivalRoles = [
-  {
-    name: "Director del Festival",
-    icon: Crown,
-    color: "text-amber-500",
-    bgColor: "bg-amber-500/10",
-    description: "Control total sobre todas las áreas del festival",
-    permissions: ["ventas", "marketing", "operaciones_pre", "operaciones_dia", "proveedores", "equipo", "integraciones", "config"]
-  },
-  {
-    name: "Ticketing Manager",
-    icon: Ticket,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/10",
-    description: "Gestión de venta de entradas y previsiones",
-    permissions: ["ventas", "integraciones"]
-  },
-  {
-    name: "Marketing Manager",
-    icon: Megaphone,
-    color: "text-pink-500",
-    bgColor: "bg-pink-500/10",
-    description: "Campañas, audiencia y comunicación",
-    permissions: ["ventas", "marketing"]
-  },
-  {
-    name: "Jefe de Producción",
-    icon: Clapperboard,
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
-    description: "Escenarios, riders y logística técnica",
-    permissions: ["operaciones_pre", "proveedores"]
-  },
-  {
-    name: "Coordinador de Accesos",
-    icon: DoorOpen,
-    color: "text-green-500",
-    bgColor: "bg-green-500/10",
-    description: "Control de puertas y flujo de público",
-    permissions: ["operaciones_dia"]
-  },
-  {
-    name: "Staff de Operaciones",
-    icon: Wrench,
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
-    description: "Ejecución operativa durante el evento",
-    permissions: ["operaciones_dia"]
-  },
-  {
-    name: "Equipo de Barras",
-    icon: Wine,
-    color: "text-red-500",
-    bgColor: "bg-red-500/10",
-    description: "Gestión de consumos y puntos de venta",
-    permissions: ["operaciones_dia"]
-  }
-];
-
-// Permission categories
+// Permission categories (static - these are system-level)
 const permissionCategories = [
   { id: "ventas", name: "Ventas & BI", icon: TrendingUp, description: "Dashboard, previsiones, informes" },
   { id: "marketing", name: "Marketing", icon: Megaphone, description: "Campañas, audiencia, segmentación" },
@@ -121,9 +63,64 @@ const permissionCategories = [
 const Team = () => {
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [createRoleOpen, setCreateRoleOpen] = useState(false);
+  
+  // Form state for new member
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberPhone, setNewMemberPhone] = useState("");
+  const [newMemberRoleId, setNewMemberRoleId] = useState("");
 
-  const activeMembers = teamMembers.filter(m => m.status === "active").length;
-  const uniqueRoles = [...new Set(teamMembers.map(m => m.role))].length;
+  const { 
+    roles, 
+    members, 
+    isLoading, 
+    inviteMember, 
+    isInviting 
+  } = useTeamMembers();
+
+  const activeMembers = members.filter(m => m.status === "active").length;
+  const invitedMembers = members.filter(m => m.status === "invited").length;
+  const uniqueRoles = [...new Set(members.map(m => m.festival_role?.name).filter(Boolean))].length;
+
+  const handleInviteMember = () => {
+    if (!newMemberEmail) return;
+    
+    inviteMember({
+      email: newMemberEmail,
+      name: newMemberName || undefined,
+      phone: newMemberPhone || undefined,
+      festival_role_id: newMemberRoleId || undefined,
+    });
+    
+    // Reset form
+    setNewMemberName("");
+    setNewMemberEmail("");
+    setNewMemberPhone("");
+    setNewMemberRoleId("");
+    setAddMemberOpen(false);
+  };
+
+  const getRoleIcon = (role: FestivalRole | null | undefined) => {
+    if (!role?.icon) return Users;
+    return iconMap[role.icon] || Users;
+  };
+
+  const formatLastActivity = (dateStr: string | null) => {
+    if (!dateStr) return "Sin actividad";
+    try {
+      return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: es });
+    } catch {
+      return "Sin actividad";
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -160,7 +157,7 @@ const Team = () => {
                       <Users className="h-4 w-4 text-primary" />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold">{teamMembers.length}</p>
+                  <p className="text-2xl font-bold">{members.length}</p>
                   <p className="text-xs text-muted-foreground">Total miembros</p>
                 </CardContent>
               </Card>
@@ -182,8 +179,8 @@ const Team = () => {
                       <UserPlus className="h-4 w-4 text-accent-foreground" />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-accent-foreground">+2</p>
-                  <p className="text-xs text-muted-foreground">Nuevos este mes</p>
+                  <p className="text-2xl font-bold text-accent-foreground">{invitedMembers}</p>
+                  <p className="text-xs text-muted-foreground">Invitados pendientes</p>
                 </CardContent>
               </Card>
               <Card>
@@ -226,27 +223,41 @@ const Team = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Nombre</Label>
-                          <Input placeholder="Nombre completo" />
+                          <Input 
+                            placeholder="Nombre completo" 
+                            value={newMemberName}
+                            onChange={(e) => setNewMemberName(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label>Email</Label>
-                          <Input type="email" placeholder="email@ejemplo.com" />
+                          <Label>Email *</Label>
+                          <Input 
+                            type="email" 
+                            placeholder="email@ejemplo.com" 
+                            value={newMemberEmail}
+                            onChange={(e) => setNewMemberEmail(e.target.value)}
+                            required
+                          />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Teléfono</Label>
-                          <Input placeholder="+34 600 000 000" />
+                          <Input 
+                            placeholder="+34 600 000 000" 
+                            value={newMemberPhone}
+                            onChange={(e) => setNewMemberPhone(e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Rol</Label>
-                          <Select>
+                          <Select value={newMemberRoleId} onValueChange={setNewMemberRoleId}>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
                             <SelectContent>
-                              {festivalRoles.map(role => (
-                                <SelectItem key={role.name} value={role.name}>
+                              {roles.map(role => (
+                                <SelectItem key={role.id} value={role.id}>
                                   {role.name}
                                 </SelectItem>
                               ))}
@@ -259,72 +270,109 @@ const Team = () => {
                       <Button variant="outline" onClick={() => setAddMemberOpen(false)}>
                         Cancelar
                       </Button>
-                      <Button onClick={() => setAddMemberOpen(false)}>
-                        Enviar invitación
+                      <Button 
+                        onClick={handleInviteMember} 
+                        disabled={!newMemberEmail || isInviting}
+                      >
+                        {isInviting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : (
+                          "Enviar invitación"
+                        )}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </CardHeader>
               <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="pl-6">Miembro</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead className="hidden md:table-cell">Teléfono</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="hidden lg:table-cell">Última actividad</TableHead>
-                      <TableHead className="text-right pr-6">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {teamMembers.map((member, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="pl-6">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                {member.name.split(" ").map(n => n[0]).join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-medium">{member.name}</p>
-                              <p className="text-xs text-muted-foreground">{member.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs font-normal">
-                            {member.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                          {member.phone}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${member.status === "active" ? "bg-emerald-500" : "bg-muted-foreground"}`} />
-                            <span className="text-xs">{member.status === "active" ? "Activo" : "Inactivo"}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                          {member.lastActivity}
-                        </TableCell>
-                        <TableCell className="text-right pr-6">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                {members.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm">No hay miembros en el equipo</p>
+                    <p className="text-xs">Añade el primer miembro usando el botón de arriba</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="pl-6">Miembro</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead className="hidden md:table-cell">Teléfono</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="hidden lg:table-cell">Última actividad</TableHead>
+                        <TableHead className="text-right pr-6">Acciones</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {members.map((member) => {
+                        const RoleIcon = getRoleIcon(member.festival_role);
+                        return (
+                          <TableRow key={member.id}>
+                            <TableCell className="pl-6">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                    {(member.name || member.email).split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="text-sm font-medium">{member.name || "Sin nombre"}</p>
+                                  <p className="text-xs text-muted-foreground">{member.email}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {member.festival_role ? (
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-xs font-normal ${member.festival_role.bg_color || ''} ${member.festival_role.color || ''}`}
+                                >
+                                  <RoleIcon className="h-3 w-3 mr-1" />
+                                  {member.festival_role.name}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs font-normal">
+                                  Sin rol
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                              {member.phone || "-"}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className={`h-2 w-2 rounded-full ${
+                                  member.status === "active" ? "bg-emerald-500" : 
+                                  member.status === "invited" ? "bg-amber-500" : "bg-muted-foreground"
+                                }`} />
+                                <span className="text-xs capitalize">
+                                  {member.status === "active" ? "Activo" : 
+                                   member.status === "invited" ? "Invitado" : "Inactivo"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                              {formatLastActivity(member.last_activity)}
+                            </TableCell>
+                            <TableCell className="text-right pr-6">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -401,45 +449,48 @@ const Team = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {festivalRoles.map((role) => (
-                <Card key={role.name} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${role.bgColor}`}>
-                        <role.icon className={`h-5 w-5 ${role.color}`} />
+              {roles.map((role) => {
+                const RoleIcon = iconMap[role.icon || ''] || Users;
+                return (
+                  <Card key={role.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-lg ${role.bg_color || 'bg-muted'}`}>
+                          <RoleIcon className={`h-5 w-5 ${role.color || 'text-muted-foreground'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-sm font-semibold truncate">{role.name}</CardTitle>
+                          <CardDescription className="text-xs mt-0.5 line-clamp-2">
+                            {role.description}
+                          </CardDescription>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm font-semibold truncate">{role.name}</CardTitle>
-                        <CardDescription className="text-xs mt-0.5 line-clamp-2">
-                          {role.description}
-                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                      <p className="text-xs text-muted-foreground mb-2">Permisos:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {permissionCategories.map(cat => {
+                          const hasPermission = role.permissions?.includes(cat.id);
+                          return (
+                            <Badge 
+                              key={cat.id}
+                              variant={hasPermission ? "default" : "outline"}
+                              className={`text-[10px] px-1.5 py-0 ${!hasPermission && "opacity-40"}`}
+                            >
+                              {hasPermission ? (
+                                <Check className="h-2.5 w-2.5 mr-0.5" />
+                              ) : (
+                                <X className="h-2.5 w-2.5 mr-0.5" />
+                              )}
+                              {cat.name.split(" ")[0]}
+                            </Badge>
+                          );
+                        })}
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-2">
-                    <p className="text-xs text-muted-foreground mb-2">Permisos:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {permissionCategories.map(cat => {
-                        const hasPermission = role.permissions.includes(cat.id);
-                        return (
-                          <Badge 
-                            key={cat.id}
-                            variant={hasPermission ? "default" : "outline"}
-                            className={`text-[10px] px-1.5 py-0 ${!hasPermission && "opacity-40"}`}
-                          >
-                            {hasPermission ? (
-                              <Check className="h-2.5 w-2.5 mr-0.5" />
-                            ) : (
-                              <X className="h-2.5 w-2.5 mr-0.5" />
-                            )}
-                            {cat.name.split(" ")[0]}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Detailed Permissions Matrix */}
@@ -455,14 +506,17 @@ const Team = () => {
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="pl-6 w-48">Permiso</TableHead>
-                      {festivalRoles.slice(0, 5).map(role => (
-                        <TableHead key={role.name} className="text-center text-xs px-2">
-                          <div className="flex flex-col items-center gap-1">
-                            <role.icon className={`h-4 w-4 ${role.color}`} />
-                            <span className="truncate max-w-[80px]">{role.name.split(" ").slice(-1)[0]}</span>
-                          </div>
-                        </TableHead>
-                      ))}
+                      {roles.slice(0, 5).map(role => {
+                        const RoleIcon = iconMap[role.icon || ''] || Users;
+                        return (
+                          <TableHead key={role.id} className="text-center text-xs px-2">
+                            <div className="flex flex-col items-center gap-1">
+                              <RoleIcon className={`h-4 w-4 ${role.color || 'text-muted-foreground'}`} />
+                              <span className="truncate max-w-[80px]">{role.name.split(" ").slice(-1)[0]}</span>
+                            </div>
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -474,9 +528,9 @@ const Team = () => {
                             <span className="text-sm">{cat.name}</span>
                           </div>
                         </TableCell>
-                        {festivalRoles.slice(0, 5).map(role => (
-                          <TableCell key={role.name} className="text-center">
-                            {role.permissions.includes(cat.id) ? (
+                        {roles.slice(0, 5).map(role => (
+                          <TableCell key={role.id} className="text-center">
+                            {role.permissions?.includes(cat.id) ? (
                               <Check className="h-4 w-4 text-emerald-500 mx-auto" />
                             ) : (
                               <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />
