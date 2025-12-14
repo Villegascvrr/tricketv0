@@ -8,21 +8,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Plus, Search, List, LayoutGrid, Calendar, AlertTriangle, 
   CheckCircle2, Clock, XCircle, Users, Truck, HardHat, Music,
   ClipboardList, Euro, FileCheck, MapPin, Shield, Ticket, MessageSquare,
-  Clapperboard, ArrowRight, CircleDot
+  Clapperboard, ArrowRight, CircleDot, RefreshCw
 } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
-import { usePreFestivalTasks, ViewMode } from "@/hooks/usePreFestivalTasks";
+import { usePreFestivalTasksSupabase, ViewMode, PreFestivalTask } from "@/hooks/usePreFestivalTasksSupabase";
 import { TaskCard } from "@/components/prefestival/TaskCard";
 import { TaskDetailDrawer } from "@/components/prefestival/TaskDetailDrawer";
 import { TaskCreateDialog } from "@/components/prefestival/TaskCreateDialog";
-import { KanbanView } from "@/components/prefestival/KanbanView";
+import { KanbanViewDnd } from "@/components/prefestival/KanbanViewDnd";
 import { TimelineView } from "@/components/prefestival/TimelineView";
 import { AlertsPanel } from "@/components/prefestival/AlertsPanel";
-import { PreFestivalTask, areaLabels, statusLabels, priorityLabels, TaskArea, TaskStatus, TaskPriority } from "@/data/preFestivalMockData";
+import { areaLabels, statusLabels, priorityLabels, TaskArea, TaskStatus, TaskPriority } from "@/data/preFestivalMockData";
 import { cn } from "@/lib/utils";
 
 // ============ ORIGINAL DATA ============
@@ -142,8 +143,9 @@ const PreFestivalOperations = () => {
   const {
     tasks, allTasks, milestones, tasksByStatus, stats, alerts, teamMembers,
     viewMode, setViewMode, filters, setFilters,
-    addTask, updateTask, deleteTask, addSubtask, toggleSubtask, addComment, addAttachment
-  } = usePreFestivalTasks();
+    addTask, updateTask, deleteTask, addSubtask, toggleSubtask, addComment, addAttachment,
+    isLoading, error
+  } = usePreFestivalTasksSupabase();
 
   const [selectedTask, setSelectedTask] = useState<PreFestivalTask | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -208,9 +210,15 @@ const PreFestivalOperations = () => {
                 <ClipboardList className="h-4 w-4 text-primary" />
                 <span className="text-xs text-muted-foreground">Tareas</span>
               </div>
-              <p className="text-2xl font-bold">{stats.completedPercent}%</p>
-              <Progress value={stats.completedPercent} className="h-1 mt-1" />
-              <p className="text-xs text-muted-foreground mt-1">{stats.completed}/{stats.total}</p>
+              {isLoading ? (
+                <Skeleton className="h-8 w-16 mb-1" />
+              ) : (
+                <>
+                  <p className="text-2xl font-bold">{stats.completionRate}%</p>
+                  <Progress value={stats.completionRate} className="h-1 mt-1" />
+                  <p className="text-xs text-muted-foreground mt-1">{stats.completed}/{stats.total}</p>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -243,16 +251,22 @@ const PreFestivalOperations = () => {
               <Progress value={(checklistCompleted / preProductionChecklist.length) * 100} className="h-1 mt-1" />
             </CardContent>
           </Card>
-          <Card className={stats.critical > 0 || stats.overdue > 0 ? "border-warning/30" : ""}>
+          <Card className={stats.overdue > 0 ? "border-warning/30" : ""}>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-2 mb-1">
                 <AlertTriangle className="h-4 w-4 text-warning" />
                 <span className="text-xs text-muted-foreground">Alertas</span>
               </div>
-              <p className={cn("text-2xl font-bold", alerts.length > 0 && "text-warning")}>{alerts.length}</p>
-              <Badge className={cn("text-[10px]", getRiskColor(stats.riskLevel))}>
-                Riesgo {stats.riskLevel}
-              </Badge>
+              {isLoading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <>
+                  <p className={cn("text-2xl font-bold", alerts.length > 0 && "text-warning")}>{alerts.length}</p>
+                  <Badge className={cn("text-[10px]", stats.overdue > 0 ? "bg-warning text-warning-foreground" : "bg-success text-success-foreground")}>
+                    {stats.overdue > 0 ? `${stats.overdue} vencidas` : 'Sin alertas'}
+                  </Badge>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -353,18 +367,55 @@ const PreFestivalOperations = () => {
                   </CardContent>
                 </Card>
 
-                {viewMode === 'list' && (
+                {isLoading ? (
                   <div className="space-y-3">
-                    {tasks.map(task => (
-                      <TaskCard key={task.id} task={task} onOpen={handleOpenTask} onStatusChange={handleStatusChange} onDelete={deleteTask} />
+                    {[1, 2, 3].map(i => (
+                      <Card key={i}>
+                        <CardContent className="py-4">
+                          <div className="flex items-center gap-4">
+                            <Skeleton className="h-10 w-10 rounded" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-4 w-3/4" />
+                              <Skeleton className="h-3 w-1/2" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
-                    {tasks.length === 0 && (
-                      <Card><CardContent className="py-12 text-center text-muted-foreground">No hay tareas</CardContent></Card>
-                    )}
                   </div>
+                ) : error ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
+                      <p className="text-destructive font-medium">Error al cargar tareas</p>
+                      <p className="text-sm text-muted-foreground mt-1">Intenta recargar la página</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {viewMode === 'list' && (
+                      <div className="space-y-3">
+                        {tasks.map(task => (
+                          <TaskCard key={task.id} task={task as any} onOpen={handleOpenTask as any} onStatusChange={handleStatusChange} onDelete={deleteTask} />
+                        ))}
+                        {tasks.length === 0 && (
+                          <Card>
+                            <CardContent className="py-12 text-center text-muted-foreground">
+                              <ClipboardList className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No hay tareas creadas</p>
+                              <Button onClick={() => setCreateOpen(true)} variant="outline" size="sm" className="mt-4">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Crear primera tarea
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                    {viewMode === 'kanban' && <KanbanViewDnd tasksByStatus={tasksByStatus as any} onOpenTask={handleOpenTask as any} onStatusChange={handleStatusChange} onDeleteTask={deleteTask} />}
+                    {viewMode === 'timeline' && <TimelineView tasks={allTasks as any} milestones={milestones as any} onOpenTask={handleOpenTask as any} />}
+                  </>
                 )}
-                {viewMode === 'kanban' && <KanbanView tasksByStatus={tasksByStatus} onOpenTask={handleOpenTask} onStatusChange={handleStatusChange} onDeleteTask={deleteTask} />}
-                {viewMode === 'timeline' && <TimelineView tasks={allTasks} milestones={milestones} onOpenTask={handleOpenTask} />}
               </div>
               <div className="lg:col-span-1">
                 <AlertsPanel alerts={alerts} onOpenTask={handleOpenTaskById} />
