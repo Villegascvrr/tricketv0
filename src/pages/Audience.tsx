@@ -1,127 +1,178 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Users, MapPin, UserCheck, Heart, Mail, Phone, Megaphone, Download, Filter, ChevronDown } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Users, 
+  MapPin, 
+  UserCheck, 
+  TrendingUp, 
+  Target,
+  Zap,
+  Repeat,
+  GraduationCap,
+  Briefcase,
+  Ticket,
+  Euro,
+  ArrowRight,
+  ChevronRight,
+  Sparkles
+} from "lucide-react";
 import { festivalData } from "@/data/festivalData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
-import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 
+// Actionable segments data - based on festival audience patterns
+const actionableSegments = [
+  {
+    id: 'jovenes_sevilla',
+    name: 'Jóvenes Sevilla',
+    description: 'Universitarios y jóvenes trabajadores de Sevilla capital',
+    icon: GraduationCap,
+    size: 4200,
+    sizePercent: 28.3,
+    ticketType: 'General + Early Bird',
+    avgTicketPrice: 22,
+    conversionPotential: 85,
+    conversionLabel: 'Muy alto',
+    characteristics: ['18-24 años', 'Sevilla ciudad', 'Email activo'],
+    action: 'Campaña universitaria Instagram + WhatsApp',
+    estimatedImpact: '+320 entradas',
+    priority: 'high'
+  },
+  {
+    id: 'repeat_buyers',
+    name: 'Repeat Buyers',
+    description: 'Asistentes a ediciones anteriores (2023-2024)',
+    icon: Repeat,
+    size: 2850,
+    sizePercent: 19.2,
+    ticketType: 'General + VIP',
+    avgTicketPrice: 35,
+    conversionPotential: 92,
+    conversionLabel: 'Excelente',
+    characteristics: ['Compra recurrente', 'Email verificado', 'Marketing consent'],
+    action: 'Email personalizado con precio especial',
+    estimatedImpact: '+180 entradas',
+    priority: 'high'
+  },
+  {
+    id: 'provincia_andalucia',
+    name: 'Andalucía Exterior',
+    description: 'Públicos de Cádiz, Málaga, Córdoba con historial de viaje',
+    icon: MapPin,
+    size: 2100,
+    sizePercent: 14.1,
+    ticketType: 'General',
+    avgTicketPrice: 24,
+    conversionPotential: 65,
+    conversionLabel: 'Moderado',
+    characteristics: ['Cádiz/Málaga/Córdoba', '18-30 años', 'Pack transporte'],
+    action: 'Promoción bus + entrada combo',
+    estimatedImpact: '+140 entradas',
+    priority: 'medium'
+  },
+  {
+    id: 'vip_seekers',
+    name: 'VIP Seekers',
+    description: 'Perfil alto gasto, interés en experiencia premium',
+    icon: Sparkles,
+    size: 890,
+    sizePercent: 6.0,
+    ticketType: 'VIP exclusivo',
+    avgTicketPrice: 85,
+    conversionPotential: 78,
+    conversionLabel: 'Alto',
+    characteristics: ['25-35 años', 'Compra VIP previa', 'Alto ticket medio'],
+    action: 'Lanzamiento VIP exclusivo con ventajas',
+    estimatedImpact: '+€25K revenue',
+    priority: 'medium'
+  },
+  {
+    id: 'jovenes_trabajadores',
+    name: 'Jóvenes Profesionales',
+    description: 'Trabajadores 25-30 años con capacidad de gasto',
+    icon: Briefcase,
+    size: 1650,
+    sizePercent: 11.1,
+    ticketType: 'General + Upgrades',
+    avgTicketPrice: 45,
+    conversionPotential: 70,
+    conversionLabel: 'Alto',
+    characteristics: ['25-30 años', 'Área metropolitana', 'Upgrade potencial'],
+    action: 'Promoción upgrade VIP a mitad de precio',
+    estimatedImpact: '+€15K revenue',
+    priority: 'medium'
+  },
+  {
+    id: 'cold_leads',
+    name: 'Leads Fríos',
+    description: 'Registrados sin compra, interacción hace +30 días',
+    icon: Target,
+    size: 3200,
+    sizePercent: 21.5,
+    ticketType: 'Early Bird / Descuento',
+    avgTicketPrice: 18,
+    conversionPotential: 25,
+    conversionLabel: 'Bajo',
+    characteristics: ['Sin compra', 'Registro web', 'Inactivos'],
+    action: 'Reactivación con oferta flash 48h',
+    estimatedImpact: '+95 entradas',
+    priority: 'low'
+  }
+];
+
+// Geographic data for the chart
+const geographicData = [
+  { zona: 'Sevilla capital', asistentes: 5640, percent: 38, ticketMedio: 28 },
+  { zona: 'Área metropolitana', asistentes: 2970, percent: 20, ticketMedio: 25 },
+  { zona: 'Resto Andalucía', asistentes: 3570, percent: 24, ticketMedio: 24 },
+  { zona: 'Resto España', asistentes: 1785, percent: 12, ticketMedio: 32 },
+  { zona: 'Internacional', asistentes: 885, percent: 6, ticketMedio: 45 }
+];
+
+// Age segments with ticket preferences
+const ageSegments = [
+  { rango: '18-21', asistentes: 4455, percent: 30, ticketPref: 'Early Bird', avgPrice: 19 },
+  { rango: '22-25', asistentes: 4950, percent: 33, ticketPref: 'General', avgPrice: 24 },
+  { rango: '26-30', asistentes: 3465, percent: 23, ticketPref: 'General + VIP', avgPrice: 38 },
+  { rango: '31+', asistentes: 1980, percent: 14, ticketPref: 'VIP', avgPrice: 65 }
+];
+
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
 const Audience = () => {
-  const { audiencia } = festivalData;
+  const { audiencia, overview } = festivalData;
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
   
-  // Segmentation filters
-  const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
-  const [selectedAges, setSelectedAges] = useState<string[]>([]);
-  const [filters, setFilters] = useState({
-    hasEmail: false,
-    hasPhone: false,
-    hasMarketingConsent: false,
-  });
+  const totalAsistentes = overview.entradasVendidas;
 
-  // Calculate stats
-  const totalSample = audiencia.totalAsistentes;
-  const emailPercent = ((audiencia.contactStats.conEmail / totalSample) * 100).toFixed(0);
-  const phonePercent = ((audiencia.contactStats.conTelefono / totalSample) * 100).toFixed(0);
-  const marketingPercent = ((audiencia.contactStats.consentimientoMarketing / totalSample) * 100).toFixed(0);
+  // Calculate total potential from segments
+  const totalPotential = useMemo(() => {
+    return actionableSegments.reduce((acc, seg) => {
+      const match = seg.estimatedImpact.match(/\+(\d+)/);
+      if (match && seg.estimatedImpact.includes('entradas')) {
+        return acc + parseInt(match[1]);
+      }
+      return acc;
+    }, 0);
+  }, []);
 
-  // Calculate age stats
-  const ageData = audiencia.edades.map(e => ({
-    name: e.rango,
-    value: e.asistentes,
-    percent: ((e.asistentes / totalSample) * 100).toFixed(1)
-  }));
-
-  const avgAge = Math.round(
-    audiencia.edades.reduce((acc, e) => {
-      const midAge = e.rango === '31+' ? 35 : (parseInt(e.rango.split('-')[0]) + parseInt(e.rango.split('-')[1])) / 2;
-      return acc + midAge * e.asistentes;
-    }, 0) / totalSample
-  );
-
-  // Province data
-  const provinceData = audiencia.provincias.map(p => ({
-    name: p.nombre,
-    value: p.asistentes,
-    percent: ((p.asistentes / totalSample) * 100).toFixed(1)
-  }));
-
-  // City data
-  const cityData = audiencia.ciudades.map(c => ({
-    name: c.nombre,
-    value: c.asistentes,
-    percent: ((c.asistentes / totalSample) * 100).toFixed(1)
-  }));
-
-  // Colors for charts
-  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--muted))', 'hsl(var(--muted-foreground))'];
-
-  // Calculate filtered segment
-  const calculateSegmentSize = () => {
-    let size = totalSample;
-    
-    if (selectedProvinces.length > 0) {
-      size = audiencia.provincias
-        .filter(p => selectedProvinces.includes(p.nombre))
-        .reduce((acc, p) => acc + p.asistentes, 0);
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-success/10 text-success border-success/30';
+      case 'medium': return 'bg-warning/10 text-warning border-warning/30';
+      case 'low': return 'bg-muted text-muted-foreground border-muted';
+      default: return 'bg-muted text-muted-foreground';
     }
-    
-    if (selectedAges.length > 0) {
-      const ageRatio = audiencia.edades
-        .filter(e => selectedAges.includes(e.rango))
-        .reduce((acc, e) => acc + e.asistentes, 0) / totalSample;
-      size = Math.round(size * ageRatio);
-    }
-    
-    if (filters.hasEmail) size = Math.round(size * (audiencia.contactStats.conEmail / totalSample));
-    if (filters.hasPhone) size = Math.round(size * (audiencia.contactStats.conTelefono / totalSample));
-    if (filters.hasMarketingConsent) size = Math.round(size * (audiencia.contactStats.consentimientoMarketing / totalSample));
-    
-    return size;
   };
 
-  const segmentSize = calculateSegmentSize();
-  const segmentPercent = ((segmentSize / totalSample) * 100).toFixed(1);
-
-  const handleExportCSV = () => {
-    // Simulate export
-    toast.success("Exportación iniciada", {
-      description: `Segmento de ${segmentSize.toLocaleString('es-ES')} contactos exportado a CSV`
-    });
+  const getConversionColor = (potential: number) => {
+    if (potential >= 80) return 'text-success';
+    if (potential >= 60) return 'text-warning';
+    return 'text-muted-foreground';
   };
-
-  const toggleProvince = (province: string) => {
-    setSelectedProvinces(prev => 
-      prev.includes(province) 
-        ? prev.filter(p => p !== province)
-        : [...prev, province]
-    );
-  };
-
-  const toggleAge = (age: string) => {
-    setSelectedAges(prev => 
-      prev.includes(age) 
-        ? prev.filter(a => a !== age)
-        : [...prev, age]
-    );
-  };
-
-  const clearFilters = () => {
-    setSelectedProvinces([]);
-    setSelectedAges([]);
-    setFilters({ hasEmail: false, hasPhone: false, hasMarketingConsent: false });
-  };
-
-  const hasActiveFilters = selectedProvinces.length > 0 || selectedAges.length > 0 || filters.hasEmail || filters.hasPhone || filters.hasMarketingConsent;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -129,424 +180,316 @@ const Audience = () => {
         <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
         
         {/* Header */}
-        <div className="mb-1">
-          <h1 className="text-lg font-bold text-foreground">Público y Audiencia</h1>
-          <p className="text-xs text-muted-foreground">Perfil demográfico y análisis del público</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Público y Audiencia</h1>
+            <p className="text-xs text-muted-foreground">Segmentos accionables para decisiones de marketing y ventas</p>
+          </div>
+          <Badge variant="outline" className="text-xs">
+            {totalAsistentes.toLocaleString('es-ES')} entradas vendidas
+          </Badge>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <Card>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="h-4 w-4 text-primary" />
-                </div>
+            <CardContent className="pt-3 pb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-muted-foreground uppercase">Segmentos Activos</span>
               </div>
-              <div className="text-2xl font-bold">{festivalData.overview.entradasVendidas.toLocaleString('es-ES')}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">Asistentes únicos</p>
+              <p className="text-xl font-bold">{actionableSegments.length}</p>
+              <p className="text-[10px] text-muted-foreground">{actionableSegments.filter(s => s.priority === 'high').length} prioritarios</p>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-lg bg-accent/20">
-                  <UserCheck className="h-4 w-4 text-accent-foreground" />
-                </div>
+            <CardContent className="pt-3 pb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Target className="h-4 w-4 text-success" />
+                <span className="text-[11px] text-muted-foreground uppercase">Potencial Total</span>
               </div>
-              <div className="text-2xl font-bold">{avgAge} años</div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {((ageData[0].value + ageData[1].value) / totalSample * 100).toFixed(0)}% entre 18-25
-              </p>
+              <p className="text-xl font-bold text-success">+{totalPotential}</p>
+              <p className="text-[10px] text-muted-foreground">entradas estimadas</p>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <MapPin className="h-4 w-4 text-secondary-foreground" />
-                </div>
+            <CardContent className="pt-3 pb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Repeat className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-muted-foreground uppercase">Repeat Rate</span>
               </div>
-              <div className="text-2xl font-bold">{audiencia.provincias[0].nombre}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">{provinceData[0].percent}% del público</p>
+              <p className="text-xl font-bold">38%</p>
+              <p className="text-[10px] text-success">+12% vs 2024</p>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-lg bg-success/10">
-                  <Heart className="h-4 w-4 text-success" />
-                </div>
+            <CardContent className="pt-3 pb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Euro className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-muted-foreground uppercase">Ticket Medio</span>
               </div>
-              <div className="text-2xl font-bold">38%</div>
-              <p className="text-xs text-success mt-0.5">+12% vs 2024</p>
+              <p className="text-xl font-bold">€{(overview.ingresosTotales / totalAsistentes).toFixed(0)}</p>
+              <p className="text-[10px] text-muted-foreground">por asistente</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-3 pb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-muted-foreground uppercase">Local vs Foráneo</span>
+              </div>
+              <p className="text-xl font-bold">58% / 42%</p>
+              <p className="text-[10px] text-muted-foreground">Sevilla vs otros</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Charts Row 1: Province and City */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {/* Province Chart */}
+        {/* Actionable Segments - Main Section */}
+        <Card className="border-2 border-primary/20">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  Segmentos Accionables
+                </CardTitle>
+                <CardDescription className="text-[11px]">Grupos definidos con acción concreta y potencial medible</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">Alto</Badge>
+                <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/30">Medio</Badge>
+                <Badge variant="outline" className="text-[10px] bg-muted text-muted-foreground">Bajo</Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {actionableSegments.map((segment) => {
+                const IconComponent = segment.icon;
+                const isSelected = selectedSegment === segment.id;
+                
+                return (
+                  <div 
+                    key={segment.id}
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
+                        : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                    }`}
+                    onClick={() => setSelectedSegment(isSelected ? null : segment.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Icon */}
+                      <div className={`p-2 rounded-lg shrink-0 ${getPriorityColor(segment.priority)}`}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      
+                      {/* Main Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-sm">{segment.name}</span>
+                          <Badge variant="outline" className={`text-[10px] ${getPriorityColor(segment.priority)}`}>
+                            {segment.priority === 'high' ? 'Prioritario' : segment.priority === 'medium' ? 'Moderado' : 'Bajo'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">{segment.description}</p>
+                        
+                        {/* Key Metrics Row */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            <span className="font-medium">{segment.size.toLocaleString('es-ES')}</span>
+                            <span className="text-muted-foreground">({segment.sizePercent}%)</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Ticket className="h-3 w-3 text-muted-foreground" />
+                            <span>{segment.ticketType}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Euro className="h-3 w-3 text-muted-foreground" />
+                            <span>€{segment.avgTicketPrice} medio</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className={`h-3 w-3 ${getConversionColor(segment.conversionPotential)}`} />
+                            <span className={`font-medium ${getConversionColor(segment.conversionPotential)}`}>
+                              {segment.conversionPotential}% conversión
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Impact Badge */}
+                      <div className="text-right shrink-0">
+                        <div className="text-sm font-bold text-success">{segment.estimatedImpact}</div>
+                        <p className="text-[10px] text-muted-foreground">impacto est.</p>
+                      </div>
+                      
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? 'rotate-90' : ''}`} />
+                    </div>
+                    
+                    {/* Expanded Details */}
+                    {isSelected && (
+                      <div className="mt-3 pt-3 border-t space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Características</p>
+                            <div className="flex flex-wrap gap-1">
+                              {segment.characteristics.map((char, i) => (
+                                <Badge key={i} variant="secondary" className="text-[10px]">{char}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Potencial de Conversión</p>
+                            <div className="flex items-center gap-2">
+                              <Progress value={segment.conversionPotential} className="h-2 flex-1" />
+                              <span className={`text-sm font-medium ${getConversionColor(segment.conversionPotential)}`}>
+                                {segment.conversionLabel}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Zap className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-xs font-medium text-primary">Acción Recomendada</span>
+                          </div>
+                          <p className="text-sm">{segment.action}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Geographic + Age Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Geographic Distribution */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                Distribución por Provincia
+                Distribución Geográfica
               </CardTitle>
-              <CardDescription className="text-xs">Origen geográfico de los asistentes</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={provinceData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-popover border rounded-md p-2 shadow-lg text-xs">
-                            <p className="font-medium">{payload[0].payload.name}</p>
-                            <p className="text-muted-foreground">
-                              {payload[0].value} asistentes ({payload[0].payload.percent}%)
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {provinceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* City Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Top Ciudades
-              </CardTitle>
-              <CardDescription>Ciudades con mayor presencia</CardDescription>
+              <CardDescription className="text-[11px]">Origen y ticket medio por zona</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={cityData} layout="vertical" margin={{ left: 30, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" className="text-xs" />
-                  <YAxis dataKey="name" type="category" width={100} className="text-xs" />
-                  <Tooltip 
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-popover border rounded-lg p-2 shadow-lg">
-                            <p className="font-medium">{payload[0].payload.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {payload[0].value} asistentes ({payload[0].payload.percent}%)
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {cityData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Row 2: Age and Contact Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Age Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Distribución por Edad
-              </CardTitle>
-              <CardDescription>Rangos de edad de los asistentes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-8">
-                <ResponsiveContainer width="50%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={ageData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {ageData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-popover border rounded-lg p-2 shadow-lg">
-                              <p className="font-medium">{payload[0].payload.name} años</p>
-                              <p className="text-sm text-muted-foreground">
-                                {payload[0].value} asistentes ({payload[0].payload.percent}%)
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="flex-1 space-y-3">
-                  {ageData.map((age, index) => (
-                    <div key={age.name} className="flex items-center justify-between">
+              <div className="space-y-3">
+                {geographicData.map((zona, index) => (
+                  <div key={zona.zona} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS[index] }}
+                          className="w-2.5 h-2.5 rounded-full" 
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
                         />
-                        <span className="text-sm font-medium">{age.name} años</span>
+                        <span className="font-medium">{zona.zona}</span>
                       </div>
-                      <div className="text-right">
-                        <span className="text-sm font-bold">{age.percent}%</span>
-                        <span className="text-xs text-muted-foreground ml-2">({age.value})</span>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-muted-foreground">{zona.asistentes.toLocaleString('es-ES')}</span>
+                        <Badge variant="outline" className="text-[10px]">€{zona.ticketMedio}</Badge>
+                        <span className="font-medium w-8 text-right">{zona.percent}%</span>
                       </div>
                     </div>
-                  ))}
+                    <Progress value={zona.percent} className="h-1.5" />
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-3 border-t">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Oportunidad detectada:</span>
+                  <span className="font-medium">Málaga y Cádiz con bajo ticket medio</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Contact Stats */}
+          {/* Age Segments with Ticket Preferences */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Megaphone className="h-5 w-5 text-primary" />
-                Datos de Contacto
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <UserCheck className="h-4 w-4 text-primary" />
+                Segmentos por Edad
               </CardTitle>
-              <CardDescription>Disponibilidad de información de contacto</CardDescription>
+              <CardDescription className="text-[11px]">Preferencia de entrada y precio medio</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Email */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Con Email</span>
+            <CardContent>
+              <div className="space-y-3">
+                {ageSegments.map((age, index) => (
+                  <div key={age.rango} className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-2.5 h-2.5 rounded-full" 
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="font-semibold text-sm">{age.rango} años</span>
+                        <Badge variant="secondary" className="text-[10px]">{age.percent}%</Badge>
+                      </div>
+                      <span className="text-sm font-medium">{age.asistentes.toLocaleString('es-ES')}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1">
+                        <Ticket className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">Preferencia:</span>
+                        <span className="font-medium">{age.ticketPref}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Euro className="h-3 w-3 text-muted-foreground" />
+                        <span className="font-medium">€{age.avgPrice}</span>
+                        <span className="text-muted-foreground">medio</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-lg font-bold text-primary">{emailPercent}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all"
-                    style={{ width: `${emailPercent}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {audiencia.contactStats.conEmail.toLocaleString('es-ES')} contactos con email
-                </p>
+                ))}
               </div>
-
-              {/* Phone */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Con Teléfono</span>
-                  </div>
-                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{phonePercent}%</span>
+              
+              <div className="mt-4 pt-3 border-t">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Insight:</span>
+                  <span className="font-medium">31+ años = 14% público pero 22% revenue</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full transition-all"
-                    style={{ width: `${phonePercent}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {audiencia.contactStats.conTelefono.toLocaleString('es-ES')} contactos con teléfono
-                </p>
-              </div>
-
-              {/* Marketing Consent */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Marketing Consent</span>
-                  </div>
-                  <span className="text-lg font-bold text-green-600 dark:text-green-400">{marketingPercent}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{ width: `${marketingPercent}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {audiencia.contactStats.consentimientoMarketing.toLocaleString('es-ES')} han aceptado recibir comunicaciones
-                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Segmentation Module */}
-        <Card className="border-2 border-primary/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-primary" />
-                  Segmentación de Audiencia
-                </CardTitle>
-                <CardDescription>Filtra y exporta segmentos específicos de tu base de datos</CardDescription>
-              </div>
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  Limpiar filtros
-                </Button>
-              )}
-            </div>
+        {/* Contact Quality */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Calidad de Datos de Contacto</CardTitle>
+            <CardDescription className="text-[11px]">Base de datos disponible para activaciones</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Filter Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Province Filter */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Provincias
-                      {selectedProvinces.length > 0 && (
-                        <Badge variant="secondary" className="ml-1">{selectedProvinces.length}</Badge>
-                      )}
-                    </span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  {audiencia.provincias.map(p => (
-                    <DropdownMenuCheckboxItem
-                      key={p.nombre}
-                      checked={selectedProvinces.includes(p.nombre)}
-                      onCheckedChange={() => toggleProvince(p.nombre)}
-                    >
-                      {p.nombre} ({((p.asistentes / totalSample) * 100).toFixed(0)}%)
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Age Filter */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    <span className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Edades
-                      {selectedAges.length > 0 && (
-                        <Badge variant="secondary" className="ml-1">{selectedAges.length}</Badge>
-                      )}
-                    </span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  {audiencia.edades.map(e => (
-                    <DropdownMenuCheckboxItem
-                      key={e.rango}
-                      checked={selectedAges.includes(e.rango)}
-                      onCheckedChange={() => toggleAge(e.rango)}
-                    >
-                      {e.rango} años ({((e.asistentes / totalSample) * 100).toFixed(0)}%)
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Contact Filters */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="hasEmail" 
-                    checked={filters.hasEmail}
-                    onCheckedChange={(checked) => setFilters(f => ({ ...f, hasEmail: !!checked }))}
-                  />
-                  <label htmlFor="hasEmail" className="text-sm cursor-pointer">Con Email</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="hasPhone" 
-                    checked={filters.hasPhone}
-                    onCheckedChange={(checked) => setFilters(f => ({ ...f, hasPhone: !!checked }))}
-                  />
-                  <label htmlFor="hasPhone" className="text-sm cursor-pointer">Con Teléfono</label>
-                </div>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-bold">{((audiencia.contactStats.conEmail / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-xs text-muted-foreground">Con email válido</p>
+                <p className="text-[10px] text-primary mt-1">{audiencia.contactStats.conEmail.toLocaleString('es-ES')} contactos</p>
               </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="hasMarketing" 
-                    checked={filters.hasMarketingConsent}
-                    onCheckedChange={(checked) => setFilters(f => ({ ...f, hasMarketingConsent: !!checked }))}
-                  />
-                  <label htmlFor="hasMarketing" className="text-sm cursor-pointer">Marketing Consent</label>
-                </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-bold">{((audiencia.contactStats.conTelefono / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-xs text-muted-foreground">Con teléfono</p>
+                <p className="text-[10px] text-primary mt-1">{audiencia.contactStats.conTelefono.toLocaleString('es-ES')} contactos</p>
               </div>
-            </div>
-
-            {/* Segment Result */}
-            <div className="bg-muted/50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Segmento resultante</p>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-bold text-primary">
-                      {segmentSize.toLocaleString('es-ES')}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      contactos ({segmentPercent}% del total)
-                    </span>
-                  </div>
-                  {hasActiveFilters && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {selectedProvinces.map(p => (
-                        <Badge key={p} variant="secondary" className="text-xs">{p}</Badge>
-                      ))}
-                      {selectedAges.map(a => (
-                        <Badge key={a} variant="secondary" className="text-xs">{a} años</Badge>
-                      ))}
-                      {filters.hasEmail && <Badge variant="secondary" className="text-xs">Email</Badge>}
-                      {filters.hasPhone && <Badge variant="secondary" className="text-xs">Teléfono</Badge>}
-                      {filters.hasMarketingConsent && <Badge variant="secondary" className="text-xs">Consent</Badge>}
-                    </div>
-                  )}
-                </div>
-                <Button onClick={handleExportCSV} className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Exportar CSV
-                </Button>
+              <div className="p-3 rounded-lg bg-muted/30 text-center">
+                <p className="text-2xl font-bold">{((audiencia.contactStats.consentimientoMarketing / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-xs text-muted-foreground">Marketing consent</p>
+                <p className="text-[10px] text-success mt-1">Activables directamente</p>
+              </div>
+              <div className="p-3 rounded-lg bg-primary/10 text-center">
+                <p className="text-2xl font-bold text-primary">42%</p>
+                <p className="text-xs text-muted-foreground">Datos completos</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Email + Tel + Consent</p>
               </div>
             </div>
           </CardContent>
