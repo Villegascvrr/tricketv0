@@ -16,7 +16,8 @@ import {
   HardHat,
   Radio,
   ChevronDown,
-  FlaskConical
+  FlaskConical,
+  MessageCircle
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -42,7 +43,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import TryTricketModal from "@/components/TryTricketModal";
+import EventChatDrawer from "@/components/event/EventChatDrawer";
 import { useAuth } from "@/contexts/AuthContext";
+import { festivalData } from "@/data/festivalData";
 
 const mainItems = [
   {
@@ -125,6 +128,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const [tryModalOpen, setTryModalOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [operationsOpen, setOperationsOpen] = useState(
     currentPath.startsWith('/operations')
   );
@@ -227,6 +231,28 @@ export function AppSidebar() {
             {collapsed && (
               <TooltipContent side="right" className="z-50">
                 Probar Tricket gratis
+              </TooltipContent>
+            )}
+          </Tooltip>
+          
+          {/* AI Chat Button */}
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={() => setChatOpen(true)} 
+                variant="outline"
+                className={cn(
+                  "w-full mt-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200", 
+                  collapsed ? "h-10 w-10 p-0" : "h-10"
+                )}
+              >
+                <MessageCircle className={cn("h-5 w-5 text-primary", !collapsed && "mr-2")} />
+                {!collapsed && <span className="font-medium text-primary">Chat con IA</span>}
+              </Button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="z-50">
+                Chat con IA
               </TooltipContent>
             )}
           </Tooltip>
@@ -344,6 +370,14 @@ export function AppSidebar() {
       </SidebarFooter>
 
       <TryTricketModal open={tryModalOpen} onOpenChange={setTryModalOpen} />
+      
+      <EventChatDrawer
+        eventId="demo-primaverando-2025"
+        eventName={festivalData.nombre}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        isDemo={true}
+      />
     </Sidebar>
   );
 }
