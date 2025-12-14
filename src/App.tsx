@@ -27,10 +27,8 @@ const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider defaultOpen={true}>
-    <div className="flex min-h-screen w-full gap-0">
-      <AppSidebar />
-      <main className="flex-1 min-w-0">{children}</main>
-    </div>
+    <AppSidebar />
+    <main className="flex-1 min-w-0 overflow-auto">{children}</main>
   </SidebarProvider>
 );
 
