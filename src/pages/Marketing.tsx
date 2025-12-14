@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import { 
   Megaphone, 
   Mail, 
@@ -30,7 +35,8 @@ import {
   Euro,
   MessageSquare,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Plus
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -232,14 +238,74 @@ const getPlatformIcon = (platform: string) => {
 
 const Marketing = () => {
   const [expandedCampaign, setExpandedCampaign] = useState<number | null>(null);
+  const [campaigns, setCampaigns] = useState(campaignsData);
+  const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({
+    name: '',
+    type: 'paid' as 'paid' | 'organic' | 'email' | 'influencer',
+    platform: 'instagram' as 'instagram' | 'facebook' | 'twitter' | 'email',
+    budget: 0,
+    startDate: '',
+    endDate: '',
+    observation: '',
+    teamNotes: ''
+  });
   
-  const totalReach = campaignsData.reduce((acc, c) => acc + c.reach, 0);
-  const totalTicketsSold = campaignsData.reduce((acc, c) => acc + c.ticketsSold, 0);
-  const totalSpent = campaignsData.reduce((acc, c) => acc + c.spent, 0);
-  const totalRevenue = campaignsData.reduce((acc, c) => acc + c.estimatedRevenue, 0);
-  const avgCtr = campaignsData.reduce((acc, c) => acc + c.ctr, 0) / campaignsData.length;
-  const activeCampaignsCount = campaignsData.filter(c => c.status === 'active').length;
-  const completedCampaignsCount = campaignsData.filter(c => c.status === 'completed').length;
+  const totalReach = campaigns.reduce((acc, c) => acc + c.reach, 0);
+  const totalTicketsSold = campaigns.reduce((acc, c) => acc + c.ticketsSold, 0);
+  const totalSpent = campaigns.reduce((acc, c) => acc + c.spent, 0);
+  const totalRevenue = campaigns.reduce((acc, c) => acc + c.estimatedRevenue, 0);
+  const avgCtr = campaigns.reduce((acc, c) => acc + c.ctr, 0) / campaigns.length;
+  const activeCampaignsCount = campaigns.filter(c => c.status === 'active').length;
+  const completedCampaignsCount = campaigns.filter(c => c.status === 'completed').length;
+
+  const handleCreateCampaign = () => {
+    if (!newCampaign.name || !newCampaign.startDate) {
+      toast({
+        title: "Campos requeridos",
+        description: "Nombre y fecha de inicio son obligatorios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const campaign = {
+      id: campaigns.length + 1,
+      name: newCampaign.name,
+      type: newCampaign.type,
+      platform: newCampaign.platform,
+      status: 'active' as const,
+      startDate: newCampaign.startDate,
+      endDate: newCampaign.endDate || null,
+      budget: newCampaign.budget,
+      spent: 0,
+      reach: 0,
+      clicks: 0,
+      ticketsSold: 0,
+      estimatedRevenue: 0,
+      ctr: 0,
+      observation: newCampaign.observation,
+      teamNotes: newCampaign.teamNotes
+    };
+
+    setCampaigns([campaign, ...campaigns]);
+    setIsNewCampaignOpen(false);
+    setNewCampaign({
+      name: '',
+      type: 'paid',
+      platform: 'instagram',
+      budget: 0,
+      startDate: '',
+      endDate: '',
+      observation: '',
+      teamNotes: ''
+    });
+
+    toast({
+      title: "Campaña creada",
+      description: `"${campaign.name}" añadida correctamente`
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -256,10 +322,130 @@ const Marketing = () => {
               Gestión de campañas y análisis de rendimiento
             </p>
           </div>
-          <Button size="sm" className="gap-1.5 h-7 text-xs">
-            <Megaphone className="h-3.5 w-3.5" />
-            Nueva Campaña
-          </Button>
+          <Dialog open={isNewCampaignOpen} onOpenChange={setIsNewCampaignOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5 h-7 text-xs">
+                <Megaphone className="h-3.5 w-3.5" />
+                Nueva Campaña
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Nueva Campaña</DialogTitle>
+                <DialogDescription>
+                  Crea una nueva campaña de marketing. Los datos de rendimiento se actualizarán manualmente.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nombre de la campaña *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Ej: Black Friday - Últimas plazas"
+                    value={newCampaign.name}
+                    onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="type">Tipo</Label>
+                    <Select
+                      value={newCampaign.type}
+                      onValueChange={(value: 'paid' | 'organic' | 'email' | 'influencer') => 
+                        setNewCampaign({ ...newCampaign, type: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paid">Paid Ads</SelectItem>
+                        <SelectItem value="organic">Orgánico</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="influencer">Influencer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="platform">Plataforma</Label>
+                    <Select
+                      value={newCampaign.platform}
+                      onValueChange={(value: 'instagram' | 'facebook' | 'twitter' | 'email') => 
+                        setNewCampaign({ ...newCampaign, platform: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Plataforma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="twitter">Twitter</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="startDate">Fecha inicio *</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={newCampaign.startDate}
+                      onChange={(e) => setNewCampaign({ ...newCampaign, startDate: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="endDate">Fecha fin</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={newCampaign.endDate}
+                      onChange={(e) => setNewCampaign({ ...newCampaign, endDate: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="budget">Presupuesto (€)</Label>
+                  <Input
+                    id="budget"
+                    type="number"
+                    placeholder="0"
+                    value={newCampaign.budget || ''}
+                    onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="observation">Observación</Label>
+                  <Textarea
+                    id="observation"
+                    placeholder="Objetivo o notas iniciales de la campaña..."
+                    value={newCampaign.observation}
+                    onChange={(e) => setNewCampaign({ ...newCampaign, observation: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="teamNotes">Notas del equipo</Label>
+                  <Textarea
+                    id="teamNotes"
+                    placeholder="Notas internas del equipo..."
+                    value={newCampaign.teamNotes}
+                    onChange={(e) => setNewCampaign({ ...newCampaign, teamNotes: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsNewCampaignOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleCreateCampaign}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Crear Campaña
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* KPIs */}
@@ -454,7 +640,7 @@ const Marketing = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              {campaignsData.map((campaign) => {
+              {campaigns.map((campaign) => {
                 const isExpanded = expandedCampaign === campaign.id;
                 const startDateFormatted = new Date(campaign.startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
                 const endDateFormatted = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
