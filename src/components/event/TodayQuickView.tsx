@@ -119,7 +119,8 @@ const getSuggestedActions = (recommendations: Recommendation[], metrics: ReturnT
 export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuickViewProps) {
   const [isMinimized, setIsMinimized] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === "true";
+    // Por defecto cerrado si no hay preferencia guardada
+    return saved === null ? true : saved === "true";
   });
 
   const metrics = getCurrentMetrics();
@@ -151,7 +152,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
-      <CardHeader className={cn("pb-3", isMinimized && "pb-0")}>
+      <CardHeader className={cn("py-4", !isMinimized && "pb-3")}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
