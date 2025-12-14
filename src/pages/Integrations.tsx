@@ -1,11 +1,19 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plug, CheckCircle2, XCircle } from "lucide-react";
+import { Plug, CheckCircle2, XCircle, Upload, FileSpreadsheet } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { TicketImportDrawer } from "@/components/tickets/TicketImportDrawer";
+import { TicketImportHistory } from "@/components/tickets/TicketImportHistory";
+
+// Event ID for the current festival
+const EVENT_ID = "demo-primaverando-2025";
 
 const Integrations = () => {
+  const [importDrawerOpen, setImportDrawerOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-4">
@@ -15,6 +23,42 @@ const Integrations = () => {
         <div className="mb-1">
           <h1 className="text-lg font-bold text-foreground">Integraciones</h1>
           <p className="text-xs text-muted-foreground">Gestiona las conexiones con ticketeras y fuentes de datos externas</p>
+        </div>
+
+        {/* Manual Import Section */}
+        <div>
+          <h2 className="text-sm font-semibold text-foreground mb-3">Importación Manual de Tickets</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Card className="border-primary/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Importar desde CSV/Excel</CardTitle>
+                      <CardDescription>
+                        Sube archivos de ticketeras manualmente
+                      </CardDescription>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Importa datos de ventas desde archivos CSV o Excel exportados de tus ticketeras
+                </p>
+                <Button onClick={() => setImportDrawerOpen(true)} className="w-full">
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Importar Tickets
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Import History Card */}
+            <TicketImportHistory eventId={EVENT_ID} />
+          </div>
         </div>
 
         {/* Ticketing Providers */}
@@ -326,6 +370,13 @@ const Integrations = () => {
           </div>
         </div>
       </div>
+
+      {/* Import Drawer */}
+      <TicketImportDrawer
+        open={importDrawerOpen}
+        onOpenChange={setImportDrawerOpen}
+        eventId={EVENT_ID}
+      />
     </div>
   );
 };
