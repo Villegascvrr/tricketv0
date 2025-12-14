@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +13,8 @@ import {
   ArrowRight,
   Zap,
   CheckCircle2,
-  XCircle,
-  Users,
+  ChevronDown,
+  ChevronUp,
   Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations, Recommendation } from "@/utils/generateAIRecommendations";
 import { differenceInDays, format } from "date-fns";
 import { es } from "date-fns/locale";
+
+const STORAGE_KEY = "todayQuickView_minimized";
 
 interface TodayQuickViewProps {
   onOpenRecommendations: () => void;
@@ -111,10 +114,21 @@ const getSuggestedActions = (recommendations: Recommendation[], metrics: ReturnT
 };
 
 export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuickViewProps) {
+  const [isMinimized, setIsMinimized] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === "true";
+  });
+
   const metrics = getCurrentMetrics();
   const recommendations = generateAIRecommendations();
   const topAlerts = getTopAlerts(recommendations);
   const suggestedActions = getSuggestedActions(recommendations, metrics);
+
+  const toggleMinimized = () => {
+    const newValue = !isMinimized;
+    setIsMinimized(newValue);
+    localStorage.setItem(STORAGE_KEY, String(newValue));
+  };
   
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -134,7 +148,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
-      <CardHeader className="pb-3">
+      <CardHeader className={cn("pb-3", isMinimized && "pb-0")}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -142,17 +156,32 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
             </div>
             <div>
               <CardTitle className="text-base">Qué debería estar revisando hoy</CardTitle>
-              <p className="text-xs text-muted-foreground">
-                {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })} • Vista rápida de 2 minutos
-              </p>
+              {!isMinimized && (
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })} • Vista rápida de 2 minutos
+                </p>
+              )}
             </div>
           </div>
-          <Badge variant="outline" className="gap-1 text-xs">
-            <Calendar className="h-3 w-3" />
-            {metrics.daysToFestival} días para el festival
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 text-xs">
+              <Calendar className="h-3 w-3" />
+              {metrics.daysToFestival} días
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0" 
+              onClick={toggleMinimized}
+              title={isMinimized ? "Expandir vista rápida" : "Minimizar vista rápida"}
+            >
+              {isMinimized ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
+
+      {!isMinimized && (
       
       <CardContent className="space-y-4">
         {/* 3 Critical Metrics */}
@@ -322,6 +351,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
           </div>
         </div>
       </CardContent>
+      )}
     </Card>
   );
 }
