@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Settings as SettingsIcon, Save } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import ZoneManager from "@/components/settings/ZoneManager";
 
 const Settings = () => {
   return (
@@ -104,6 +105,9 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Zone Management */}
+        <ZoneManager />
 
         {/* Notifications */}
         <Card>
