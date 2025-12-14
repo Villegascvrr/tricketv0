@@ -21,9 +21,11 @@ interface Recommendation {
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
-  category: "marketing" | "pricing" | "alert";
+  category: "marketing" | "pricing" | "alert" | "operations";
   scope: "global" | "provider" | "channel" | "zone" | "ageSegment" | "city";
   targetKey?: string;
+  rule?: string;
+  dataPoint?: string;
 }
 
 const EventRecommendations = ({ eventId, recommendations: propRecommendations, isLoading, onRefresh }: EventRecommendationsProps) => {

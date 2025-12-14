@@ -18,9 +18,11 @@ interface Recommendation {
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
-  category: "marketing" | "pricing" | "alert";
+  category: "marketing" | "pricing" | "alert" | "operations";
   scope: "global" | "provider" | "channel" | "zone" | "ageSegment" | "city";
   targetKey?: string;
+  rule?: string;
+  dataPoint?: string;
 }
 
 const AIRecommendations = () => {
@@ -51,6 +53,8 @@ const AIRecommendations = () => {
         return <DollarSign className="h-3.5 w-3.5" />;
       case 'alert':
         return <AlertTriangle className="h-3.5 w-3.5" />;
+      case 'operations':
+        return <Radio className="h-3.5 w-3.5" />;
       default:
         return <Sparkles className="h-3.5 w-3.5" />;
     }
@@ -64,6 +68,8 @@ const AIRecommendations = () => {
         return 'Pricing';
       case 'alert':
         return 'Alerta';
+      case 'operations':
+        return 'Operaciones';
       default:
         return category;
     }
@@ -130,14 +136,6 @@ const AIRecommendations = () => {
     }
   };
 
-  const extractAction = (description: string): string => {
-    const actionMatch = description.match(/🎯 Acción sugerida:\s*(.+)$/s);
-    if (actionMatch) {
-      return actionMatch[1].trim();
-    }
-    return description;
-  };
-
   const RecommendationCard = ({ rec, variant }: { rec: Recommendation; variant: 'critical' | 'important' | 'suggestion' }) => {
     const status = getStatus(rec.id);
     const statusConfig = getStatusConfig(status);
@@ -149,7 +147,13 @@ const AIRecommendations = () => {
         ? 'border-l-4 border-l-warning' 
         : 'border-l-4 border-l-blue-400';
 
-    const action = extractAction(rec.description);
+    // Extraer la acción del final de la descripción
+    const actionMatch = rec.description.match(/Acción[^:]*:\s*(.+)$/s);
+    const action = actionMatch ? actionMatch[1].trim() : '';
+    
+    // Extraer contexto (todo antes de la acción)
+    const contextMatch = rec.description.match(/^([\s\S]*?)(?:Acción[^:]*:)/);
+    const context = contextMatch ? contextMatch[1].trim() : rec.description;
 
     return (
       <Card 
@@ -166,6 +170,20 @@ const AIRecommendations = () => {
             </CardTitle>
             <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
           </div>
+          
+          {/* Rule that triggered this recommendation */}
+          {rec.rule && (
+            <div className="mt-2 text-xs text-muted-foreground bg-muted/30 rounded px-2 py-1 border-l-2 border-primary/40">
+              <span className="font-medium">Regla:</span> {rec.rule}
+            </div>
+          )}
+          
+          {/* Data point */}
+          {rec.dataPoint && (
+            <div className="mt-1.5 text-xs font-medium text-primary">
+              📊 {rec.dataPoint}
+            </div>
+          )}
           
           {/* Tags row */}
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -213,11 +231,19 @@ const AIRecommendations = () => {
           </div>
         </CardHeader>
         
-        <CardContent className="p-4 pt-0">
-          <div className="bg-muted/50 rounded-md p-3">
-            <p className="text-xs text-muted-foreground mb-1 font-medium">Acción recomendada:</p>
-            <p className="text-sm leading-relaxed">{action}</p>
+        <CardContent className="p-4 pt-0 space-y-2">
+          {/* Context / Why this recommendation */}
+          <div className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+            {context}
           </div>
+          
+          {/* Action */}
+          {action && (
+            <div className="bg-primary/5 border border-primary/20 rounded-md p-3">
+              <p className="text-xs text-primary font-medium mb-1">Acción recomendada:</p>
+              <p className="text-sm leading-relaxed">{action}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
