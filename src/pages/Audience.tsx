@@ -15,12 +15,22 @@ import {
   Briefcase,
   Ticket,
   Euro,
-  ArrowRight,
   ChevronRight,
   Sparkles
 } from "lucide-react";
 import { festivalData } from "@/data/festivalData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Cell, 
+  PieChart, 
+  Pie 
+} from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 
 // Actionable segments data - based on festival audience patterns
@@ -370,14 +380,116 @@ const Audience = () => {
           </CardContent>
         </Card>
 
-        {/* Geographic + Age Analysis */}
+        {/* Charts Row - Province and Age */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Province Chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                Distribución por Provincia
+              </CardTitle>
+              <CardDescription className="text-[11px]">Origen geográfico de los asistentes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={audiencia.provincias.map(p => ({ name: p.nombre, value: p.asistentes, percent: ((p.asistentes / audiencia.totalAsistentes) * 100).toFixed(1) }))} layout="vertical" margin={{ left: 10, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-popover border rounded-md p-2 shadow-lg text-xs">
+                            <p className="font-medium">{payload[0].payload.name}</p>
+                            <p className="text-muted-foreground">
+                              {payload[0].value} asistentes ({payload[0].payload.percent}%)
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {audiencia.provincias.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Age Distribution Pie Chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Distribución por Edad
+              </CardTitle>
+              <CardDescription className="text-[11px]">Rangos de edad y preferencia de entrada</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="45%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={ageSegments.map(a => ({ name: a.rango, value: a.asistentes, percent: a.percent }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={70}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {ageSegments.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-popover border rounded-md p-2 shadow-lg text-xs">
+                              <p className="font-medium">{payload[0].payload.name} años</p>
+                              <p className="text-muted-foreground">{payload[0].payload.percent}%</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex-1 space-y-2">
+                  {ageSegments.map((age, index) => (
+                    <div key={age.rango} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index] }} />
+                        <span className="font-medium">{age.rango} años</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{age.ticketPref}</span>
+                        <Badge variant="secondary" className="text-[10px]">{age.percent}%</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Geographic + Age Analysis - Detailed */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Geographic Distribution */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                Distribución Geográfica
+                Análisis por Zona Geográfica
               </CardTitle>
               <CardDescription className="text-[11px]">Origen y ticket medio por zona</CardDescription>
             </CardHeader>
