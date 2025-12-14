@@ -186,14 +186,14 @@ export function AppSidebar() {
       <SidebarMenuItem key={item.title}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
-            <SidebarMenuButton asChild className={cn("h-8", active && "bg-sidebar-accent")}>
+            <SidebarMenuButton asChild className={cn("h-7", active && "bg-sidebar-accent")}>
               <NavLink 
                 to={item.url} 
                 className="hover:bg-sidebar-accent/50" 
                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
               >
                 <item.icon className={cn("h-4 w-4", collapsed ? "mx-auto" : "")} />
-                {!collapsed && <span className="text-sm">{item.title}</span>}
+                {!collapsed && <span className="text-[13px]">{item.title}</span>}
               </NavLink>
             </SidebarMenuButton>
           </TooltipTrigger>
@@ -208,12 +208,12 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-56")}>
-      <SidebarHeader className="border-b border-sidebar-border p-3">
+    <Sidebar collapsible="icon" className={cn("border-r border-sidebar-border transition-all duration-300", collapsed ? "w-14" : "w-52")}>
+      <SidebarHeader className="border-b border-sidebar-border px-3 py-2">
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex-1">
-              <h1 className="text-base font-bold text-sidebar-foreground leading-tight">
+              <h1 className="text-sm font-bold text-sidebar-foreground leading-tight">
                 Primaverando
               </h1>
               <p className="text-[10px] text-sidebar-foreground/60">Command Center 2025</p>
@@ -223,27 +223,28 @@ export function AppSidebar() {
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar} 
-            className={cn("h-7 w-7 shrink-0", collapsed && "mx-auto")}
+            className={cn("h-6 w-6 shrink-0", collapsed && "mx-auto")}
           >
-            {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? <Menu className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
           </Button>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="overflow-y-auto">
-        <div className={cn("px-2 py-2 space-y-1", collapsed && "px-1")}>
+        {/* Action buttons - horizontal on expanded, vertical on collapsed */}
+        <div className={cn("px-2 py-1.5", collapsed ? "space-y-1" : "flex gap-1")}>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <Button 
                 onClick={() => setTryModalOpen(true)} 
                 size="sm"
                 className={cn(
-                  "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-sm", 
-                  collapsed ? "h-8 w-8 p-0" : "h-8"
+                  "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-sm h-7", 
+                  collapsed ? "w-full p-0" : "flex-1 px-2"
                 )}
               >
-                <Sparkles className={cn("h-4 w-4", !collapsed && "mr-1.5")} />
-                {!collapsed && <span className="text-xs font-semibold">Probar gratis</span>}
+                <Sparkles className="h-3.5 w-3.5" />
+                {!collapsed && <span className="text-[11px] font-semibold ml-1">Probar</span>}
               </Button>
             </TooltipTrigger>
             {collapsed && (
@@ -260,12 +261,12 @@ export function AppSidebar() {
                 variant="outline"
                 size="sm"
                 className={cn(
-                  "w-full border-primary/30 hover:bg-primary/10 hover:border-primary/50", 
-                  collapsed ? "h-8 w-8 p-0" : "h-8"
+                  "border-primary/30 hover:bg-primary/10 hover:border-primary/50 h-7", 
+                  collapsed ? "w-full p-0" : "flex-1 px-2"
                 )}
               >
-                <MessageCircle className={cn("h-4 w-4 text-primary", !collapsed && "mr-1.5")} />
-                {!collapsed && <span className="text-xs font-medium text-primary">Chat con IA</span>}
+                <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                {!collapsed && <span className="text-[11px] font-medium text-primary ml-1">Chat IA</span>}
               </Button>
             </TooltipTrigger>
             {collapsed && (
@@ -276,14 +277,14 @@ export function AppSidebar() {
           </Tooltip>
         </div>
 
-        <SidebarGroup className="py-1">
+        <SidebarGroup className="py-0">
           {!collapsed && (
-            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-1">
+            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-0.5 h-5">
               Festival
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5 px-2">
+            <SidebarMenu className="space-y-0 px-2">
               {mainItems.map(renderMenuItem)}
               
               {/* Operations Collapsible */}
@@ -291,10 +292,10 @@ export function AppSidebar() {
                 <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className={cn("h-8 w-full justify-between", isOperationsActive && "bg-sidebar-accent")}>
+                      <SidebarMenuButton className={cn("h-7 w-full justify-between", isOperationsActive && "bg-sidebar-accent")}>
                         <div className="flex items-center">
                           <HardHat className="h-4 w-4 mr-2" />
-                          <span className="text-sm">Operaciones</span>
+                          <span className="text-[13px]">Operaciones</span>
                         </div>
                         <ChevronDown className={cn("h-3 w-3 transition-transform", operationsOpen && "rotate-180")} />
                       </SidebarMenuButton>
@@ -303,14 +304,14 @@ export function AppSidebar() {
                       <SidebarMenuSub className="ml-4 pl-2 border-l border-sidebar-border">
                         {operationsItems.map((item) => (
                           <SidebarMenuSubItem key={item.url}>
-                            <SidebarMenuSubButton asChild className={cn("h-7", isActive(item.url) && "bg-sidebar-accent")}>
+                            <SidebarMenuSubButton asChild className={cn("h-6", isActive(item.url) && "bg-sidebar-accent")}>
                               <NavLink 
                                 to={item.url}
                                 className="hover:bg-sidebar-accent/50"
                                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                               >
-                                <item.icon className="h-3.5 w-3.5 mr-2" />
-                                <span className="text-xs">{item.title}</span>
+                                <item.icon className="h-3 w-3 mr-1.5" />
+                                <span className="text-[11px]">{item.title}</span>
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -323,7 +324,7 @@ export function AppSidebar() {
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild className={cn("h-8", isOperationsActive && "bg-sidebar-accent")}>
+                      <SidebarMenuButton asChild className={cn("h-7", isOperationsActive && "bg-sidebar-accent")}>
                         <NavLink to="/operations/pre-festival" className="hover:bg-sidebar-accent/50">
                           <HardHat className="h-4 w-4 mx-auto" />
                         </NavLink>
@@ -341,23 +342,23 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <Separator className="mx-3 my-1" />
+        <Separator className="mx-3 my-0.5" />
 
-        <SidebarGroup className="py-1">
+        <SidebarGroup className="py-0">
           {!collapsed && (
-            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-1">
+            <SidebarGroupLabel className="text-[10px] text-sidebar-foreground/60 px-3 py-0.5 h-5">
               Administración
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5 px-2">
+            <SidebarMenu className="space-y-0 px-2">
               {secondaryItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2 border-t border-sidebar-border">
+      <SidebarFooter className="px-2 py-1.5 border-t border-sidebar-border">
         <DropdownMenu>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
@@ -365,13 +366,13 @@ export function AppSidebar() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start hover:bg-sidebar-accent/50 h-auto py-1.5",
+                    "w-full justify-start hover:bg-sidebar-accent/50 h-auto py-1",
                     collapsed && "justify-center px-0"
                   )}
                 >
                   <div 
                     className={cn(
-                      "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0",
+                      "h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-semibold shrink-0",
                       !collapsed && "mr-2"
                     )}
                     style={{ 
@@ -383,10 +384,10 @@ export function AppSidebar() {
                   </div>
                   {!collapsed && (
                     <div className="flex-1 text-left overflow-hidden">
-                      <p className="text-xs font-medium text-sidebar-foreground truncate">
+                      <p className="text-[11px] font-medium text-sidebar-foreground truncate leading-tight">
                         {profile?.full_name || (user ? 'Usuario' : 'Demo User')}
                       </p>
-                      <p className="text-[10px] text-sidebar-foreground/60 truncate">
+                      <p className="text-[9px] text-sidebar-foreground/60 truncate leading-tight">
                         {festivalRole?.name || user?.email || 'Director Festival'}
                       </p>
                     </div>
