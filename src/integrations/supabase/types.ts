@@ -83,6 +83,247 @@ export type Database = {
         }
         Relationships: []
       }
+      pre_festival_attachments: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          task_id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          task_id: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          task_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_festival_attachments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "pre_festival_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_festival_comments: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_festival_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "pre_festival_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_festival_milestones: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string | null
+          id: string
+          target_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          target_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          target_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_festival_milestones_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_festival_subtasks: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          task_id: string
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          task_id: string
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          task_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_festival_subtasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "pre_festival_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_festival_task_history: {
+        Row: {
+          action: string
+          changed_by: string
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          task_id: string
+        }
+        Insert: {
+          action: string
+          changed_by: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_festival_task_history_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "pre_festival_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_festival_tasks: {
+        Row: {
+          area: string
+          assignee_id: string | null
+          assignee_name: string | null
+          created_at: string
+          dependencies: string[] | null
+          description: string | null
+          due_date: string
+          event_id: string | null
+          id: string
+          milestone_id: string | null
+          priority: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          assignee_id?: string | null
+          assignee_name?: string | null
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          due_date: string
+          event_id?: string | null
+          id?: string
+          milestone_id?: string | null
+          priority?: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          assignee_id?: string | null
+          assignee_name?: string | null
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          due_date?: string
+          event_id?: string | null
+          id?: string
+          milestone_id?: string | null
+          priority?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_milestone"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "pre_festival_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pre_festival_tasks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
