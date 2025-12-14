@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -26,14 +28,14 @@ import {
   HardHat,
   Radio,
   Truck,
-  Eye,
   Edit,
+  Trash2,
   Check,
   X,
   Loader2
 } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
-import { useTeamMembers, FestivalRole } from "@/hooks/useTeamMembers";
+import { useTeamMembers, FestivalRole, TeamMember } from "@/hooks/useTeamMembers";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -64,6 +66,15 @@ const Team = () => {
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [createRoleOpen, setCreateRoleOpen] = useState(false);
   
+  // Edit/Delete member state
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editRoleId, setEditRoleId] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  
   // Form state for new member
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberEmail, setNewMemberEmail] = useState("");
@@ -75,8 +86,45 @@ const Team = () => {
     members, 
     isLoading, 
     inviteMember, 
-    isInviting 
+    updateMember,
+    deleteMember,
+    isInviting,
+    isUpdating,
+    isDeleting
   } = useTeamMembers();
+
+  // Open edit drawer with member data
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setEditName(member.name || "");
+    setEditEmail(member.email);
+    setEditPhone(member.phone || "");
+    setEditRoleId(member.festival_role_id || "");
+    setEditStatus(member.status);
+  };
+
+  // Save edited member
+  const handleSaveEdit = () => {
+    if (!editingMember) return;
+    updateMember({
+      id: editingMember.id,
+      updates: {
+        name: editName || null,
+        email: editEmail,
+        phone: editPhone || null,
+        festival_role_id: editRoleId || null,
+        status: editStatus,
+      }
+    });
+    setEditingMember(null);
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = () => {
+    if (!deletingMember) return;
+    deleteMember(deletingMember.id);
+    setDeletingMember(null);
+  };
 
   const activeMembers = members.filter(m => m.status === "active").length;
   const invitedMembers = members.filter(m => m.status === "invited").length;
@@ -359,11 +407,21 @@ const Team = () => {
                             </TableCell>
                             <TableCell className="text-right pr-6">
                               <div className="flex items-center justify-end gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => handleEditMember(member)}
+                                >
                                   <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={() => setDeletingMember(member)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>
@@ -546,6 +604,132 @@ const Team = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Member Drawer */}
+      <Drawer open={!!editingMember} onOpenChange={(open) => !open && setEditingMember(null)}>
+        <DrawerContent>
+          <div className="mx-auto w-full max-w-md">
+            <DrawerHeader>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {(editName || editEmail).split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <DrawerTitle>Editar miembro</DrawerTitle>
+                  <DrawerDescription>Modifica los datos de {editName || editEmail}</DrawerDescription>
+                </div>
+              </div>
+            </DrawerHeader>
+            <div className="p-4 space-y-4">
+              <div className="space-y-2">
+                <Label>Nombre completo</Label>
+                <Input 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nombre completo"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input 
+                  type="email"
+                  value={editEmail} 
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="email@ejemplo.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Teléfono</Label>
+                <Input 
+                  value={editPhone} 
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="+34 600 000 000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Rol en el festival</Label>
+                <Select value={editRoleId} onValueChange={setEditRoleId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sin rol</SelectItem>
+                    {roles.map(role => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="invited">Invitado</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DrawerFooter>
+              <div className="flex gap-2 w-full">
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => {
+                    setEditingMember(null);
+                    if (editingMember) setDeletingMember(editingMember);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline" className="flex-1">Cancelar</Button>
+                </DrawerClose>
+                <Button 
+                  className="flex-1" 
+                  onClick={handleSaveEdit}
+                  disabled={isUpdating || !editEmail}
+                >
+                  {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}
+                </Button>
+              </div>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingMember} onOpenChange={(open) => !open && setDeletingMember(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar miembro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará a <strong>{deletingMember?.name || deletingMember?.email}</strong> del equipo. 
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
