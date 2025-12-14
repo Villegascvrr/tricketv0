@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,14 @@ import {
   ArrowUpRight,
   Calendar,
   BarChart3,
-  Send
+  Send,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Euro,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -48,23 +56,25 @@ const campaignPerformanceData = [
   { date: '6 Dic', reach: 85000, clicks: 2800, conversions: 112 },
 ];
 
-// Active campaigns
-const activeCampaigns = [
+// Enhanced campaigns with operational data
+const campaignsData = [
   {
     id: 1,
     name: 'Black Friday - Early Bird',
     type: 'paid',
     platform: 'instagram',
-    status: 'active',
+    status: 'completed',
+    startDate: '2024-11-22',
+    endDate: '2024-11-30',
     budget: 2500,
-    spent: 1875,
+    spent: 2480,
     reach: 185000,
     clicks: 5200,
-    conversions: 208,
+    ticketsSold: 892,
+    estimatedRevenue: 22300,
     ctr: 2.8,
-    cpc: 0.36,
-    startDate: '22 Nov',
-    endDate: '30 Nov'
+    observation: 'Mejor campaña hasta la fecha. El timing de Black Friday fue clave. Replicar estrategia en Navidad.',
+    teamNotes: 'Creativos de aftermovie funcionaron mejor que imágenes estáticas. CTR 40% superior.'
   },
   {
     id: 2,
@@ -72,31 +82,35 @@ const activeCampaigns = [
     type: 'paid',
     platform: 'facebook',
     status: 'active',
+    startDate: '2024-12-01',
+    endDate: '2024-12-15',
     budget: 1500,
     spent: 920,
     reach: 95000,
     clicks: 2800,
-    conversions: 112,
+    ticketsSold: 312,
+    estimatedRevenue: 7800,
     ctr: 2.9,
-    cpc: 0.33,
-    startDate: '1 Dic',
-    endDate: '15 Dic'
+    observation: 'Segmento universitario responde bien. Considerar ampliar presupuesto.',
+    teamNotes: 'Audiencia 18-24 Sevilla convierte mejor que Málaga/Cádiz.'
   },
   {
     id: 3,
-    name: 'Cartel Reveal - Orgánico',
+    name: 'Cartel Reveal Orgánico',
     type: 'organic',
     platform: 'instagram',
     status: 'active',
+    startDate: '2024-12-05',
+    endDate: null,
     budget: 0,
     spent: 0,
     reach: 42000,
     clicks: 1250,
-    conversions: 45,
+    ticketsSold: 145,
+    estimatedRevenue: 3625,
     ctr: 3.0,
-    cpc: 0,
-    startDate: '5 Dic',
-    endDate: 'Ongoing'
+    observation: 'Buen engagement orgánico. Stories funcionando mejor que posts.',
+    teamNotes: 'El reveal de Henry Méndez generó pico de tráfico. Planificar reveal de segundo cabeza de cartel.'
   },
   {
     id: 4,
@@ -104,16 +118,54 @@ const activeCampaigns = [
     type: 'email',
     platform: 'email',
     status: 'completed',
+    startDate: '2024-12-01',
+    endDate: '2024-12-01',
     budget: 0,
     spent: 0,
     reach: 28500,
     clicks: 4200,
-    conversions: 168,
+    ticketsSold: 168,
+    estimatedRevenue: 4200,
     ctr: 14.7,
-    cpc: 0,
-    startDate: '1 Dic',
-    endDate: '1 Dic'
+    observation: 'Open rate del 32%, por encima de la media del sector.',
+    teamNotes: 'Asunto "Últimas plazas Early Bird" tuvo mejor apertura que "Novedades Primaverando".'
   },
+  {
+    id: 5,
+    name: 'Campaña Pre-Lanzamiento',
+    type: 'paid',
+    platform: 'instagram',
+    status: 'completed',
+    startDate: '2024-10-15',
+    endDate: '2024-10-31',
+    budget: 1800,
+    spent: 1800,
+    reach: 120000,
+    clicks: 3600,
+    ticketsSold: 520,
+    estimatedRevenue: 9880,
+    ctr: 3.0,
+    observation: 'Fase de expectación cumplió objetivos. Generó base de leads para retargeting.',
+    teamNotes: 'Teaser con cuenta atrás funcionó bien. Lista de espera alcanzó 4.200 emails.'
+  },
+  {
+    id: 6,
+    name: 'Influencers Locales',
+    type: 'influencer',
+    platform: 'instagram',
+    status: 'active',
+    startDate: '2024-12-10',
+    endDate: '2024-12-20',
+    budget: 3500,
+    spent: 2100,
+    reach: 78000,
+    clicks: 1890,
+    ticketsSold: 95,
+    estimatedRevenue: 2375,
+    ctr: 2.4,
+    observation: 'ROI más bajo que paid ads. Evaluar si continuar o reasignar presupuesto.',
+    teamNotes: '@sevillaniando mejor conversion que @andaluciamola. Código descuento "INFLUENCER15" activo.'
+  }
 ];
 
 // Top performing posts
@@ -179,10 +231,15 @@ const getPlatformIcon = (platform: string) => {
 };
 
 const Marketing = () => {
-  const totalReach = activeCampaigns.reduce((acc, c) => acc + c.reach, 0);
-  const totalConversions = activeCampaigns.reduce((acc, c) => acc + c.conversions, 0);
-  const totalSpent = activeCampaigns.reduce((acc, c) => acc + c.spent, 0);
-  const avgCtr = activeCampaigns.reduce((acc, c) => acc + c.ctr, 0) / activeCampaigns.length;
+  const [expandedCampaign, setExpandedCampaign] = useState<number | null>(null);
+  
+  const totalReach = campaignsData.reduce((acc, c) => acc + c.reach, 0);
+  const totalTicketsSold = campaignsData.reduce((acc, c) => acc + c.ticketsSold, 0);
+  const totalSpent = campaignsData.reduce((acc, c) => acc + c.spent, 0);
+  const totalRevenue = campaignsData.reduce((acc, c) => acc + c.estimatedRevenue, 0);
+  const avgCtr = campaignsData.reduce((acc, c) => acc + c.ctr, 0) / campaignsData.length;
+  const activeCampaignsCount = campaignsData.filter(c => c.status === 'active').length;
+  const completedCampaignsCount = campaignsData.filter(c => c.status === 'completed').length;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -249,15 +306,15 @@ const Marketing = () => {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Conversiones</p>
-                  <p className="text-2xl font-bold">{totalConversions}</p>
+                  <p className="text-xs text-muted-foreground">Entradas Vendidas</p>
+                  <p className="text-2xl font-bold">{totalTicketsSold}</p>
                 </div>
                 <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
                   <ShoppingCart className="h-5 w-5 text-success" />
                 </div>
               </div>
               <div className="flex items-center gap-1 mt-2 text-xs">
-                <span className="text-muted-foreground">€{(totalSpent / totalConversions).toFixed(2)} CPA</span>
+                <span className="text-muted-foreground">€{totalSpent > 0 ? (totalSpent / totalTicketsSold).toFixed(2) : '0'} CPA</span>
               </div>
             </CardContent>
           </Card>
@@ -387,75 +444,152 @@ const Marketing = () => {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">Campañas Activas</CardTitle>
-                  <CardDescription>Rendimiento en tiempo real</CardDescription>
+                  <CardTitle className="text-base">Historial de Campañas</CardTitle>
+                  <CardDescription>Todas las campañas con datos operativos</CardDescription>
                 </div>
-                <Badge variant="outline">{activeCampaigns.filter(c => c.status === 'active').length} activas</Badge>
+                <div className="flex gap-2">
+                  <Badge variant="default" className="text-[10px]">{activeCampaignsCount} activas</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{completedCampaignsCount} finalizadas</Badge>
+                </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {activeCampaigns.map((campaign) => (
-                <div 
-                  key={campaign.id} 
-                  className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
-                        campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
-                        campaign.platform === 'facebook' ? 'bg-blue-500/10 text-blue-500' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {getPlatformIcon(campaign.platform)}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{campaign.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{campaign.startDate} - {campaign.endDate}</span>
-                          <Badge variant={campaign.type === 'paid' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">
-                            {campaign.type === 'paid' ? 'Pagada' : campaign.type === 'email' ? 'Email' : 'Orgánica'}
-                          </Badge>
+            <CardContent className="space-y-2">
+              {campaignsData.map((campaign) => {
+                const isExpanded = expandedCampaign === campaign.id;
+                const startDateFormatted = new Date(campaign.startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                const endDateFormatted = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
+                
+                return (
+                  <div 
+                    key={campaign.id} 
+                    className={`rounded-lg border transition-all ${isExpanded ? 'bg-muted/30 ring-1 ring-primary/20' : 'bg-card hover:bg-accent/5'}`}
+                  >
+                    {/* Campaign Header - Always Visible */}
+                    <div 
+                      className="p-3 cursor-pointer"
+                      onClick={() => setExpandedCampaign(isExpanded ? null : campaign.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                            campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
+                            campaign.platform === 'facebook' ? 'bg-blue-500/10 text-blue-500' :
+                            campaign.platform === 'email' ? 'bg-amber-500/10 text-amber-500' :
+                            'bg-purple-500/10 text-purple-500'
+                          }`}>
+                            {getPlatformIcon(campaign.platform)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm">{campaign.name}</p>
+                              <Badge 
+                                variant={campaign.status === 'active' ? 'default' : 'secondary'}
+                                className={`text-[10px] ${campaign.status === 'active' ? 'bg-success text-success-foreground' : ''}`}
+                              >
+                                {campaign.status === 'active' ? (
+                                  <><Clock className="h-2.5 w-2.5 mr-1" />Activa</>
+                                ) : (
+                                  <><CheckCircle2 className="h-2.5 w-2.5 mr-1" />Finalizada</>
+                                )}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                              <Calendar className="h-3 w-3" />
+                              <span>{startDateFormatted} → {endDateFormatted}</span>
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                                {campaign.type === 'paid' ? 'Pagada' : campaign.type === 'email' ? 'Email' : campaign.type === 'influencer' ? 'Influencer' : 'Orgánica'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                          {/* Quick Stats */}
+                          <div className="hidden md:flex items-center gap-4 text-right">
+                            <div>
+                              <p className="text-sm font-semibold">{campaign.ticketsSold}</p>
+                              <p className="text-[10px] text-muted-foreground">entradas</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-success">€{campaign.estimatedRevenue.toLocaleString('es-ES')}</p>
+                              <p className="text-[10px] text-muted-foreground">ingresos</p>
+                            </div>
+                          </div>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                         </div>
                       </div>
                     </div>
-                    <Badge 
-                      variant={campaign.status === 'active' ? 'default' : 'secondary'}
-                      className="text-[10px]"
-                    >
-                      {campaign.status === 'active' ? 'Activa' : 'Completada'}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-4 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-semibold">{(campaign.reach / 1000).toFixed(0)}K</p>
-                      <p className="text-[10px] text-muted-foreground">Alcance</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold">{campaign.clicks.toLocaleString('es-ES')}</p>
-                      <p className="text-[10px] text-muted-foreground">Clics</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold">{campaign.conversions}</p>
-                      <p className="text-[10px] text-muted-foreground">Conversiones</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold">{campaign.ctr}%</p>
-                      <p className="text-[10px] text-muted-foreground">CTR</p>
-                    </div>
-                  </div>
-                  
-                  {campaign.budget > 0 && (
-                    <div className="mt-3 pt-3 border-t">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">Presupuesto gastado</span>
-                        <span className="font-medium">€{campaign.spent} / €{campaign.budget}</span>
+                    
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 space-y-3">
+                        <div className="h-px bg-border" />
+                        
+                        {/* Metrics Grid */}
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                          <div className="p-2 rounded-lg bg-background text-center">
+                            <p className="text-lg font-semibold">{(campaign.reach / 1000).toFixed(0)}K</p>
+                            <p className="text-[10px] text-muted-foreground">Alcance</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-background text-center">
+                            <p className="text-lg font-semibold">{campaign.clicks.toLocaleString('es-ES')}</p>
+                            <p className="text-[10px] text-muted-foreground">Clics</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-background text-center">
+                            <p className="text-lg font-semibold">{campaign.ctr}%</p>
+                            <p className="text-[10px] text-muted-foreground">CTR</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-success/10 text-center">
+                            <p className="text-lg font-semibold text-success">{campaign.ticketsSold}</p>
+                            <p className="text-[10px] text-muted-foreground">Entradas</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-success/10 text-center">
+                            <p className="text-lg font-semibold text-success">€{campaign.estimatedRevenue.toLocaleString('es-ES')}</p>
+                            <p className="text-[10px] text-muted-foreground">Ingresos Est.</p>
+                          </div>
+                          <div className="p-2 rounded-lg bg-background text-center">
+                            <p className="text-lg font-semibold">€{campaign.spent > 0 ? (campaign.spent / campaign.ticketsSold).toFixed(2) : '0'}</p>
+                            <p className="text-[10px] text-muted-foreground">CPA</p>
+                          </div>
+                        </div>
+                        
+                        {/* Budget Progress (if paid) */}
+                        {campaign.budget > 0 && (
+                          <div className="p-2 rounded-lg bg-background">
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="text-muted-foreground">Presupuesto</span>
+                              <span className="font-medium">€{campaign.spent.toLocaleString('es-ES')} / €{campaign.budget.toLocaleString('es-ES')}</span>
+                            </div>
+                            <Progress value={(campaign.spent / campaign.budget) * 100} className="h-1.5" />
+                          </div>
+                        )}
+                        
+                        {/* Observation */}
+                        <div className="p-3 rounded-lg border bg-background">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-medium text-primary mb-1">Observación</p>
+                              <p className="text-sm text-foreground">{campaign.observation}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Team Notes */}
+                        <div className="p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-start gap-2">
+                            <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Notas del equipo</p>
+                              <p className="text-sm text-muted-foreground">{campaign.teamNotes}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <Progress value={(campaign.spent / campaign.budget) * 100} className="h-1.5" />
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 
