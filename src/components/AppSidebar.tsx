@@ -52,7 +52,10 @@ const mainItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard
-  }, 
+  }
+];
+
+const mainItemsAfterOps = [
   {
     title: "Ventas & Previsiones",
     url: "/sales",
@@ -270,7 +273,7 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1 px-2">
               {mainItems.map(renderMenuItem)}
               
-              {/* Operations Collapsible */}
+              {/* Operations Collapsible - Second position */}
               {!collapsed ? (
                 <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
                   <SidebarMenuItem>
@@ -294,7 +297,7 @@ export function AppSidebar() {
                                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                               >
                                 <item.icon className="h-4 w-4 mr-2" />
-                                <span className="text-sm">{item.title.replace('Operaciones ', '')}</span>
+                                <span className="text-sm">{item.title}</span>
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -319,6 +322,9 @@ export function AppSidebar() {
                   </TooltipContent>
                 </Tooltip>
               )}
+              
+              {/* Rest of main items */}
+              {mainItemsAfterOps.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
