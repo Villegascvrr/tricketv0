@@ -30,39 +30,41 @@ interface TodayQuickViewProps {
   onOpenChat: () => void;
 }
 
-// Simulated current metrics based on festival data
+// Métricas derivadas de festivalData (fuente única de verdad)
 const getCurrentMetrics = () => {
   const today = new Date();
   const festivalDate = new Date('2025-03-29');
   const daysToFestival = differenceInDays(festivalDate, today);
   
-  // Simulated sales progress
-  const targetToday = Math.round(festivalData.aforoTotal * 0.65); // 65% target by today
-  const currentSales = 12847;
-  const salesGap = targetToday - currentSales;
-  const salesPace = currentSales / (festivalData.aforoTotal * 0.80) * 100; // vs 80% final target
+  const { overview } = festivalData;
+  const objetivoVentas = overview.objetivoVentas || 18000;
   
-  // Yesterday's sales
-  const yesterdaySales = 342;
-  const avgDailySales = 285;
+  // Progreso actual vs objetivo
+  const currentSales = overview.entradasVendidas;
+  const targetProgress = (currentSales / objetivoVentas) * 100;
+  const salesGap = objetivoVentas - currentSales;
+  
+  // Datos de ayer (desde festivalData)
+  const yesterdaySales = overview.ventasAyer || 342;
+  const avgDailySales = overview.mediaVentasDiaria || 285;
   const salesTrend = ((yesterdaySales - avgDailySales) / avgDailySales) * 100;
   
-  // Revenue
-  const currentRevenue = 683450;
-  const targetRevenue = 850000;
+  // Ingresos coherentes con festivalData
+  const currentRevenue = overview.ingresosTotales;
+  const targetRevenue = objetivoVentas * 25; // Estimación €25 ticket promedio
   
   return {
     daysToFestival,
     currentSales,
-    targetToday,
+    objetivoVentas,
+    targetProgress,
     salesGap,
-    salesPace,
     yesterdaySales,
     avgDailySales,
     salesTrend,
     currentRevenue,
     targetRevenue,
-    occupancy: (currentSales / festivalData.aforoTotal) * 100
+    occupancy: overview.ocupacion * 100
   };
 };
 
@@ -195,7 +197,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
               </div>
               {metrics.salesGap > 0 ? (
                 <Badge variant="outline" className="text-[10px] border-warning text-warning">
-                  -{metrics.salesGap.toLocaleString()}
+                  Faltan {metrics.salesGap.toLocaleString()}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-[10px] border-success text-success">
@@ -205,11 +207,11 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
             </div>
             <div className="flex items-end gap-2">
               <span className="text-2xl font-bold">{metrics.currentSales.toLocaleString()}</span>
-              <span className="text-sm text-muted-foreground mb-0.5">/ {metrics.targetToday.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground mb-0.5">/ {metrics.objetivoVentas.toLocaleString()}</span>
             </div>
-            <Progress value={(metrics.currentSales / metrics.targetToday) * 100} className="h-1.5 mt-2" />
+            <Progress value={metrics.targetProgress} className="h-1.5 mt-2" />
             <p className="text-[10px] text-muted-foreground mt-1">
-              {((metrics.currentSales / metrics.targetToday) * 100).toFixed(0)}% del objetivo para hoy
+              {metrics.targetProgress.toFixed(0)}% del objetivo de {metrics.objetivoVentas.toLocaleString()} entradas
             </p>
           </div>
           
@@ -222,7 +224,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
                 ) : (
                   <TrendingDown className="h-4 w-4 text-destructive" />
                 )}
-                <span className="text-xs font-medium text-muted-foreground">Ventas ayer</span>
+                <span className="text-xs font-medium text-muted-foreground">Ventas de ayer</span>
               </div>
               <Badge 
                 variant="outline" 
@@ -236,10 +238,10 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
             </div>
             <div className="flex items-end gap-2">
               <span className="text-2xl font-bold">{metrics.yesterdaySales}</span>
-              <span className="text-sm text-muted-foreground mb-0.5">entradas</span>
+              <span className="text-sm text-muted-foreground mb-0.5">entradas vendidas</span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Media diaria: {metrics.avgDailySales || 285} entradas
+              Media últimos 30 días: {metrics.avgDailySales} entradas/día
             </p>
           </div>
           
