@@ -12,7 +12,9 @@ import {
   XCircle,
   Info
 } from "lucide-react";
-import { festivalData } from "@/data/festivalData";
+import { useTicketStats } from "@/hooks/useTicketStats";
+import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type StatusLevel = "good" | "warning" | "critical";
 
@@ -24,56 +26,9 @@ interface StatusItem {
   tooltip: string;
 }
 
-// Datos coherentes derivados de festivalData
-const getStatusItems = (): StatusItem[] => {
-  const ocupacion = festivalData.overview.ocupacion * 100;
-  const ventasStatus: StatusLevel = ocupacion >= 80 ? "good" : ocupacion >= 65 ? "warning" : "critical";
-  
-  return [
-    {
-      label: "Ventas",
-      icon: TrendingUp,
-      status: ventasStatus,
-      detail: `${ocupacion.toFixed(0)}% del objetivo`,
-      tooltip: `${festivalData.overview.entradasVendidas.toLocaleString()} de ${festivalData.overview.objetivoVentas?.toLocaleString() || '18.000'} entradas objetivo`,
-    },
-    {
-      label: "Marketing",
-      icon: Megaphone,
-      status: "good",
-      detail: "3 campañas activas",
-      tooltip: "Instagram Ads, Retargeting 2024, Email Newsletter",
-    },
-    {
-      label: "Operaciones",
-      icon: Settings,
-      status: "good",
-      detail: "78% tareas cerradas",
-      tooltip: "28 de 36 tareas pre-festival completadas",
-    },
-    {
-      label: "Personal",
-      icon: Users,
-      status: "warning",
-      detail: "Faltan 12 roles",
-      tooltip: "8 seguridad, 3 barra, 1 producción por confirmar",
-    },
-    {
-      label: "Proveedores",
-      icon: Truck,
-      status: "good",
-      detail: "100% confirmados",
-      tooltip: "Sonido, catering, seguridad y limpieza OK",
-    },
-    {
-      label: "Alertas IA",
-      icon: AlertTriangle,
-      status: "critical",
-      detail: "2 críticas",
-      tooltip: "Ritmo ventas inferior a 2024, Fever bajo rendimiento",
-    },
-  ];
-};
+interface FestivalStatusOverviewProps {
+  eventId?: string;
+}
 
 const getStatusConfig = (status: StatusLevel) => {
   switch (status) {
@@ -101,7 +56,86 @@ const getStatusConfig = (status: StatusLevel) => {
   }
 };
 
-const FestivalStatusOverview = () => {
+const FestivalStatusOverview = ({ eventId = "demo-primaverando-2025" }: FestivalStatusOverviewProps) => {
+  const { stats, loading } = useTicketStats(eventId);
+  const recommendations = generateAIRecommendations();
+  
+  // Build status items based on real/demo data
+  const getStatusItems = (): StatusItem[] => {
+    if (!stats) return [];
+    
+    const ocupacion = stats.targetProgress;
+    const ventasStatus: StatusLevel = ocupacion >= 80 ? "good" : ocupacion >= 65 ? "warning" : "critical";
+    
+    // Count critical AI recommendations
+    const criticalAlerts = recommendations.filter(r => r.priority === 'high').length;
+    const alertStatus: StatusLevel = criticalAlerts >= 2 ? "critical" : criticalAlerts >= 1 ? "warning" : "good";
+    
+    return [
+      {
+        label: "Ventas",
+        icon: TrendingUp,
+        status: ventasStatus,
+        detail: `${ocupacion.toFixed(0)}% del objetivo`,
+        tooltip: `${stats.totalSold.toLocaleString()} de ${stats.targetSales.toLocaleString()} entradas objetivo`,
+      },
+      {
+        label: "Marketing",
+        icon: Megaphone,
+        status: "good",
+        detail: "3 campañas activas",
+        tooltip: "Instagram Ads, Retargeting 2024, Email Newsletter",
+      },
+      {
+        label: "Operaciones",
+        icon: Settings,
+        status: "good",
+        detail: "78% tareas cerradas",
+        tooltip: "28 de 36 tareas pre-festival completadas",
+      },
+      {
+        label: "Personal",
+        icon: Users,
+        status: "warning",
+        detail: "Faltan 12 roles",
+        tooltip: "8 seguridad, 3 barra, 1 producción por confirmar",
+      },
+      {
+        label: "Proveedores",
+        icon: Truck,
+        status: "good",
+        detail: "100% confirmados",
+        tooltip: "Sonido, catering, seguridad y limpieza OK",
+      },
+      {
+        label: "Alertas IA",
+        icon: AlertTriangle,
+        status: alertStatus,
+        detail: criticalAlerts > 0 ? `${criticalAlerts} críticas` : "Sin alertas",
+        tooltip: criticalAlerts > 0 
+          ? recommendations.filter(r => r.priority === 'high').map(r => r.title).slice(0, 2).join(', ')
+          : "No hay alertas críticas pendientes",
+      },
+    ];
+  };
+
+  if (loading) {
+    return (
+      <Card className="border-border/60">
+        <CardHeader className="pb-2 px-4 pt-3">
+          <Skeleton className="h-5 w-40" />
+        </CardHeader>
+        <CardContent className="px-4 pb-4 pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const statusItems = getStatusItems();
   
   const overallStatus: StatusLevel = statusItems.some(i => i.status === "critical") 
@@ -130,7 +164,11 @@ const FestivalStatusOverview = () => {
                   <Info className="h-3.5 w-3.5 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
-                  <p className="text-xs">Resumen rápido del estado de cada área. Haz hover en cada bloque para más detalle.</p>
+                  <p className="text-xs">
+                    Resumen rápido del estado de cada área. 
+                    {stats?.isDemo && " (Datos de demostración)"}
+                    {stats?.hasRealData && " (Datos reales de Supabase)"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>
