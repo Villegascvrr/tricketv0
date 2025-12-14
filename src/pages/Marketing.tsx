@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMarketingCampaigns, MarketingCampaign } from "@/hooks/useMarketingCampaigns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { 
   Megaphone, 
@@ -38,7 +39,9 @@ import {
   MessageSquare,
   ChevronDown,
   ChevronUp,
-  Plus
+  Plus,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -128,8 +131,10 @@ const getPlatformIcon = (platform: string) => {
 
 const Marketing = () => {
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
-  const { campaigns, isLoading, addCampaign, isAdding } = useMarketingCampaigns();
+  const { campaigns, isLoading, addCampaign, updateCampaign, deleteCampaign, isAdding, isUpdating, isDeleting } = useMarketingCampaigns();
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<MarketingCampaign | null>(null);
+  const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     type: 'paid' as 'paid' | 'organic' | 'email' | 'influencer',
@@ -140,6 +145,77 @@ const Marketing = () => {
     observation: '',
     teamNotes: ''
   });
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    type: 'paid' as string,
+    platform: 'instagram' as string,
+    status: 'active' as string,
+    budget: 0,
+    spent: 0,
+    reach: 0,
+    clicks: 0,
+    ctr: 0,
+    tickets_sold: 0,
+    estimated_revenue: 0,
+    start_date: '',
+    end_date: '',
+    observation: '',
+    team_notes: ''
+  });
+
+  const openEditModal = (campaign: MarketingCampaign) => {
+    setEditFormData({
+      name: campaign.name,
+      type: campaign.type,
+      platform: campaign.platform,
+      status: campaign.status,
+      budget: Number(campaign.budget) || 0,
+      spent: Number(campaign.spent) || 0,
+      reach: campaign.reach || 0,
+      clicks: campaign.clicks || 0,
+      ctr: Number(campaign.ctr) || 0,
+      tickets_sold: campaign.tickets_sold || 0,
+      estimated_revenue: Number(campaign.estimated_revenue) || 0,
+      start_date: campaign.start_date,
+      end_date: campaign.end_date || '',
+      observation: campaign.observation || '',
+      team_notes: campaign.team_notes || ''
+    });
+    setEditingCampaign(campaign);
+  };
+
+  const handleUpdateCampaign = async () => {
+    if (!editingCampaign) return;
+    
+    const success = await updateCampaign(editingCampaign.id, {
+      name: editFormData.name,
+      type: editFormData.type,
+      platform: editFormData.platform,
+      status: editFormData.status,
+      budget: editFormData.budget,
+      spent: editFormData.spent,
+      reach: editFormData.reach,
+      clicks: editFormData.clicks,
+      ctr: editFormData.ctr,
+      tickets_sold: editFormData.tickets_sold,
+      estimated_revenue: editFormData.estimated_revenue,
+      start_date: editFormData.start_date,
+      end_date: editFormData.end_date || null,
+      observation: editFormData.observation || null,
+      team_notes: editFormData.team_notes || null
+    });
+
+    if (success) {
+      setEditingCampaign(null);
+    }
+  };
+
+  const handleDeleteCampaign = async () => {
+    if (!deletingCampaignId) return;
+    
+    await deleteCampaign(deletingCampaignId);
+    setDeletingCampaignId(null);
+  };
   
   const totalReach = campaigns.reduce((acc, c) => acc + (c.reach || 0), 0);
   const totalTicketsSold = campaigns.reduce((acc, c) => acc + (c.tickets_sold || 0), 0);
@@ -674,6 +750,34 @@ const Marketing = () => {
                             </div>
                           </div>
                         )}
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-2 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 h-7 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(campaign);
+                            }}
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="gap-1.5 h-7 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingCampaignId(campaign.id);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Eliminar
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -841,6 +945,222 @@ const Marketing = () => {
           </Card>
         </div>
       </div>
+
+      {/* Edit Campaign Modal */}
+      <Dialog open={!!editingCampaign} onOpenChange={(open) => !open && setEditingCampaign(null)}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Campaña</DialogTitle>
+            <DialogDescription>
+              Modifica los datos de la campaña. Los cambios se guardarán inmediatamente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Nombre de la campaña</Label>
+              <Input
+                id="edit-name"
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <Label>Tipo</Label>
+                <Select
+                  value={editFormData.type}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="paid">Paid Ads</SelectItem>
+                    <SelectItem value="organic">Orgánico</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="influencer">Influencer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Plataforma</Label>
+                <Select
+                  value={editFormData.platform}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, platform: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="twitter">Twitter</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Estado</Label>
+                <Select
+                  value={editFormData.status}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activa</SelectItem>
+                    <SelectItem value="completed">Finalizada</SelectItem>
+                    <SelectItem value="paused">Pausada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Fecha inicio</Label>
+                <Input
+                  type="date"
+                  value={editFormData.start_date}
+                  onChange={(e) => setEditFormData({ ...editFormData, start_date: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Fecha fin</Label>
+                <Input
+                  type="date"
+                  value={editFormData.end_date}
+                  onChange={(e) => setEditFormData({ ...editFormData, end_date: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <div className="h-px bg-border my-2" />
+            <p className="text-sm font-medium text-muted-foreground">Presupuesto y gasto</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Presupuesto (€)</Label>
+                <Input
+                  type="number"
+                  value={editFormData.budget}
+                  onChange={(e) => setEditFormData({ ...editFormData, budget: Number(e.target.value) })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Gastado (€)</Label>
+                <Input
+                  type="number"
+                  value={editFormData.spent}
+                  onChange={(e) => setEditFormData({ ...editFormData, spent: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            
+            <div className="h-px bg-border my-2" />
+            <p className="text-sm font-medium text-muted-foreground">Métricas de rendimiento</p>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <Label>Alcance</Label>
+                <Input
+                  type="number"
+                  value={editFormData.reach}
+                  onChange={(e) => setEditFormData({ ...editFormData, reach: Number(e.target.value) })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Clics</Label>
+                <Input
+                  type="number"
+                  value={editFormData.clicks}
+                  onChange={(e) => setEditFormData({ ...editFormData, clicks: Number(e.target.value) })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>CTR (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={editFormData.ctr}
+                  onChange={(e) => setEditFormData({ ...editFormData, ctr: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Entradas vendidas</Label>
+                <Input
+                  type="number"
+                  value={editFormData.tickets_sold}
+                  onChange={(e) => setEditFormData({ ...editFormData, tickets_sold: Number(e.target.value) })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Ingresos estimados (€)</Label>
+                <Input
+                  type="number"
+                  value={editFormData.estimated_revenue}
+                  onChange={(e) => setEditFormData({ ...editFormData, estimated_revenue: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            
+            <div className="h-px bg-border my-2" />
+            
+            <div className="grid gap-2">
+              <Label>Observación</Label>
+              <Textarea
+                value={editFormData.observation}
+                onChange={(e) => setEditFormData({ ...editFormData, observation: e.target.value })}
+                placeholder="Objetivo o notas de la campaña..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Notas del equipo</Label>
+              <Textarea
+                value={editFormData.team_notes}
+                onChange={(e) => setEditFormData({ ...editFormData, team_notes: e.target.value })}
+                placeholder="Notas internas del equipo..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingCampaign(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateCampaign} disabled={isUpdating}>
+              {isUpdating ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingCampaignId} onOpenChange={(open) => !open && setDeletingCampaignId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar campaña?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la campaña
+              {deletingCampaignId && campaigns.find(c => c.id === deletingCampaignId) && (
+                <span className="font-medium"> "{campaigns.find(c => c.id === deletingCampaignId)?.name}"</span>
+              )}
+              {" "}y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCampaign}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
