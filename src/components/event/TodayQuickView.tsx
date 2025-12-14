@@ -32,9 +32,10 @@ interface TodayQuickViewProps {
 
 // Métricas derivadas de festivalData (fuente única de verdad)
 const getCurrentMetrics = () => {
-  const today = new Date();
+  // Fecha fija de referencia para demo: 15 de enero 2025
+  const referenceDate = new Date('2025-01-15');
   const festivalDate = new Date('2025-03-29');
-  const daysToFestival = differenceInDays(festivalDate, today);
+  const daysToFestival = differenceInDays(festivalDate, referenceDate);
   
   const { overview } = festivalData;
   const objetivoVentas = overview.objetivoVentas || 18000;
@@ -165,15 +166,15 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 text-xs">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge variant="outline" className="gap-1.5 text-xs whitespace-nowrap px-2.5 py-1">
               <Calendar className="h-3 w-3" />
-              {metrics.daysToFestival} días
+              {metrics.daysToFestival} días restantes
             </Badge>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 w-7 p-0" 
+              className="h-8 w-8 p-0 flex-shrink-0" 
               onClick={toggleMinimized}
               title={isMinimized ? "Expandir vista rápida" : "Minimizar vista rápida"}
             >
@@ -184,7 +185,6 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
       </CardHeader>
 
       {!isMinimized && (
-      
       <CardContent className="space-y-4">
         {/* 3 Critical Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
