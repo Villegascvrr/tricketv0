@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, Users, DollarSign, Target, Brain } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { TrendingUp, Users, DollarSign, Target, Brain, Database } from "lucide-react";
 import AIBadgePopover from "./AIBadgePopover";
 import AIRecommendationsDrawer from "./AIRecommendationsDrawer";
 import AIBadge from "./AIBadge";
-import { useQuery } from "@tanstack/react-query";
 import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
 import { festivalData, calculateProviderOccupancy, calculateProviderRemaining } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useTicketStats } from "@/hooks/useTicketStats";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LineChart,
   Line,
@@ -46,11 +47,6 @@ interface AIRecommendation {
   dataPoint?: string;
 }
 
-interface ProviderAllocation {
-  provider_name: string;
-  allocated_capacity: number;
-}
-
 interface ProviderStats {
   ticketera: string;
   capacidad: number | null;
@@ -71,9 +67,9 @@ const CHART_COLORS = [
 
 // Semantic color helpers
 const getOccupancyColor = (occupancy: number) => {
-  if (occupancy >= 70) return "hsl(var(--success))"; // Green - good
-  if (occupancy >= 30) return "hsl(var(--warning))"; // Orange - attention
-  return "hsl(var(--danger))"; // Red - critical
+  if (occupancy >= 70) return "hsl(var(--success))";
+  if (occupancy >= 30) return "hsl(var(--warning))";
+  return "hsl(var(--danger))";
 };
 
 const getOccupancyBgClass = (occupancy: number) => {
@@ -88,34 +84,18 @@ const getOccupancyTextClass = (occupancy: number) => {
   return "text-danger font-semibold";
 };
 
-const getPerformanceColor = (percentage: number, isGood: boolean = true) => {
-  // For metrics where high is good (sales, revenue)
-  if (isGood) {
-    if (percentage >= 15) return "hsl(var(--success))";
-    if (percentage >= 5) return "hsl(var(--warning))";
-    return "hsl(var(--danger))";
-  }
-  // For metrics where low might be concerning
-  if (percentage < 5) return "hsl(var(--danger))";
-  if (percentage < 15) return "hsl(var(--warning))";
-  return "hsl(var(--success))";
+const getPerformanceColor = (percentage: number) => {
+  if (percentage >= 30) return "hsl(var(--chart-1))";
+  if (percentage >= 15) return "hsl(var(--chart-2))";
+  return "hsl(var(--chart-3))";
 };
 
 const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProps) => {
-  const [kpis, setKpis] = useState({
-    totalSold: 0,
-    occupancyRate: 0,
-    grossRevenue: 0,
-  });
-  const [salesOverTime, setSalesOverTime] = useState<any[]>([]);
-  const [channelData, setChannelData] = useState<any[]>([]);
-  const [providerData, setProviderData] = useState<ProviderStats[]>([]);
-  const [zoneData, setZoneData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { stats, loading } = useTicketStats(eventId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerContext, setDrawerContext] = useState<{ type: 'provider' | 'zone' | 'ageSegment' | 'global'; value: string } | undefined>(undefined);
 
-  // Generate AI recommendations from festivalData
+  // Generate AI recommendations
   const recommendations: AIRecommendation[] = generateAIRecommendations();
 
   const getRecommendationsForScope = (scope: string, targetKey?: string) => {
@@ -130,254 +110,69 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
     return recs.filter(r => r.priority === "high").length;
   };
 
-  // Check if demo mode
-  const isDemo = eventId?.startsWith("demo-") ?? false;
-
-  useEffect(() => {
-    fetchData();
-  }, [eventId]);
-
-  // Generate realistic simulated trend data for demo mode
-  const generateSimulatedTrends = (totalSold: number, daysCount: number = 30) => {
-    const trends: number[] = [];
-    let cumulative = 0;
-    const dailyAvg = totalSold / daysCount;
-    
-    for (let i = 0; i < daysCount; i++) {
-      // Simulate realistic sales pattern: slow start, accelerating toward event
-      const daysToEvent = daysCount - i;
-      const accelerationFactor = 1 + (i / daysCount) * 1.5; // Sales increase closer to event
-      const weekendBoost = (i % 7 === 5 || i % 7 === 6) ? 1.3 : 1; // Weekend bump
-      const variance = 0.7 + Math.random() * 0.6; // 70%-130% variance
-      
-      const dailySales = Math.round(dailyAvg * accelerationFactor * weekendBoost * variance);
-      trends.push(dailySales);
-      cumulative += dailySales;
-    }
-    
-    // Normalize to match total
-    const scaleFactor = totalSold / cumulative;
-    return trends.map(t => Math.round(t * scaleFactor));
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Use festivalData as single source of truth
-      const totalSold = festivalData.overview.entradasVendidas;
-      const grossRevenue = festivalData.overview.ingresosTotales;
-      const occupancyRate = festivalData.overview.ocupacion * 100;
-
-      setKpis({ totalSold, occupancyRate, grossRevenue });
-
-      // Get last 30 days for trends (realistic sales window)
-      const last30Days = Array.from({ length: 30 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (29 - i));
-        return date.toISOString().split("T")[0];
-      });
-
-      const last7Days = last30Days.slice(-7);
-
-      if (isDemo) {
-        // Generate realistic simulated data for demo mode
-        const simulatedDailySales = generateSimulatedTrends(totalSold, 30);
-        
-        // Sales over time (last 30 days)
-        const salesTimeData = last30Days.map((date, i) => ({
-          date: new Date(date).toLocaleDateString("es-ES", {
-            month: "short",
-            day: "numeric",
-          }),
-          ventas: simulatedDailySales[i],
-          acumulado: simulatedDailySales.slice(0, i + 1).reduce((a, b) => a + b, 0),
-        }));
-        setSalesOverTime(salesTimeData);
-
-        // Simulate channel data based on realistic distribution
-        const channels = [
-          { canal: "Online", porcentaje: 45 },
-          { canal: "App Móvil", porcentaje: 25 },
-          { canal: "RRPP", porcentaje: 18 },
-          { canal: "Taquilla", porcentaje: 8 },
-          { canal: "Corporativo", porcentaje: 4 },
-        ];
-        
-        const channelDataArray = channels.map((ch, idx) => {
-          const entradas = Math.round(totalSold * (ch.porcentaje / 100));
-          const ingresos = Math.round(grossRevenue * (ch.porcentaje / 100));
-          // Generate trend for each channel
-          const channelTrend = last7Days.map((_, i) => 
-            Math.round(simulatedDailySales[23 + i] * (ch.porcentaje / 100) * (0.8 + Math.random() * 0.4))
-          );
-          return {
-            canal: ch.canal,
-            entradas,
-            ingresos,
-            porcentaje: ch.porcentaje.toFixed(1),
-            trend: channelTrend,
-          };
-        });
-        setChannelData(channelDataArray);
-
-        // Provider data with realistic trends
-        const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider, idx) => {
-          const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
-          const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
-          // Generate trend based on provider's share
-          const providerShare = provider.vendidas / totalSold;
-          const providerTrend = last7Days.map((_, i) => 
-            Math.round(simulatedDailySales[23 + i] * providerShare * (0.7 + Math.random() * 0.6))
-          );
-
-          return {
-            ticketera: provider.nombre,
-            capacidad: provider.capacidad,
-            vendidas: provider.vendidas,
-            ocupacion: `${occupancy.toFixed(1)}%`,
-            restantes: remaining.toLocaleString(),
-            ingresos: provider.ingresos,
-            trend: providerTrend,
-          };
-        });
-        setProviderData(providerDataArray);
-
-        // Zone data with realistic trends
-        const zoneDataArray = festivalData.zones.map((zone) => {
-          const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
-          const zoneShare = zone.vendidas / totalSold;
-          const zoneTrend = last7Days.map((_, i) => 
-            Math.round(simulatedDailySales[23 + i] * zoneShare * (0.7 + Math.random() * 0.6))
-          );
-
-          return {
-            zona: zone.zona,
-            vendidas: zone.vendidas,
-            aforo: zone.aforo,
-            ocupacion: porcentajeOcupacionZona.toFixed(1),
-            ingresos: zone.ingresos,
-            trend: zoneTrend,
-          };
-        });
-        setZoneData(zoneDataArray);
-      } else {
-        // Fetch real tickets from database
-        const { data: tickets, error } = await supabase
-          .from("tickets")
-          .select("price, sale_date, channel, zone_name, provider_name")
-          .eq("event_id", eventId)
-          .eq("status", "confirmed");
-
-        if (error) throw error;
-
-        // Sales over time
-        const salesByDay: { [key: string]: number } = {};
-        tickets?.forEach((ticket) => {
-          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-          salesByDay[day] = (salesByDay[day] || 0) + 1;
-        });
-
-        const salesTimeData = Object.entries(salesByDay)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, count]) => ({
-            date: new Date(date).toLocaleDateString("es-ES", {
-              month: "short",
-              day: "numeric",
-            }),
-            ventas: count,
-          }));
-        setSalesOverTime(salesTimeData);
-
-        // Sales by CHANNEL
-        const channelStats: {
-          [key: string]: { count: number; revenue: number; dailySales: { [day: string]: number } };
-        } = {};
-        tickets?.forEach((ticket) => {
-          const channel = ticket.channel || "Sin canal";
-          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-          if (!channelStats[channel]) {
-            channelStats[channel] = { count: 0, revenue: 0, dailySales: {} };
-          }
-          channelStats[channel].count += 1;
-          channelStats[channel].revenue += Number(ticket.price);
-          channelStats[channel].dailySales[day] = (channelStats[channel].dailySales[day] || 0) + 1;
-        });
-
-        const channelDataArray = Object.entries(channelStats).map(
-          ([channel, stats]) => ({
-            canal: channel,
-            entradas: stats.count,
-            ingresos: Math.round(stats.revenue),
-            porcentaje: ((stats.count / totalSold) * 100).toFixed(1),
-            trend: last7Days.map(day => stats.dailySales[day] || 0),
-          })
-        );
-        setChannelData(channelDataArray);
-
-        // Provider stats
-        const providerStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
-        tickets?.forEach((ticket) => {
-          const provider = ticket.provider_name || "Sin ticketera";
-          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-          if (!providerStats[provider]) {
-            providerStats[provider] = { dailySales: {} };
-          }
-          providerStats[provider].dailySales[day] = (providerStats[provider].dailySales[day] || 0) + 1;
-        });
-
-        const providerDataArray: ProviderStats[] = festivalData.ticketingProviders.map((provider) => {
-          const stats = providerStats[provider.nombre] || { dailySales: {} };
-          const occupancy = calculateProviderOccupancy(provider.vendidas, provider.capacidad);
-          const remaining = calculateProviderRemaining(provider.capacidad, provider.vendidas);
-
-          return {
-            ticketera: provider.nombre,
-            capacidad: provider.capacidad,
-            vendidas: provider.vendidas,
-            ocupacion: `${occupancy.toFixed(1)}%`,
-            restantes: remaining.toLocaleString(),
-            ingresos: provider.ingresos,
-            trend: last7Days.map(day => stats.dailySales[day] || 0),
-          };
-        });
-        setProviderData(providerDataArray);
-
-        // Zone stats
-        const zoneStats: { [key: string]: { dailySales: { [day: string]: number } } } = {};
-        tickets?.forEach((ticket) => {
-          const zone = ticket.zone_name || "Sin zona";
-          const day = new Date(ticket.sale_date).toISOString().split("T")[0];
-          if (!zoneStats[zone]) {
-            zoneStats[zone] = { dailySales: {} };
-          }
-          zoneStats[zone].dailySales[day] = (zoneStats[zone].dailySales[day] || 0) + 1;
-        });
-
-        const zoneDataArray = festivalData.zones.map((zone) => {
-          const stats = zoneStats[zone.zona] || { dailySales: {} };
-          const porcentajeOcupacionZona = (zone.vendidas / zone.aforo) * 100;
-
-          return {
-            zona: zone.zona,
-            vendidas: zone.vendidas,
-            aforo: zone.aforo,
-            ocupacion: porcentajeOcupacionZona.toFixed(1),
-            ingresos: zone.ingresos,
-            trend: last7Days.map(day => stats.dailySales[day] || 0),
-          };
-        });
-        setZoneData(zoneDataArray);
-      }
-    } catch (error) {
-      console.error("Error fetching event data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center py-12">Cargando datos...</div>;
+  if (loading || !stats) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
   }
+
+  // Derive data from stats
+  const kpis = {
+    totalSold: stats.totalSold,
+    occupancyRate: stats.occupancyRate,
+    grossRevenue: stats.grossRevenue,
+  };
+
+  const salesOverTime = stats.salesOverTime.map(d => ({
+    date: d.dateLabel,
+    ventas: d.sales,
+    acumulado: d.cumulative,
+  }));
+
+  const channelData = stats.salesByChannel.map(c => ({
+    canal: c.channel,
+    entradas: c.sold,
+    ingresos: c.revenue,
+    porcentaje: c.percentage.toFixed(1),
+    trend: stats.salesOverTime.slice(-7).map(d => Math.round(d.sales * (c.percentage / 100))),
+  }));
+
+  const providerData: ProviderStats[] = stats.salesByProvider.map(p => ({
+    ticketera: p.provider,
+    capacidad: p.capacity,
+    vendidas: p.sold,
+    ocupacion: p.capacity ? `${p.occupancy.toFixed(1)}%` : 'N/D',
+    restantes: p.capacity ? (p.capacity - p.sold).toLocaleString() : 'N/D',
+    ingresos: p.revenue,
+    trend: stats.salesOverTime.slice(-7).map(d => 
+      Math.round(d.sales * (stats.totalSold > 0 ? p.sold / stats.totalSold : 0))
+    ),
+  }));
+
+  const zoneData = stats.salesByZone.map(z => ({
+    zona: z.zone,
+    vendidas: z.sold,
+    aforo: z.capacity,
+    ocupacion: z.capacity ? z.occupancy.toFixed(1) : '0',
+    ingresos: z.revenue,
+    trend: stats.salesOverTime.slice(-7).map(d => 
+      Math.round(d.sales * (stats.totalSold > 0 ? z.sold / stats.totalSold : 0))
+    ),
+  }));
+
+
+  // Data source indicator
+  const dataSourceLabel = stats.hasRealData ? "Datos reales" : stats.isDemo ? "Demo" : "Sin datos";
 
   return (
     <div className="space-y-4">

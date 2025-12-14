@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,62 +15,25 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Calendar
+  Calendar,
+  Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { festivalData } from "@/data/festivalData";
+import { useTicketStats } from "@/hooks/useTicketStats";
 import { generateAIRecommendations, Recommendation } from "@/utils/generateAIRecommendations";
-import { differenceInDays, format } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STORAGE_KEY = "todayQuickView_minimized";
 
 interface TodayQuickViewProps {
+  eventId?: string;
   onOpenRecommendations: () => void;
   onOpenChat: () => void;
 }
 
-// Métricas derivadas de festivalData (fuente única de verdad)
-const getCurrentMetrics = () => {
-  // Fecha fija de referencia para demo: 15 de enero 2025
-  const referenceDate = new Date('2025-01-15');
-  const festivalDate = new Date('2025-03-29');
-  const daysToFestival = differenceInDays(festivalDate, referenceDate);
-  
-  const { overview } = festivalData;
-  const objetivoVentas = overview.objetivoVentas || 18000;
-  
-  // Progreso actual vs objetivo
-  const currentSales = overview.entradasVendidas;
-  const targetProgress = (currentSales / objetivoVentas) * 100;
-  const salesGap = objetivoVentas - currentSales;
-  
-  // Datos de ayer (desde festivalData)
-  const yesterdaySales = overview.ventasAyer || 342;
-  const avgDailySales = overview.mediaVentasDiaria || 285;
-  const salesTrend = ((yesterdaySales - avgDailySales) / avgDailySales) * 100;
-  
-  // Ingresos coherentes con festivalData
-  const currentRevenue = overview.ingresosTotales;
-  const targetRevenue = objetivoVentas * 25; // Estimación €25 ticket promedio
-  
-  return {
-    daysToFestival,
-    currentSales,
-    objetivoVentas,
-    targetProgress,
-    salesGap,
-    yesterdaySales,
-    avgDailySales,
-    salesTrend,
-    currentRevenue,
-    targetRevenue,
-    occupancy: overview.ocupacion * 100
-  };
-};
-
 const getTopAlerts = (recommendations: Recommendation[]) => {
-  // Get top 3 most critical recommendations
   return recommendations
     .filter(r => r.priority === 'high' || r.priority === 'medium')
     .sort((a, b) => {
@@ -80,34 +43,36 @@ const getTopAlerts = (recommendations: Recommendation[]) => {
     .slice(0, 3);
 };
 
-const getSuggestedActions = (recommendations: Recommendation[], metrics: ReturnType<typeof getCurrentMetrics>) => {
+const getSuggestedActions = (recommendations: Recommendation[], stats: ReturnType<typeof useTicketStats>['stats']) => {
   const actions: { title: string; description: string; impact: string; urgent: boolean }[] = [];
   
+  if (!stats) return actions;
+  
   // Based on sales gap
-  if (metrics.salesGap > 0) {
+  if (stats.salesGap > 0) {
     actions.push({
       title: "Activar campaña de conversión",
-      description: `Faltan ${metrics.salesGap.toLocaleString()} entradas para el objetivo de hoy`,
+      description: `Faltan ${stats.salesGap.toLocaleString()} entradas para el objetivo`,
       impact: "+8-12% conversión esperada",
-      urgent: metrics.salesGap > 1000
+      urgent: stats.salesGap > 1000
     });
   }
   
   // Based on days to festival
-  if (metrics.daysToFestival < 30) {
+  if (stats.daysToFestival < 30) {
     actions.push({
       title: "Revisar operaciones pre-festival",
-      description: `Solo quedan ${metrics.daysToFestival} días - verificar tareas críticas`,
+      description: `Solo quedan ${stats.daysToFestival} días - verificar tareas críticas`,
       impact: "Prevenir bloqueos de última hora",
-      urgent: metrics.daysToFestival < 14
+      urgent: stats.daysToFestival < 14
     });
   }
   
   // Based on sales trend
-  if (metrics.salesTrend > 15) {
+  if (stats.salesTrend > 15) {
     actions.push({
       title: "Aprovechar momentum de ventas",
-      description: `Ayer +${metrics.salesTrend.toFixed(0)}% sobre media - amplificar campañas activas`,
+      description: `Ayer +${stats.salesTrend.toFixed(0)}% sobre media - amplificar campañas activas`,
       impact: "Mantener ritmo positivo",
       urgent: false
     });
@@ -116,17 +81,20 @@ const getSuggestedActions = (recommendations: Recommendation[], metrics: ReturnT
   return actions.slice(0, 2);
 };
 
-export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuickViewProps) {
+export function TodayQuickView({ 
+  eventId = "demo-primaverando-2025",
+  onOpenRecommendations, 
+  onOpenChat 
+}: TodayQuickViewProps) {
   const [isMinimized, setIsMinimized] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    // Por defecto cerrado si no hay preferencia guardada
     return saved === null ? true : saved === "true";
   });
 
-  const metrics = getCurrentMetrics();
+  const { stats, loading } = useTicketStats(eventId);
   const recommendations = generateAIRecommendations();
   const topAlerts = getTopAlerts(recommendations);
-  const suggestedActions = getSuggestedActions(recommendations, metrics);
+  const suggestedActions = getSuggestedActions(recommendations, stats);
 
   const toggleMinimized = () => {
     const newValue = !isMinimized;
@@ -150,6 +118,24 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
     }
   };
 
+  if (loading) {
+    return (
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+        <CardHeader className="py-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!stats) return null;
+
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
       <CardHeader className={cn("py-4", !isMinimized && "pb-3")}>
@@ -159,7 +145,15 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-base">Qué debería estar revisando hoy</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                Qué debería estar revisando hoy
+                {stats.hasRealData && (
+                  <Badge variant="outline" className="text-[10px] gap-1">
+                    <Database className="h-2.5 w-2.5" />
+                    Datos reales
+                  </Badge>
+                )}
+              </CardTitle>
               {!isMinimized && (
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })} • Vista rápida de 2 minutos
@@ -170,7 +164,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
           <div className="flex items-center gap-2 flex-shrink-0">
             <Badge variant="outline" className="gap-1.5 text-xs whitespace-nowrap px-2.5 py-1">
               <Calendar className="h-3 w-3" />
-              {metrics.daysToFestival} días restantes
+              {stats.daysToFestival} días restantes
             </Badge>
             <Button 
               variant="ghost" 
@@ -196,23 +190,23 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
                 <Target className="h-4 w-4 text-primary" />
                 <span className="text-xs font-medium text-muted-foreground">Ventas vs Objetivo</span>
               </div>
-              {metrics.salesGap > 0 ? (
+              {stats.salesGap > 0 ? (
                 <Badge variant="outline" className="text-[10px] border-warning text-warning">
-                  Faltan {metrics.salesGap.toLocaleString()}
+                  Faltan {stats.salesGap.toLocaleString()}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-[10px] border-success text-success">
-                  +{Math.abs(metrics.salesGap).toLocaleString()}
+                  +{Math.abs(stats.salesGap).toLocaleString()}
                 </Badge>
               )}
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold">{metrics.currentSales.toLocaleString()}</span>
-              <span className="text-sm text-muted-foreground mb-0.5">/ {metrics.objetivoVentas.toLocaleString()}</span>
+              <span className="text-2xl font-bold">{stats.totalSold.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground mb-0.5">/ {stats.targetSales.toLocaleString()}</span>
             </div>
-            <Progress value={metrics.targetProgress} className="h-1.5 mt-2" />
+            <Progress value={stats.targetProgress} className="h-1.5 mt-2" />
             <p className="text-[10px] text-muted-foreground mt-1">
-              {metrics.targetProgress.toFixed(0)}% del objetivo de {metrics.objetivoVentas.toLocaleString()} entradas
+              {stats.targetProgress.toFixed(0)}% del objetivo de {stats.targetSales.toLocaleString()} entradas
             </p>
           </div>
           
@@ -220,7 +214,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
           <div className="p-4 rounded-lg border bg-card">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                {metrics.salesTrend >= 0 ? (
+                {stats.salesTrend >= 0 ? (
                   <TrendingUp className="h-4 w-4 text-success" />
                 ) : (
                   <TrendingDown className="h-4 w-4 text-destructive" />
@@ -231,18 +225,18 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
                 variant="outline" 
                 className={cn(
                   "text-[10px]",
-                  metrics.salesTrend >= 0 ? "border-success text-success" : "border-destructive text-destructive"
+                  stats.salesTrend >= 0 ? "border-success text-success" : "border-destructive text-destructive"
                 )}
               >
-                {metrics.salesTrend >= 0 ? '+' : ''}{metrics.salesTrend.toFixed(0)}% vs media
+                {stats.salesTrend >= 0 ? '+' : ''}{stats.salesTrend.toFixed(0)}% vs media
               </Badge>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold">{metrics.yesterdaySales}</span>
+              <span className="text-2xl font-bold">{stats.yesterdaySales}</span>
               <span className="text-sm text-muted-foreground mb-0.5">entradas vendidas</span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Media últimos 30 días: {metrics.avgDailySales} entradas/día
+              Media últimos 7 días: {stats.avgDailySales} entradas/día
             </p>
           </div>
           
@@ -254,16 +248,17 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
                 <span className="text-xs font-medium text-muted-foreground">Ingresos totales</span>
               </div>
               <Badge variant="outline" className="text-[10px]">
-                {((metrics.currentRevenue / metrics.targetRevenue) * 100).toFixed(0)}%
+                €{stats.avgTicketPrice.toFixed(0)}/ticket
               </Badge>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold">€{(metrics.currentRevenue / 1000).toFixed(0)}K</span>
-              <span className="text-sm text-muted-foreground mb-0.5">/ €{(metrics.targetRevenue / 1000).toFixed(0)}K</span>
+              <span className="text-2xl font-bold">€{(stats.grossRevenue / 1000).toFixed(0)}K</span>
+              <span className="text-sm text-muted-foreground mb-0.5">recaudados</span>
             </div>
-            <Progress value={(metrics.currentRevenue / metrics.targetRevenue) * 100} className="h-1.5 mt-2" />
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Faltan €{((metrics.targetRevenue - metrics.currentRevenue) / 1000).toFixed(0)}K para objetivo
+            <p className="text-[10px] text-muted-foreground mt-2">
+              {stats.requiredDailyRate > 0 
+                ? `Necesitas ${stats.requiredDailyRate}/día para objetivo`
+                : "Objetivo de ventas alcanzado"}
             </p>
           </div>
         </div>
@@ -284,7 +279,7 @@ export function TodayQuickView({ onOpenRecommendations, onOpenChat }: TodayQuick
             </div>
             
             <div className="space-y-2">
-              {topAlerts.map((alert, index) => (
+              {topAlerts.map((alert) => (
                 <div 
                   key={alert.id}
                   className={cn(
