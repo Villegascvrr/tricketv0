@@ -11,7 +11,11 @@ export const festivalData = {
   overview: {
     entradasVendidas: 14850,
     ingresosTotales: 371250, // euros
-    ocupacion: 0.7425 // 74.25%
+    ocupacion: 0.7425, // 74.25%
+    objetivoVentas: 18000, // 90% del aforo como objetivo realista
+    ventasAyer: 342,
+    mediaVentasDiaria: 285,
+    diasParaEvento: 74 // Calculado desde 15 enero a 29 marzo
   },
   ticketingProviders: [
     {
