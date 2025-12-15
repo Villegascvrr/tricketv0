@@ -138,9 +138,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const [tryModalOpen, setTryModalOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [operationsOpen, setOperationsOpen] = useState(
-    currentPath.startsWith('/operations')
-  );
+  const [operationsOpen, setOperationsOpen] = useState(true);
   const { signOut, user } = useAuth();
   const { profile, teamMemberInfo } = useUserProfile();
 
