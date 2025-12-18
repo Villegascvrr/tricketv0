@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import SalesForecasts from "./pages/SalesForecasts";
 import Audience from "./pages/Audience";
 import Marketing from "./pages/Marketing";
+import WeatherConditions from "./pages/WeatherConditions";
 import AIRecommendations from "./pages/AIRecommendations";
 import Historical from "./pages/Historical";
 import PreFestivalOperations from "./pages/PreFestivalOperations";
@@ -81,6 +82,16 @@ const App = () => (
                 element={
                   <AppLayout>
                     <Marketing />
+                  </AppLayout>
+                }
+                />
+
+              {/* Condiciones Externas - Clima */}
+              <Route
+                path="/weather"
+                element={
+                  <AppLayout>
+                    <WeatherConditions />
                   </AppLayout>
                 }
               />

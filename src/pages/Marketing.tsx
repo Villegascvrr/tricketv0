@@ -41,11 +41,9 @@ import {
   ChevronUp,
   Plus,
   Pencil,
-  Trash2,
-  Cloud
+  Trash2
 } from "lucide-react";
 import GoogleTrendsSection from "@/components/marketing/GoogleTrendsSection";
-import WeatherConditionsSection from "@/components/marketing/WeatherConditionsSection";
 import { 
   AreaChart, 
   Area, 
@@ -520,10 +518,6 @@ const Marketing = () => {
               <Link2 className="h-3.5 w-3.5" />
               Tracking
             </TabsTrigger>
-            <TabsTrigger value="weather" className="gap-1.5 text-xs">
-              <Cloud className="h-3.5 w-3.5" />
-              Clima
-            </TabsTrigger>
           </TabsList>
 
           {/* Tab: Campañas */}
@@ -980,11 +974,6 @@ const Marketing = () => {
                 </div>
             </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Tab: Clima */}
-          <TabsContent value="weather" className="space-y-6">
-            <WeatherConditionsSection />
           </TabsContent>
         </Tabs>
       </div>
