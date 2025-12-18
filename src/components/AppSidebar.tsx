@@ -18,7 +18,8 @@ import {
   ChevronDown,
   FlaskConical,
   MessageCircle,
-  User
+  User,
+  CloudSun
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -73,6 +74,11 @@ const mainItemsAfterOps = [
     title: "Marketing & Campañas",
     url: "/marketing",
     icon: Megaphone
+  },
+  {
+    title: "Condiciones Externas",
+    url: "/weather",
+    icon: CloudSun
   },
   {
     title: "Recomendaciones IA",
