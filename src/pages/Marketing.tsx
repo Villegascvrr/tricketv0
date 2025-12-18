@@ -44,6 +44,7 @@ import {
   Trash2
 } from "lucide-react";
 import GoogleTrendsSection from "@/components/marketing/GoogleTrendsSection";
+import EmailMarketingSection from "@/components/marketing/EmailMarketingSection";
 import { 
   AreaChart, 
   Area, 
@@ -501,10 +502,14 @@ const Marketing = () => {
 
         {/* Main Tabs for Marketing Sections */}
         <Tabs defaultValue="campaigns" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="campaigns" className="gap-1.5 text-xs">
               <Megaphone className="h-3.5 w-3.5" />
               Campañas
+            </TabsTrigger>
+            <TabsTrigger value="email" className="gap-1.5 text-xs">
+              <Mail className="h-3.5 w-3.5" />
+              Email Marketing
             </TabsTrigger>
             <TabsTrigger value="trends" className="gap-1.5 text-xs">
               <TrendingUp className="h-3.5 w-3.5" />
@@ -807,6 +812,11 @@ const Marketing = () => {
                 })}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab: Email Marketing */}
+          <TabsContent value="email" className="space-y-6">
+            <EmailMarketingSection />
           </TabsContent>
 
           {/* Tab: Interés del Público (Google Trends) */}
