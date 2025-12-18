@@ -76,14 +76,14 @@ const mainItemsAfterOps = [
     icon: Megaphone
   },
   {
-    title: "Condiciones Externas",
-    url: "/weather",
-    icon: CloudSun
-  },
-  {
     title: "Recomendaciones IA",
     url: "/ai-recommendations",
     icon: Brain
+  },
+  {
+    title: "Condiciones Externas",
+    url: "/weather",
+    icon: CloudSun
   },
   {
     title: "Scenario Planner",
