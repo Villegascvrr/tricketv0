@@ -26,9 +26,6 @@ const Integrations = () => {
           <p className="text-xs text-muted-foreground">Gestiona las conexiones con ticketeras y fuentes de datos externas</p>
         </div>
 
-        {/* External Data Sources */}
-        <ExternalDataSection />
-
         {/* Manual Import Section */}
         <div>
           <h2 className="text-sm font-semibold text-foreground mb-3">Importación Manual de Tickets</h2>
@@ -419,6 +416,9 @@ const Integrations = () => {
             </Card>
           </div>
         </div>
+
+        {/* External Data Sources */}
+        <ExternalDataSection />
       </div>
 
       {/* Import Drawer */}
