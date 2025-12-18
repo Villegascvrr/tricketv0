@@ -12,6 +12,7 @@ import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer"
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
 import FestivalStatusOverview from "@/components/event/FestivalStatusOverview";
+import ExternalSignals from "@/components/event/ExternalSignals";
 import { TodayQuickView } from "@/components/event/TodayQuickView";
 import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
@@ -99,6 +100,9 @@ const Dashboard = () => {
           onOpenRecommendations={() => setDrawerOpen(true)} 
           onOpenChat={() => setChatOpen(true)} 
         />
+
+        {/* External Signals - Compact executive summary */}
+        <ExternalSignals />
 
         {/* Festival Status Overview */}
         <FestivalStatusOverview />
