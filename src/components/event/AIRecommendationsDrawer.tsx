@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download, RefreshCw } from "lucide-react";
+import { Brain, AlertCircle, TrendingUp, DollarSign, X, Filter, Download, RefreshCw, CloudSun, Mail, BarChart3, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -24,6 +24,7 @@ interface Recommendation {
   targetKey?: string;
   rule?: string;
   dataPoint?: string;
+  source?: "ventas" | "marketing" | "trends" | "clima" | "email" | "operations";
 }
 
 interface AIRecommendationsDrawerProps {
@@ -110,6 +111,25 @@ const AIRecommendationsDrawer = ({
   const getScopeLabel = (scope: string, targetKey?: string) => {
     if (scope === 'global') return null;
     return targetKey || scope;
+  };
+
+  const getSourceConfig = (source?: string) => {
+    switch (source) {
+      case 'ventas':
+        return { label: 'Ventas', icon: BarChart3, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' };
+      case 'marketing':
+        return { label: 'Marketing', icon: TrendingUp, color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' };
+      case 'trends':
+        return { label: 'Trends', icon: TrendingUp, color: 'bg-green-500/10 text-green-600 border-green-500/20' };
+      case 'clima':
+        return { label: 'Clima', icon: CloudSun, color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20' };
+      case 'email':
+        return { label: 'Email', icon: Mail, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' };
+      case 'operations':
+        return { label: 'Ops', icon: Settings, color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' };
+      default:
+        return { label: 'Sistema', icon: Brain, color: 'bg-muted text-muted-foreground border-border' };
+    }
   };
 
   // Apply filters including context filter
@@ -368,6 +388,11 @@ const AIRecommendationsDrawer = ({
                               {rec.title}
                             </CardTitle>
                             <div className="flex gap-1 flex-shrink-0">
+                              {rec.source && (
+                                <Badge variant="outline" className={cn("text-[10px] h-4 px-1", getSourceConfig(rec.source).color)}>
+                                  {getSourceConfig(rec.source).label}
+                                </Badge>
+                              )}
                               <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
                                 {getCategoryLabel(rec.category)}
                               </Badge>
@@ -413,6 +438,11 @@ const AIRecommendationsDrawer = ({
                               {rec.title}
                             </CardTitle>
                             <div className="flex gap-1 flex-shrink-0">
+                              {rec.source && (
+                                <Badge variant="outline" className={cn("text-[10px] h-4 px-1", getSourceConfig(rec.source).color)}>
+                                  {getSourceConfig(rec.source).label}
+                                </Badge>
+                              )}
                               <Badge variant="outline" className="text-xs h-4 px-1 bg-muted">
                                 {getCategoryLabel(rec.category)}
                               </Badge>
