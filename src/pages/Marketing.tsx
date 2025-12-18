@@ -43,6 +43,7 @@ import {
   Pencil,
   Trash2
 } from "lucide-react";
+import GoogleTrendsSection from "@/components/marketing/GoogleTrendsSection";
 import { 
   AreaChart, 
   Area, 
@@ -497,6 +498,9 @@ const Marketing = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Google Trends Section */}
+        <GoogleTrendsSection />
 
         {/* Campaign Performance Chart */}
         <Card>
