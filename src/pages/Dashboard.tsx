@@ -101,11 +101,11 @@ const Dashboard = () => {
           onOpenChat={() => setChatOpen(true)} 
         />
 
-        {/* External Signals - Compact executive summary */}
-        <ExternalSignals />
-
-        {/* Festival Status Overview */}
+        {/* Festival Status Overview - Priority 1 */}
         <FestivalStatusOverview />
+
+        {/* External Signals - Compact, lower priority */}
+        <ExternalSignals />
 
         <Tabs defaultValue="summary" className="space-y-4">
           <TabsList className="bg-card border border-border h-9 p-1">
