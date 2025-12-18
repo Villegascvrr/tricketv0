@@ -7,6 +7,7 @@ import { Plug, CheckCircle2, XCircle, Upload, FileSpreadsheet } from "lucide-rea
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { TicketImportDrawer } from "@/components/tickets/TicketImportDrawer";
 import { TicketImportHistory } from "@/components/tickets/TicketImportHistory";
+import ExternalDataSection from "@/components/integrations/ExternalDataSection";
 
 // Event ID for the current festival
 const EVENT_ID = "demo-primaverando-2025";
@@ -24,6 +25,9 @@ const Integrations = () => {
           <h1 className="text-lg font-bold text-foreground">Integraciones</h1>
           <p className="text-xs text-muted-foreground">Gestiona las conexiones con ticketeras y fuentes de datos externas</p>
         </div>
+
+        {/* External Data Sources */}
+        <ExternalDataSection />
 
         {/* Manual Import Section */}
         <div>
