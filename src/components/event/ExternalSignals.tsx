@@ -1,93 +1,52 @@
-import { TrendingUp, CloudSun, Mail, Target, ExternalLink } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Mail, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ExternalSignals = () => {
-  // Mock data - would come from real integrations
-  const signals = {
-    trends: {
-      trend: "up" as const,
-      change: "+23%",
-      region: "Madrid",
-      description: "Interés creciente"
+  const navigate = useNavigate();
+
+  const signals = [
+    {
+      icon: <TrendingUp className="h-3.5 w-3.5 text-blue-500" />,
+      label: "Trends",
+      value: "+23%",
+      detail: "Madrid",
+      color: "text-green-500"
     },
-    weather: {
-      icon: "☀️",
-      temp: "22°C",
-      description: "Soleado",
-      impact: "favorable"
+    {
+      icon: <span className="text-sm">☀️</span>,
+      label: "Clima",
+      value: "22°C",
+      detail: "Favorable",
+      color: "text-green-500"
     },
-    bestChannel: {
-      name: "Email",
-      conversion: "4.2%",
-      vsAvg: "+1.8%"
+    {
+      icon: <Mail className="h-3.5 w-3.5 text-purple-500" />,
+      label: "Email",
+      value: "4.2%",
+      detail: "Mejor canal",
+      color: "text-foreground"
     }
-  };
+  ];
 
   return (
-    <Card className="bg-card border-border">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <ExternalLink className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-medium text-foreground">Señales Externas</h3>
+    <div 
+      onClick={() => navigate("/integrations")}
+      className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 bg-card hover:bg-muted/40 cursor-pointer transition-all group"
+    >
+      <span className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">Señales externas</span>
+      
+      <div className="flex items-center gap-4 flex-1">
+        {signals.map((signal, idx) => (
+          <div key={idx} className="flex items-center gap-1.5">
+            {signal.icon}
+            <span className="text-[11px] text-muted-foreground">{signal.label}</span>
+            <span className={`text-[11px] font-semibold ${signal.color}`}>{signal.value}</span>
           </div>
-          <Badge variant="outline" className="text-[10px] h-5">
-            Actualizado hace 2h
-          </Badge>
-        </div>
+        ))}
+      </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          {/* Google Trends */}
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-            <div className="h-8 w-8 rounded-md bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-medium text-foreground truncate">Trends</span>
-                <span className="text-xs font-semibold text-green-500">{signals.trends.change}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground truncate">
-                {signals.trends.description} en {signals.trends.region}
-              </p>
-            </div>
-          </div>
-
-          {/* Weather */}
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-            <div className="h-8 w-8 rounded-md bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">{signals.weather.icon}</span>
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-medium text-foreground">{signals.weather.temp}</span>
-                <span className="text-xs text-muted-foreground">{signals.weather.description}</span>
-              </div>
-              <p className="text-[10px] text-green-500 truncate">
-                Clima favorable
-              </p>
-            </div>
-          </div>
-
-          {/* Best Channel */}
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-            <div className="h-8 w-8 rounded-md bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <Mail className="h-4 w-4 text-purple-500" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-medium text-foreground">{signals.bestChannel.name}</span>
-                <span className="text-xs font-semibold text-green-500">{signals.bestChannel.vsAvg}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground truncate">
-                Mejor conversión: {signals.bestChannel.conversion}
-              </p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+    </div>
   );
 };
 
