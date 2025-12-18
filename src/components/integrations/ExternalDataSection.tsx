@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { 
   TrendingUp, 
   CloudSun, 
-  Mail, 
   Instagram,
   ExternalLink,
   CheckCircle2,
@@ -47,17 +46,6 @@ const externalDataSources: ExternalDataSource[] = [
     lastUpdate: 'Hace 30 min',
     route: '/weather',
     color: 'text-cyan-500 bg-cyan-500/10'
-  },
-  {
-    id: 'email-marketing',
-    name: 'Email Marketing',
-    description: 'Mailchimp / Brevo',
-    icon: <Mail className="h-5 w-5" />,
-    status: 'demo',
-    dataType: 'Campañas enviadas, aperturas, clics, conversiones a ticket',
-    lastUpdate: 'Hace 2 horas',
-    route: '/marketing',
-    color: 'text-amber-500 bg-amber-500/10'
   },
   {
     id: 'social-media',
