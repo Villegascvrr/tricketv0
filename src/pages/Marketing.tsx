@@ -499,455 +499,483 @@ const Marketing = () => {
           </Card>
         </div>
 
-        {/* Google Trends Section */}
-        <GoogleTrendsSection />
+        {/* Main Tabs for Marketing Sections */}
+        <Tabs defaultValue="campaigns" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="campaigns" className="gap-1.5 text-xs">
+              <Megaphone className="h-3.5 w-3.5" />
+              Campañas
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="gap-1.5 text-xs">
+              <TrendingUp className="h-3.5 w-3.5" />
+              Interés Público
+            </TabsTrigger>
+            <TabsTrigger value="content" className="gap-1.5 text-xs">
+              <Share2 className="h-3.5 w-3.5" />
+              Contenido
+            </TabsTrigger>
+            <TabsTrigger value="tracking" className="gap-1.5 text-xs">
+              <Link2 className="h-3.5 w-3.5" />
+              Tracking
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Campaign Performance Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Rendimiento de Campañas</CardTitle>
-                <CardDescription>Alcance, clics y conversiones por semana</CardDescription>
-              </div>
-              <div className="flex gap-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
-                  <span>Alcance</span>
+          {/* Tab: Campañas */}
+          <TabsContent value="campaigns" className="space-y-6">
+            {/* Campaign Performance Chart */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Rendimiento de Campañas</CardTitle>
+                    <CardDescription>Alcance, clics y conversiones por semana</CardDescription>
+                  </div>
+                  <div className="flex gap-3 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
+                      <span>Alcance</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary/60" />
+                      <span>Clics</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                      <span>Conversiones</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary/60" />
-                  <span>Clics</span>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={campaignPerformanceData}>
+                      <defs>
+                        <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} />
+                      <YAxis 
+                        yAxisId="left"
+                        tick={{ fontSize: 11 }} 
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                      />
+                      <YAxis 
+                        yAxisId="right"
+                        orientation="right"
+                        tick={{ fontSize: 11 }} 
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                        formatter={(value: number, name: string) => {
+                          const label = name === 'reach' ? 'Alcance' : name === 'clicks' ? 'Clics' : 'Conversiones';
+                          return [value.toLocaleString('es-ES'), label];
+                        }}
+                      />
+                      <Area 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="reach" 
+                        stroke="hsl(var(--primary))" 
+                        strokeOpacity={0.3}
+                        strokeWidth={1}
+                        fillOpacity={1} 
+                        fill="url(#colorReach)" 
+                      />
+                      <Area 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="clicks" 
+                        stroke="hsl(var(--primary))" 
+                        strokeOpacity={0.6}
+                        strokeWidth={2}
+                        fillOpacity={1} 
+                        fill="url(#colorClicks)" 
+                      />
+                      <Area 
+                        yAxisId="right"
+                        type="monotone" 
+                        dataKey="conversions" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        fill="none"
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                  <span>Conversiones</span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={campaignPerformanceData}>
-                  <defs>
-                    <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} />
-                  <YAxis 
-                    yAxisId="left"
-                    tick={{ fontSize: 11 }} 
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    tick={{ fontSize: 11 }} 
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number, name: string) => {
-                      const label = name === 'reach' ? 'Alcance' : name === 'clicks' ? 'Clics' : 'Conversiones';
-                      return [value.toLocaleString('es-ES'), label];
-                    }}
-                  />
-                  <Area 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="reach" 
-                    stroke="hsl(var(--primary))" 
-                    strokeOpacity={0.3}
-                    strokeWidth={1}
-                    fillOpacity={1} 
-                    fill="url(#colorReach)" 
-                  />
-                  <Area 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="clicks" 
-                    stroke="hsl(var(--primary))" 
-                    strokeOpacity={0.6}
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorClicks)" 
-                  />
-                  <Area 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="conversions" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    fill="none"
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Campaigns List & Top Posts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Active Campaigns */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">Historial de Campañas</CardTitle>
-                  <CardDescription>Todas las campañas con datos operativos</CardDescription>
+            {/* Campaigns List */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Historial de Campañas</CardTitle>
+                    <CardDescription>Todas las campañas con datos operativos</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="default" className="text-[10px]">{activeCampaignsCount} activas</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{completedCampaignsCount} finalizadas</Badge>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Badge variant="default" className="text-[10px]">{activeCampaignsCount} activas</Badge>
-                  <Badge variant="secondary" className="text-[10px]">{completedCampaignsCount} finalizadas</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {campaigns.map((campaign) => {
-                const isExpanded = expandedCampaign === campaign.id;
-                const startDateFormatted = new Date(campaign.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-                const endDateFormatted = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
-                
-                return (
-                  <div 
-                    key={campaign.id} 
-                    className={`rounded-lg border transition-all ${isExpanded ? 'bg-muted/30 ring-1 ring-primary/20' : 'bg-card hover:bg-accent/5'}`}
-                  >
-                    {/* Campaign Header - Always Visible */}
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {campaigns.map((campaign) => {
+                  const isExpanded = expandedCampaign === campaign.id;
+                  const startDateFormatted = new Date(campaign.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                  const endDateFormatted = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
+                  
+                  return (
                     <div 
-                      className="p-3 cursor-pointer"
-                      onClick={() => setExpandedCampaign(isExpanded ? null : campaign.id)}
+                      key={campaign.id} 
+                      className={`rounded-lg border transition-all ${isExpanded ? 'bg-muted/30 ring-1 ring-primary/20' : 'bg-card hover:bg-accent/5'}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                            campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
-                            campaign.platform === 'facebook' ? 'bg-blue-500/10 text-blue-500' :
-                            campaign.platform === 'email' ? 'bg-amber-500/10 text-amber-500' :
-                            'bg-purple-500/10 text-purple-500'
-                          }`}>
-                            {getPlatformIcon(campaign.platform)}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-sm">{campaign.name}</p>
-                              <Badge 
-                                variant={campaign.status === 'active' ? 'default' : 'secondary'}
-                                className={`text-[10px] ${campaign.status === 'active' ? 'bg-success text-success-foreground' : ''}`}
-                              >
-                                {campaign.status === 'active' ? (
-                                  <><Clock className="h-2.5 w-2.5 mr-1" />Activa</>
-                                ) : (
-                                  <><CheckCircle2 className="h-2.5 w-2.5 mr-1" />Finalizada</>
-                                )}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                              <Calendar className="h-3 w-3" />
-                              <span>{startDateFormatted} → {endDateFormatted}</span>
-                              <Badge variant="outline" className="text-[9px] px-1.5 py-0">
-                                {campaign.type === 'paid' ? 'Pagada' : campaign.type === 'email' ? 'Email' : campaign.type === 'influencer' ? 'Influencer' : 'Orgánica'}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                          {/* Quick Stats */}
-                          <div className="hidden md:flex items-center gap-4 text-right">
-                            <div>
-                              <p className="text-sm font-semibold">{campaign.tickets_sold}</p>
-                              <p className="text-[10px] text-muted-foreground">entradas</p>
+                      {/* Campaign Header - Always Visible */}
+                      <div 
+                        className="p-3 cursor-pointer"
+                        onClick={() => setExpandedCampaign(isExpanded ? null : campaign.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                              campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
+                              campaign.platform === 'facebook' ? 'bg-blue-500/10 text-blue-500' :
+                              campaign.platform === 'email' ? 'bg-amber-500/10 text-amber-500' :
+                              'bg-purple-500/10 text-purple-500'
+                            }`}>
+                              {getPlatformIcon(campaign.platform)}
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
-                              <p className="text-[10px] text-muted-foreground">ingresos</p>
-                            </div>
-                          </div>
-                          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Expanded Details */}
-                    {isExpanded && (
-                      <div className="px-3 pb-3 space-y-3">
-                        <div className="h-px bg-border" />
-                        
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                          <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">{((campaign.reach || 0) / 1000).toFixed(0)}K</p>
-                            <p className="text-[10px] text-muted-foreground">Alcance</p>
-                          </div>
-                          <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">{(campaign.clicks || 0).toLocaleString('es-ES')}</p>
-                            <p className="text-[10px] text-muted-foreground">Clics</p>
-                          </div>
-                          <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">{campaign.ctr}%</p>
-                            <p className="text-[10px] text-muted-foreground">CTR</p>
-                          </div>
-                          <div className="p-2 rounded-lg bg-success/10 text-center">
-                            <p className="text-lg font-semibold text-success">{campaign.tickets_sold}</p>
-                            <p className="text-[10px] text-muted-foreground">Entradas</p>
-                          </div>
-                          <div className="p-2 rounded-lg bg-success/10 text-center">
-                            <p className="text-lg font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
-                            <p className="text-[10px] text-muted-foreground">Ingresos Est.</p>
-                          </div>
-                          <div className="p-2 rounded-lg bg-background text-center">
-                            <p className="text-lg font-semibold">€{Number(campaign.spent) > 0 && campaign.tickets_sold > 0 ? (Number(campaign.spent) / campaign.tickets_sold).toFixed(2) : '0'}</p>
-                            <p className="text-[10px] text-muted-foreground">CPA</p>
-                          </div>
-                        </div>
-                        
-                        {/* Budget Progress (if paid) */}
-                        {Number(campaign.budget) > 0 && (
-                          <div className="p-2 rounded-lg bg-background">
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">Presupuesto</span>
-                              <span className="font-medium">€{Number(campaign.spent).toLocaleString('es-ES')} / €{Number(campaign.budget).toLocaleString('es-ES')}</span>
-                            </div>
-                            <Progress value={(Number(campaign.spent) / Number(campaign.budget)) * 100} className="h-1.5" />
-                          </div>
-                        )}
-                        
-                        {/* Observation */}
-                        {campaign.observation && (
-                          <div className="p-3 rounded-lg border bg-background">
-                            <div className="flex items-start gap-2">
-                              <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                              <div>
-                                <p className="text-xs font-medium text-primary mb-1">Observación</p>
-                                <p className="text-sm text-foreground">{campaign.observation}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-sm">{campaign.name}</p>
+                                <Badge 
+                                  variant={campaign.status === 'active' ? 'default' : 'secondary'}
+                                  className={`text-[10px] ${campaign.status === 'active' ? 'bg-success text-success-foreground' : ''}`}
+                                >
+                                  {campaign.status === 'active' ? (
+                                    <><Clock className="h-2.5 w-2.5 mr-1" />Activa</>
+                                  ) : (
+                                    <><CheckCircle2 className="h-2.5 w-2.5 mr-1" />Finalizada</>
+                                  )}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                                <Calendar className="h-3 w-3" />
+                                <span>{startDateFormatted} → {endDateFormatted}</span>
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                                  {campaign.type === 'paid' ? 'Pagada' : campaign.type === 'email' ? 'Email' : campaign.type === 'influencer' ? 'Influencer' : 'Orgánica'}
+                                </Badge>
                               </div>
                             </div>
                           </div>
-                        )}
-                        
-                        {/* Team Notes */}
-                        {campaign.team_notes && (
-                          <div className="p-3 rounded-lg border bg-muted/30">
-                            <div className="flex items-start gap-2">
-                              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                          
+                          <div className="flex items-center gap-4">
+                            {/* Quick Stats */}
+                            <div className="hidden md:flex items-center gap-4 text-right">
                               <div>
-                                <p className="text-xs font-medium text-muted-foreground mb-1">Notas del equipo</p>
-                                <p className="text-sm text-muted-foreground">{campaign.team_notes}</p>
+                                <p className="text-sm font-semibold">{campaign.tickets_sold}</p>
+                                <p className="text-[10px] text-muted-foreground">entradas</p>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
+                                <p className="text-[10px] text-muted-foreground">ingresos</p>
                               </div>
                             </div>
+                            {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                           </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end gap-2 pt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5 h-7 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditModal(campaign);
-                            }}
-                          >
-                            <Pencil className="h-3 w-3" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="gap-1.5 h-7 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingCampaignId(campaign.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                            Eliminar
-                          </Button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                      
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="px-3 pb-3 space-y-3">
+                          <div className="h-px bg-border" />
+                          
+                          {/* Metrics Grid */}
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                            <div className="p-2 rounded-lg bg-background text-center">
+                              <p className="text-lg font-semibold">{((campaign.reach || 0) / 1000).toFixed(0)}K</p>
+                              <p className="text-[10px] text-muted-foreground">Alcance</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-background text-center">
+                              <p className="text-lg font-semibold">{(campaign.clicks || 0).toLocaleString('es-ES')}</p>
+                              <p className="text-[10px] text-muted-foreground">Clics</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-background text-center">
+                              <p className="text-lg font-semibold">{campaign.ctr}%</p>
+                              <p className="text-[10px] text-muted-foreground">CTR</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-success/10 text-center">
+                              <p className="text-lg font-semibold text-success">{campaign.tickets_sold}</p>
+                              <p className="text-[10px] text-muted-foreground">Entradas</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-success/10 text-center">
+                              <p className="text-lg font-semibold text-success">€{Number(campaign.estimated_revenue).toLocaleString('es-ES')}</p>
+                              <p className="text-[10px] text-muted-foreground">Ingresos Est.</p>
+                            </div>
+                            <div className="p-2 rounded-lg bg-background text-center">
+                              <p className="text-lg font-semibold">€{Number(campaign.spent) > 0 && campaign.tickets_sold > 0 ? (Number(campaign.spent) / campaign.tickets_sold).toFixed(2) : '0'}</p>
+                              <p className="text-[10px] text-muted-foreground">CPA</p>
+                            </div>
+                          </div>
+                          
+                          {/* Budget Progress (if paid) */}
+                          {Number(campaign.budget) > 0 && (
+                            <div className="p-2 rounded-lg bg-background">
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-muted-foreground">Presupuesto</span>
+                                <span className="font-medium">€{Number(campaign.spent).toLocaleString('es-ES')} / €{Number(campaign.budget).toLocaleString('es-ES')}</span>
+                              </div>
+                              <Progress value={(Number(campaign.spent) / Number(campaign.budget)) * 100} className="h-1.5" />
+                            </div>
+                          )}
+                          
+                          {/* Observation */}
+                          {campaign.observation && (
+                            <div className="p-3 rounded-lg border bg-background">
+                              <div className="flex items-start gap-2">
+                                <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-xs font-medium text-primary mb-1">Observación</p>
+                                  <p className="text-sm text-foreground">{campaign.observation}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Team Notes */}
+                          {campaign.team_notes && (
+                            <div className="p-3 rounded-lg border bg-muted/30">
+                              <div className="flex items-start gap-2">
+                                <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Notas del equipo</p>
+                                  <p className="text-sm text-muted-foreground">{campaign.team_notes}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
-          {/* Top Posts */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Top Posts que Generan Ventas</CardTitle>
-              <CardDescription>Contenido con mejor conversión</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {topPosts.map((post, index) => (
-                <div 
-                  key={post.id} 
-                  className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
-                >
-                  <div className="relative">
-                    <img 
-                      src={post.thumbnail} 
-                      alt={post.content}
-                      className="h-16 w-16 rounded-lg object-cover"
-                    />
-                    <div className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                      {index + 1}
+                          {/* Action Buttons */}
+                          <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 h-7 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditModal(campaign);
+                              }}
+                            >
+                              <Pencil className="h-3 w-3" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="gap-1.5 h-7 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingCampaignId(campaign.id);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Eliminar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      {getPlatformIcon(post.platform)}
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{post.type}</Badge>
-                    </div>
-                    <p className="text-sm font-medium truncate">{post.content}</p>
-                    <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                      <span>{(post.reach / 1000).toFixed(0)}K vistas</span>
-                      <span className="text-success font-medium">{post.conversions} ventas</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Newsletter & UTM Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Newsletters */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Send className="h-4 w-4" />
-                    Newsletters Enviadas
-                  </CardTitle>
-                  <CardDescription>Rendimiento de campañas de email</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <Mail className="h-3.5 w-3.5" />
-                  Nueva Newsletter
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {newsletters.map((newsletter, index) => (
-                <div key={index} className="p-3 rounded-lg border bg-card">
-                  <div className="flex items-center justify-between mb-2">
+          {/* Tab: Interés del Público (Google Trends) */}
+          <TabsContent value="trends" className="space-y-6">
+            <GoogleTrendsSection />
+          </TabsContent>
+
+          {/* Tab: Contenido */}
+          <TabsContent value="content" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Top Posts */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Top Posts que Generan Ventas</CardTitle>
+                  <CardDescription>Contenido con mejor conversión</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {topPosts.map((post, index) => (
+                    <div 
+                      key={post.id} 
+                      className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                    >
+                      <div className="relative">
+                        <img 
+                          src={post.thumbnail} 
+                          alt={post.content}
+                          className="h-16 w-16 rounded-lg object-cover"
+                        />
+                        <div className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {getPlatformIcon(post.platform)}
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{post.type}</Badge>
+                        </div>
+                        <p className="text-sm font-medium truncate">{post.content}</p>
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                          <span>{(post.reach / 1000).toFixed(0)}K vistas</span>
+                          <span className="text-success font-medium">{post.conversions} ventas</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Newsletters */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm">{newsletter.name}</p>
-                      <p className="text-xs text-muted-foreground">{newsletter.date}</p>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Send className="h-4 w-4" />
+                        Newsletters Enviadas
+                      </CardTitle>
+                      <CardDescription>Rendimiento de campañas de email</CardDescription>
                     </div>
-                    <Badge variant="secondary" className="text-[10px]">
-                      {newsletter.sent.toLocaleString('es-ES')} enviados
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="p-2 rounded bg-muted/30">
-                      <p className="text-sm font-semibold">{((newsletter.opened / newsletter.sent) * 100).toFixed(0)}%</p>
-                      <p className="text-[10px] text-muted-foreground">Apertura</p>
-                    </div>
-                    <div className="p-2 rounded bg-muted/30">
-                      <p className="text-sm font-semibold">{((newsletter.clicked / newsletter.sent) * 100).toFixed(0)}%</p>
-                      <p className="text-[10px] text-muted-foreground">Clics</p>
-                    </div>
-                    <div className="p-2 rounded bg-muted/30">
-                      <p className="text-sm font-semibold">{newsletter.conversions}</p>
-                      <p className="text-[10px] text-muted-foreground">Ventas</p>
-                    </div>
-                    <div className="p-2 rounded bg-success/10">
-                      <p className="text-sm font-semibold text-success">€{(newsletter.conversions * 25).toLocaleString('es-ES')}</p>
-                      <p className="text-[10px] text-muted-foreground">Ingresos</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* UTM & Tracked Links */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Link2 className="h-4 w-4" />
-                    Links Trackeados (UTM)
-                  </CardTitle>
-                  <CardDescription>Generador y plantillas de UTMs</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* UTM Generator */}
-              <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
-                <p className="text-xs font-medium text-muted-foreground">Generador de Links</p>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="https://primaverando.com/tickets" 
-                    className="text-sm"
-                  />
-                  <Button size="sm" className="gap-1.5 shrink-0">
-                    <Copy className="h-3.5 w-3.5" />
-                    Generar
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input placeholder="utm_source" className="text-xs h-8" />
-                  <Input placeholder="utm_medium" className="text-xs h-8" />
-                  <Input placeholder="utm_campaign" className="text-xs h-8" />
-                  <Input placeholder="utm_content" className="text-xs h-8" />
-                </div>
-              </div>
-
-              {/* UTM Templates */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Plantillas guardadas</p>
-                {utmTemplates.map((template, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-accent/5 transition-colors group"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="h-7 w-7 rounded bg-muted flex items-center justify-center shrink-0">
-                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{template.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{template.utm}</p>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                      <Mail className="h-3.5 w-3.5" />
+                      Nueva Newsletter
                     </Button>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {newsletters.map((newsletter, index) => (
+                    <div key={index} className="p-3 rounded-lg border bg-card">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-medium text-sm">{newsletter.name}</p>
+                          <p className="text-xs text-muted-foreground">{newsletter.date}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {newsletter.sent.toLocaleString('es-ES')} enviados
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="p-2 rounded bg-muted/30">
+                          <p className="text-sm font-semibold">{((newsletter.opened / newsletter.sent) * 100).toFixed(0)}%</p>
+                          <p className="text-[10px] text-muted-foreground">Apertura</p>
+                        </div>
+                        <div className="p-2 rounded bg-muted/30">
+                          <p className="text-sm font-semibold">{((newsletter.clicked / newsletter.sent) * 100).toFixed(0)}%</p>
+                          <p className="text-[10px] text-muted-foreground">Clics</p>
+                        </div>
+                        <div className="p-2 rounded bg-muted/30">
+                          <p className="text-sm font-semibold">{newsletter.conversions}</p>
+                          <p className="text-[10px] text-muted-foreground">Ventas</p>
+                        </div>
+                        <div className="p-2 rounded bg-success/10">
+                          <p className="text-sm font-semibold text-success">€{(newsletter.conversions * 25).toLocaleString('es-ES')}</p>
+                          <p className="text-[10px] text-muted-foreground">Ingresos</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Tab: Tracking */}
+          <TabsContent value="tracking" className="space-y-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Link2 className="h-4 w-4" />
+                      Links Trackeados (UTM)
+                    </CardTitle>
+                    <CardDescription>Generador y plantillas de UTMs</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* UTM Generator */}
+                <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground">Generador de Links</p>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="https://primaverando.com/tickets" 
+                      className="text-sm"
+                    />
+                    <Button size="sm" className="gap-1.5 shrink-0">
+                      <Copy className="h-3.5 w-3.5" />
+                      Generar
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="utm_source" className="text-xs h-8" />
+                    <Input placeholder="utm_medium" className="text-xs h-8" />
+                    <Input placeholder="utm_campaign" className="text-xs h-8" />
+                    <Input placeholder="utm_content" className="text-xs h-8" />
+                  </div>
+                </div>
+
+                {/* UTM Templates */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Plantillas guardadas</p>
+                  {utmTemplates.map((template, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-accent/5 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="h-7 w-7 rounded bg-muted flex items-center justify-center shrink-0">
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">{template.name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{template.utm}</p>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Edit Campaign Modal */}
