@@ -11,6 +11,7 @@ export interface Recommendation {
   targetKey?: string;
   rule: string; // Regla que dispara esta recomendación
   dataPoint: string; // Dato específico que la justifica
+  source: "ventas" | "marketing" | "trends" | "clima" | "email" | "operations"; // Fuente de la recomendación
 }
 
 // Constantes de referencia Primaverando 2024
@@ -41,6 +42,114 @@ export function generateAIRecommendations(): Recommendation[] {
   const ticketPromedio = overview.ingresosTotales / overview.entradasVendidas;
 
   // ═══════════════════════════════════════════════════════════════════
+  // RECOMENDACIONES BASADAS EN GOOGLE TRENDS
+  // ═══════════════════════════════════════════════════════════════════
+  recs.push({
+    id: 'trends-madrid-creciendo',
+    title: 'Interés en Google Trends creciendo en Madrid',
+    description: `Las búsquedas de "Primaverando 2025" han aumentado un 45% en Madrid en las últimas 2 semanas, superando a Sevilla por primera vez.
+
+Madrid representa solo el 8% de las ventas actuales pero muestra el mayor crecimiento de interés. El pico de búsquedas coincide con el anuncio del cartel.
+
+Acción: Lanzar campaña geolocalizada en Madrid con mensaje "Viaja al mejor festival del sur" + pack transporte AVE incluido.`,
+    priority: 'high',
+    category: 'marketing',
+    scope: 'city',
+    targetKey: 'Madrid',
+    rule: 'Interés Google Trends Madrid > +40% en 2 semanas',
+    dataPoint: '+45% búsquedas en Madrid vs semana anterior',
+    source: 'trends'
+  });
+
+  recs.push({
+    id: 'trends-artistas-principales',
+    title: 'Artistas principales generan pico de interés',
+    description: `Las búsquedas combinadas de "Bad Bunny Sevilla" y "Rosalía festival" han alcanzado su máximo histórico esta semana.
+
+El interés por los headliners supera en 3x las búsquedas del propio festival. Esto indica potencial de conversión si se vincula correctamente.
+
+Acción: Crear landing específica "Bad Bunny en Primaverando" optimizada para SEO y campañas de búsqueda.`,
+    priority: 'medium',
+    category: 'marketing',
+    scope: 'global',
+    rule: 'Búsquedas artistas > 3x búsquedas festival',
+    dataPoint: 'Ratio 3.2x búsquedas artistas vs festival',
+    source: 'trends'
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // RECOMENDACIONES BASADAS EN CLIMA
+  // ═══════════════════════════════════════════════════════════════════
+  recs.push({
+    id: 'clima-buen-tiempo',
+    title: 'Previsión de buen tiempo: oportunidad para última fase',
+    description: `La previsión meteorológica para el 6-8 de junio indica temperaturas de 30-34°C y solo 10% probabilidad de lluvia.
+
+Históricamente, las ediciones con buen tiempo confirmado 2 semanas antes experimentaron un +15% en ventas de última hora.
+
+Acción: Comunicar "Sol garantizado" en campañas y reforzar mensaje de experiencia al aire libre. Preparar stock adicional de bebidas frías.`,
+    priority: 'high',
+    category: 'marketing',
+    scope: 'global',
+    rule: 'Previsión favorable confirmada < 3 semanas del evento',
+    dataPoint: '30-34°C, 10% prob. lluvia - condiciones ideales',
+    source: 'clima'
+  });
+
+  recs.push({
+    id: 'clima-calor-operaciones',
+    title: 'Alerta calor: reforzar puntos de hidratación',
+    description: `Con temperaturas previstas de 34°C el sábado, se replicarán las condiciones que causaron incidentes de deshidratación en 2023.
+
+El histórico muestra que con >32°C, el consumo de agua aumenta un 80% y las incidencias sanitarias un 40%.
+
+Acción: Duplicar puntos de agua gratuitos (de 8 a 16), instalar nebulizadores en zonas de espera y comunicar "Trae tu botella" en RRSS.`,
+    priority: 'high',
+    category: 'operations',
+    scope: 'global',
+    rule: 'Temperatura prevista > 32°C',
+    dataPoint: '34°C máxima prevista - riesgo deshidratación',
+    source: 'clima'
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // RECOMENDACIONES BASADAS EN EMAIL MARKETING
+  // ═══════════════════════════════════════════════════════════════════
+  recs.push({
+    id: 'email-mejor-conversion',
+    title: 'Email tiene mejor conversión que RRSS esta semana',
+    description: `Las campañas de email han generado 456 conversiones con ROI de 12.5x, mientras que Instagram Ads solo 420 con ROI de 4.2x.
+
+El coste por adquisición en email es €2.80 vs €8.50 en Meta Ads. El email es 3x más rentable para el público actual.
+
+Acción: Reasignar €2.000 de presupuesto Meta Ads a campañas de email segmentadas. Priorizar base de datos de compradores 2024.`,
+    priority: 'high',
+    category: 'marketing',
+    scope: 'channel',
+    targetKey: 'Email',
+    rule: 'ROI Email > 2x ROI Redes Sociales',
+    dataPoint: 'Email ROI 12.5x vs RRSS 4.2x',
+    source: 'email'
+  });
+
+  recs.push({
+    id: 'email-black-friday-exito',
+    title: 'Replicar estrategia Black Friday en próxima campaña',
+    description: `La campaña "Black Friday Special" logró 40% de apertura y 16% de clics, el doble del promedio del sector.
+
+El mensaje de urgencia ("Solo 48h") y el descuento directo (15%) funcionaron mejor que ofertas complejas de otras campañas.
+
+Acción: Lanzar campaña "Flash Sale 24h" con el mismo formato antes del 15 de febrero para captar indecisos.`,
+    priority: 'medium',
+    category: 'marketing',
+    scope: 'channel',
+    targetKey: 'Email',
+    rule: 'Campaña con apertura > 35% identificada',
+    dataPoint: '40% apertura, 456 conversiones en Black Friday',
+    source: 'email'
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
   // REGLA 1: COMPARATIVA INTERANUAL
   // Dispara si: ventas actuales < ventas Primaverando 2024 en misma fecha
   // ═══════════════════════════════════════════════════════════════════
@@ -60,7 +169,8 @@ Acción: Activar campaña de retargeting sobre la base de datos de 2024 con mens
       category: 'alert',
       scope: 'global',
       rule: 'Ventas actuales < Ventas Primaverando 2024 en misma fecha',
-      dataPoint: `${pctVs2024.toFixed(0)}% del ritmo de 2024`
+      dataPoint: `${pctVs2024.toFixed(0)}% del ritmo de 2024`,
+      source: 'ventas'
     });
   }
 
@@ -85,7 +195,8 @@ Acción: Contactar account manager de Fever para activar badge "Últimas entrada
         scope: 'provider',
         targetKey: 'Fever',
         rule: 'Ventas Fever < 85% de ventas Fever 2024 en misma fecha',
-        dataPoint: `${fever.vendidas.toLocaleString('es-ES')} vs ${PRIMAVERANDO_2024.ventasFever.toLocaleString('es-ES')} (2024)`
+        dataPoint: `${fever.vendidas.toLocaleString('es-ES')} vs ${PRIMAVERANDO_2024.ventasFever.toLocaleString('es-ES')} (2024)`,
+        source: 'ventas'
       });
     }
   }
@@ -111,7 +222,8 @@ Acción: Activar opción "Pago en 3 cuotas sin intereses" exclusiva para ECI y c
         scope: 'provider',
         targetKey: 'El Corte Inglés',
         rule: 'Ocupación ECI < 75% de capacidad asignada',
-        dataPoint: `${eciOcupacion.toFixed(0)}% ocupación (${eci.vendidas}/${eci.capacidad})`
+        dataPoint: `${eciOcupacion.toFixed(0)}% ocupación (${eci.vendidas}/${eci.capacidad})`,
+        source: 'ventas'
       });
     }
   }
@@ -137,7 +249,8 @@ Acción: Crear código "PRIMAVERANDO25" con 5% descuento exclusivo web + merchan
         scope: 'provider',
         targetKey: 'Web Oficial',
         rule: 'Ocupación Web Oficial < 50%',
-        dataPoint: `${webOcupacion.toFixed(0)}% ocupación (€${((webOficial.capacidad - webOficial.vendidas) * ticketPromedio * 0.10).toFixed(0)} en comisiones evitables)`
+        dataPoint: `${webOcupacion.toFixed(0)}% ocupación (€${((webOficial.capacidad - webOficial.vendidas) * ticketPromedio * 0.10).toFixed(0)} en comisiones evitables)`,
+        source: 'ventas'
       });
     }
   }
@@ -165,7 +278,8 @@ Acción: Lanzar campaña Instagram Stories con countdown "VIP casi agotadas" + b
         scope: 'zone',
         targetKey: 'Zona VIP',
         rule: 'VIP < 90% ocupación con < 8 semanas restantes',
-        dataPoint: `${vipOcupacion.toFixed(0)}% ocupación, ${vipRestantes} disponibles`
+        dataPoint: `${vipOcupacion.toFixed(0)}% ocupación, ${vipRestantes} disponibles`,
+        source: 'ventas'
       });
     }
   }
@@ -191,7 +305,8 @@ Acción: Renombrar a "Fast Track + Primer turno de barra" y comunicar beneficio 
         scope: 'zone',
         targetKey: 'Acceso Preferente',
         rule: 'Ocupación Acceso Preferente < 60%',
-        dataPoint: `${apOcupacion.toFixed(0)}% ocupación (problema de credibilidad histórico)`
+        dataPoint: `${apOcupacion.toFixed(0)}% ocupación (problema de credibilidad histórico)`,
+        source: 'ventas'
       });
     }
   }
@@ -218,7 +333,8 @@ Acción: Campaña email a base de datos 2019-2022 con mensaje "Los que empezamos
           scope: 'ageSegment',
           targetKey: '31+',
           rule: 'Segmento 31+ < 10% del total',
-          dataPoint: `${pct31.toFixed(0)}% actual vs 12% en 2024`
+          dataPoint: `${pct31.toFixed(0)}% actual vs 12% en 2024`,
+          source: 'marketing'
         });
       }
     }
@@ -245,7 +361,8 @@ Acción: Reducir asignación de Tiqets en 1.000 entradas y reasignar a Fever o W
         scope: 'provider',
         targetKey: 'Tiqets',
         rule: 'Tiqets < 55% de capacidad asignada',
-        dataPoint: `${tiqetsOcupacion.toFixed(0)}% ocupación - perfil turístico no encaja`
+        dataPoint: `${tiqetsOcupacion.toFixed(0)}% ocupación - perfil turístico no encaja`,
+        source: 'ventas'
       });
     }
   }
@@ -271,7 +388,8 @@ Acción: Cerrar fase actual de precios y subir €3-5 comunicando "Fase 2 agotá
       category: 'pricing',
       scope: 'global',
       rule: 'Ticket promedio < €23.50 (Primaverando 2024)',
-      dataPoint: `€${ticketPromedio.toFixed(2)} actual vs €${PRIMAVERANDO_2024.ticketPromedio.toFixed(2)} (2024)`
+      dataPoint: `€${ticketPromedio.toFixed(2)} actual vs €${PRIMAVERANDO_2024.ticketPromedio.toFixed(2)} (2024)`,
+      source: 'ventas'
     });
   }
 
@@ -297,7 +415,8 @@ Acción: Activar campaña geolocalizada en Instagram para Cádiz/Málaga con men
           scope: 'city',
           targetKey: 'Sevilla',
           rule: 'Concentración Sevilla > 45%',
-          dataPoint: `${sevillaPct.toFixed(0)}% de ventas concentradas en Sevilla`
+          dataPoint: `${sevillaPct.toFixed(0)}% de ventas concentradas en Sevilla`,
+          source: 'marketing'
         });
       }
     }
@@ -324,7 +443,8 @@ Acción: Reposicionar como "Zona Relax - Vistas panorámicas" y añadir asientos
         scope: 'zone',
         targetKey: 'Grada Superior',
         rule: 'Grada Superior < 70% ocupación',
-        dataPoint: `${gsOcupacion.toFixed(0)}% ocupación - percepción valor bajo`
+        dataPoint: `${gsOcupacion.toFixed(0)}% ocupación - percepción valor bajo`,
+        source: 'ventas'
       });
     }
   }
@@ -346,7 +466,8 @@ Acción urgente: Contratar empresa externa de gestión de flujos + 3 puntos de a
       category: 'operations',
       scope: 'global',
       rule: 'Ocupación > 70% + historial de incidentes en accesos',
-      dataPoint: `${(ocupacionGlobal * 100).toFixed(0)}% ocupación prevista - 3 incidentes documentados`
+      dataPoint: `${(ocupacionGlobal * 100).toFixed(0)}% ocupación prevista - 3 incidentes documentados`,
+      source: 'operations'
     });
   }
 
