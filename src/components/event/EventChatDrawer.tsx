@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -39,10 +39,10 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isWebSearching, setIsWebSearching] = useState(false);
   const [showCommandsDialog, setShowCommandsDialog] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -60,6 +60,17 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
     '/zonas': '¿Qué zonas tienen mejor y peor ocupación? Analiza precio vs demanda por zona y sugiere ajustes de precio o estrategias.',
     '/competencia': 'Compara Primaverando con otros festivales de Sevilla como Icónica, Puro Latino Fest e Interestelar.',
     '/ayuda': 'Muéstrame la lista completa de comandos disponibles con ejemplos de uso y preguntas frecuentes que puedes responder.',
+    // Web research commands - these are passed directly to backend
+    '/investigar': '/investigar ', // Will prompt user to add topic
+    '/noticias': '/noticias ',
+    '/scrape': '/scrape ',
+    '/tendencias': '/tendencias',
+  };
+
+  // Check if message is a web research command
+  const isWebResearchCommand = (msg: string): boolean => {
+    const webCommands = ['/investigar', '/noticias', '/scrape', '/tendencias', '/competencia'];
+    return webCommands.some(cmd => msg.toLowerCase().startsWith(cmd));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,15 +79,22 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
 
     let userMessage = input.trim();
     
-    // Check if it's a command and expand it
+    // Check if it's a command and expand it (except for web research commands)
     if (userMessage.startsWith('/')) {
-      const expandedCommand = commands[userMessage.toLowerCase()];
-      if (expandedCommand) {
+      const commandKey = userMessage.split(' ')[0].toLowerCase();
+      const expandedCommand = commands[commandKey];
+      
+      // For web research commands, keep the original message
+      if (!isWebResearchCommand(userMessage) && expandedCommand) {
         userMessage = expandedCommand;
       }
     }
     
     setInput("");
+    
+    // Check if this is a web search command
+    const isWebSearch = isWebResearchCommand(userMessage);
+    setIsWebSearching(isWebSearch);
     
     // Add user message
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
@@ -183,30 +201,43 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
       }
     } finally {
       setIsLoading(false);
+      setIsWebSearching(false);
       abortControllerRef.current = null;
     }
   };
 
   const quickCommands = [
-    // Row 1
-    { cmd: '/ventas', desc: 'Análisis completo de ventas' },
-    { cmd: '/canales', desc: 'Rendimiento por canal' },
-    { cmd: '/ticketeras', desc: 'Comparativa de ticketeras' },
-    // Row 2
-    { cmd: '/demografia', desc: 'Distribución demográfica' },
-    { cmd: '/proyecciones', desc: 'Proyecciones de ingresos' },
-    { cmd: '/zonas', desc: 'Ocupación por zonas' },
+    // Row 1 - Data commands
+    { cmd: '/ventas', desc: 'Análisis de ventas', icon: '📊' },
+    { cmd: '/canales', desc: 'Por canal', icon: '📈' },
+    { cmd: '/ticketeras', desc: 'Ticketeras', icon: '🎫' },
+    // Row 2 - More data
+    { cmd: '/demografia', desc: 'Demografía', icon: '👥' },
+    { cmd: '/proyecciones', desc: 'Proyecciones', icon: '🔮' },
+    { cmd: '/zonas', desc: 'Zonas', icon: '🗺️' },
+  ];
+
+  const webCommands = [
+    { cmd: '/investigar ', desc: 'Buscar web', icon: '🔍' },
+    { cmd: '/noticias ', desc: 'Noticias', icon: '📰' },
+    { cmd: '/tendencias', desc: 'Tendencias', icon: '📈' },
   ];
 
   const allCommandsInfo = [
-    { cmd: '/ventas', desc: 'Análisis completo de ventas', detail: 'Incluye: total de ingresos, tickets vendidos, precio promedio, comparativa por canal y ticketera, y proyección para el final del evento.' },
-    { cmd: '/canales', desc: 'Rendimiento por canal', detail: 'Analiza el rendimiento de cada canal de venta: cuál funciona mejor, cuál tiene mayor ticket promedio, y recomendaciones de optimización.' },
-    { cmd: '/ticketeras', desc: 'Comparativa de ticketeras', detail: 'Compara el rendimiento de todas las ticketeras: ocupación vs capacidad asignada, ingresos generados, y recomendaciones de redistribución.' },
-    { cmd: '/demografia', desc: 'Distribución demográfica', detail: 'Análisis demográfico detallado: distribución por edades, provincias más representadas, ciudades principales, y perfil del comprador típico.' },
-    { cmd: '/proyecciones', desc: 'Proyecciones de ingresos', detail: 'Genera proyecciones de ingresos hasta el final del evento basándote en la tendencia actual de ventas. Incluye escenarios optimista, realista y pesimista.' },
-    { cmd: '/zonas', desc: 'Ocupación por zonas', detail: '¿Qué zonas tienen mejor y peor ocupación? Analiza precio vs demanda por zona y sugiere ajustes de precio o estrategias.' },
-    { cmd: '/competencia', desc: 'Comparativa de festivales', detail: 'Compara Primaverando con otros festivales sevillanos como Icónica Santalucía Fest, Puro Latino Fest e Interestelar.' },
-    { cmd: '/ayuda', desc: 'Lista de comandos', detail: 'Muestra la lista completa de comandos disponibles con ejemplos de uso y preguntas frecuentes.' },
+    // Data commands
+    { cmd: '/ventas', desc: 'Análisis de ventas', detail: 'Total ingresos, tickets, precio promedio, comparativa por canal y ticketera.', category: 'data' },
+    { cmd: '/canales', desc: 'Por canal', detail: 'Rendimiento de cada canal de venta, cuál funciona mejor.', category: 'data' },
+    { cmd: '/ticketeras', desc: 'Ticketeras', detail: 'Ocupación vs capacidad asignada por ticketera.', category: 'data' },
+    { cmd: '/demografia', desc: 'Demografía', detail: 'Distribución por edades, provincias, perfil comprador.', category: 'data' },
+    { cmd: '/proyecciones', desc: 'Proyecciones', detail: 'Estimación de ingresos: optimista, realista, pesimista.', category: 'data' },
+    { cmd: '/zonas', desc: 'Zonas', detail: 'Ocupación y revenue por zona, ajustes de precio.', category: 'data' },
+    { cmd: '/competencia', desc: 'Competencia', detail: 'Comparativa con Icónica, Puro Latino, Interestelar.', category: 'data' },
+    // Web commands
+    { cmd: '/investigar [tema]', desc: 'Buscar en web', detail: 'Busca información actualizada en internet con Perplexity.', category: 'web' },
+    { cmd: '/noticias [tema]', desc: 'Noticias recientes', detail: 'Noticias de la última semana sobre el tema.', category: 'web' },
+    { cmd: '/scrape [url]', desc: 'Extraer contenido', detail: 'Extrae el contenido de una URL específica con Firecrawl.', category: 'web' },
+    { cmd: '/tendencias', desc: 'Tendencias', detail: 'Tendencias actuales del sector festivales universitarios.', category: 'web' },
+    { cmd: '/ayuda', desc: 'Ayuda', detail: 'Lista de todos los comandos disponibles.', category: 'help' },
   ];
 
   return (
@@ -261,14 +292,23 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
                       )
                     ) : (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Analizando datos...</span>
+                        {isWebSearching ? (
+                          <>
+                            <Globe className="h-4 w-4 animate-pulse text-blue-500" />
+                            <span>Buscando en la web...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Analizando datos...</span>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
                   {message.role === "assistant" && message.content && (
                     <p className="text-[10px] text-muted-foreground px-2">
-                      Datos en tiempo real del evento
+                      {message.content.includes('---SOURCES---') ? '🌐 Incluye fuentes web' : 'Datos en tiempo real del evento'}
                     </p>
                   )}
                 </div>
@@ -323,25 +363,41 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                      {allCommandsInfo.map((cmd, index) => (
-                        <div key={index} className="border-b pb-3 last:border-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <code className="text-sm font-mono text-primary bg-primary/10 px-2 py-1 rounded">
-                              {cmd.cmd}
-                            </code>
-                            <span className="text-sm font-medium">{cmd.desc}</span>
+                      <div>
+                        <h5 className="text-sm font-medium mb-2">📊 Comandos de Datos</h5>
+                        {allCommandsInfo.filter(c => c.category === 'data').map((cmd, index) => (
+                          <div key={index} className="border-b pb-2 mb-2 last:border-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <code className="text-sm font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                {cmd.cmd}
+                              </code>
+                              <span className="text-sm">{cmd.desc}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground ml-1">{cmd.detail}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground ml-1">{cmd.detail}</p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <div>
+                        <h5 className="text-sm font-medium mb-2">🌐 Comandos Web</h5>
+                        {allCommandsInfo.filter(c => c.category === 'web').map((cmd, index) => (
+                          <div key={index} className="border-b pb-2 mb-2 last:border-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <code className="text-sm font-mono text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">
+                                {cmd.cmd}
+                              </code>
+                              <span className="text-sm">{cmd.desc}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground ml-1">{cmd.detail}</p>
+                          </div>
+                        ))}
+                      </div>
                       <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <p className="text-xs font-medium mb-2">Ejemplos de preguntas habituales:</p>
+                        <p className="text-xs font-medium mb-2">Ejemplos de uso:</p>
                         <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
+                          <li><code>/investigar tendencias festivales 2025</code></li>
+                          <li><code>/noticias Icónica Sevilla</code></li>
+                          <li><code>/scrape https://primaverando.es</code></li>
                           <li>¿Cuál es el perfil del comprador típico?</li>
-                          <li>¿Qué provincia tiene más ventas?</li>
-                          <li>¿Cuál es la proyección de ingresos final?</li>
-                          <li>¿Qué ticketera está rindiendo mejor?</li>
-                          <li>¿Qué zona tiene peor ocupación?</li>
                         </ul>
                       </div>
                     </div>
