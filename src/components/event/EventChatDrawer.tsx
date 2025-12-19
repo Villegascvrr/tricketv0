@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -265,10 +265,21 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
               <p className="text-sm text-muted-foreground mt-1">
                 Análisis en tiempo real de {eventName}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Conectado a los datos de este evento: ventas, ticketeras, zonas, audiencia y proyecciones.
-              </p>
             </div>
+            {messages.length > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMessages([{
+                  role: "assistant",
+                  content: `¡Hola! 👋 Soy tu asistente de análisis para **${eventName}**. ${isDemo ? '\n\n🎪 *Modo Demo* - Usando datos de ejemplo de Primaverando 2025.\n\n' : ''}Puedo ayudarte a analizar datos, responder preguntas específicas y proporcionar insights sobre ventas, audiencia, canales y más. ¿En qué puedo ayudarte?`
+                }])}
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="text-xs">Nueva</span>
+              </Button>
+            )}
           </div>
         </SheetHeader>
 
