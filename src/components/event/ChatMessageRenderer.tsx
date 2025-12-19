@@ -128,8 +128,9 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       }
 
       // Section headers with emoji (📊 Análisis, 📈 Métricas, etc.)
-      const emojiHeaderMatch = trimmedLine.match(/^(\*\*)?([📊📈🎯💡⚠️✅💰🔍📰🌐])\s*(.+?)(\*\*)?$/);
-      if (emojiHeaderMatch) {
+      // Match lines starting with optional ** then emoji then text
+      const emojiHeaderMatch = trimmedLine.match(/^(\*\*)?([\p{Emoji_Presentation}\p{Emoji}\u{FE0F}]+)\s*(.+?)(\*\*)?$/u);
+      if (emojiHeaderMatch && emojiHeaderMatch[2]) {
         flushList();
         const emoji = emojiHeaderMatch[2];
         const headerText = emojiHeaderMatch[3].replace(/\*\*/g, '');
@@ -200,8 +201,8 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       // Regular paragraph
       flushList();
       
-      // Check if it's an emoji-prefixed line (like 📊 or 💡)
-      const emojiPrefix = trimmedLine.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}])/u);
+      // Check if it's an emoji-prefixed line
+      const emojiPrefix = trimmedLine.match(/^([\p{Emoji_Presentation}\p{Emoji}\u{FE0F}]+)/u);
       if (emojiPrefix) {
         elements.push(
           <p key={keyCounter++} className="text-sm leading-relaxed my-2 flex items-start gap-2">
