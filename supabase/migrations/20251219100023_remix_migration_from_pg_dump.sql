@@ -115,6 +115,22 @@ CREATE TABLE public.events (
 
 
 --
+-- Name: festival_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.festival_roles (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name text NOT NULL,
+    description text,
+    icon text,
+    color text,
+    bg_color text,
+    permissions text[] DEFAULT '{}'::text[],
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: interested_users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -130,6 +146,127 @@ CREATE TABLE public.interested_users (
 
 
 --
+-- Name: marketing_campaigns; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.marketing_campaigns (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name text NOT NULL,
+    type text DEFAULT 'paid'::text NOT NULL,
+    platform text DEFAULT 'instagram'::text NOT NULL,
+    status text DEFAULT 'active'::text NOT NULL,
+    start_date date NOT NULL,
+    end_date date,
+    budget numeric DEFAULT 0,
+    spent numeric DEFAULT 0,
+    reach integer DEFAULT 0,
+    clicks integer DEFAULT 0,
+    tickets_sold integer DEFAULT 0,
+    estimated_revenue numeric DEFAULT 0,
+    ctr numeric DEFAULT 0,
+    observation text,
+    team_notes text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_attachments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_attachments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    task_id uuid NOT NULL,
+    name text NOT NULL,
+    url text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_comments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    task_id uuid NOT NULL,
+    author_name text NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_milestones; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_milestones (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    event_id uuid,
+    title text NOT NULL,
+    description text,
+    target_date date NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_subtasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_subtasks (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    task_id uuid NOT NULL,
+    title text NOT NULL,
+    completed boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_task_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_task_history (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    task_id uuid NOT NULL,
+    action text NOT NULL,
+    old_value text,
+    new_value text,
+    changed_by text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: pre_festival_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pre_festival_tasks (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    event_id uuid,
+    title text NOT NULL,
+    description text,
+    area text NOT NULL,
+    status text DEFAULT 'pendiente'::text NOT NULL,
+    priority text DEFAULT 'media'::text NOT NULL,
+    assignee_id uuid,
+    assignee_name text,
+    due_date date NOT NULL,
+    milestone_id uuid,
+    tags text[] DEFAULT '{}'::text[],
+    dependencies uuid[] DEFAULT '{}'::uuid[],
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT pre_festival_tasks_area_check CHECK ((area = ANY (ARRAY['produccion'::text, 'logistica'::text, 'proveedores'::text, 'rrhh'::text, 'seguridad'::text, 'licencias'::text, 'ticketing'::text, 'comunicacion'::text]))),
+    CONSTRAINT pre_festival_tasks_priority_check CHECK ((priority = ANY (ARRAY['baja'::text, 'media'::text, 'alta'::text]))),
+    CONSTRAINT pre_festival_tasks_status_check CHECK ((status = ANY (ARRAY['pendiente'::text, 'en_curso'::text, 'bloqueada'::text, 'hecha'::text])))
+);
+
+
+--
 -- Name: profiles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -137,6 +274,27 @@ CREATE TABLE public.profiles (
     id uuid NOT NULL,
     email text,
     full_name text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: team_members; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.team_members (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid,
+    email text NOT NULL,
+    name text,
+    phone text,
+    festival_role_id uuid,
+    status text DEFAULT 'invited'::text NOT NULL,
+    invited_by uuid,
+    invited_at timestamp with time zone DEFAULT now(),
+    joined_at timestamp with time zone,
+    last_activity timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -253,6 +411,22 @@ ALTER TABLE ONLY public.events
 
 
 --
+-- Name: festival_roles festival_roles_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.festival_roles
+    ADD CONSTRAINT festival_roles_name_key UNIQUE (name);
+
+
+--
+-- Name: festival_roles festival_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.festival_roles
+    ADD CONSTRAINT festival_roles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: interested_users interested_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -261,11 +435,75 @@ ALTER TABLE ONLY public.interested_users
 
 
 --
+-- Name: marketing_campaigns marketing_campaigns_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.marketing_campaigns
+    ADD CONSTRAINT marketing_campaigns_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_attachments pre_festival_attachments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_attachments
+    ADD CONSTRAINT pre_festival_attachments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_comments pre_festival_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_comments
+    ADD CONSTRAINT pre_festival_comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_milestones pre_festival_milestones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_milestones
+    ADD CONSTRAINT pre_festival_milestones_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_subtasks pre_festival_subtasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_subtasks
+    ADD CONSTRAINT pre_festival_subtasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_task_history pre_festival_task_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_task_history
+    ADD CONSTRAINT pre_festival_task_history_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: pre_festival_tasks pre_festival_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_tasks
+    ADD CONSTRAINT pre_festival_tasks_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: team_members team_members_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.team_members
+    ADD CONSTRAINT team_members_pkey PRIMARY KEY (id);
 
 
 --
@@ -389,10 +627,38 @@ CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON public.events FOR EACH 
 
 
 --
+-- Name: marketing_campaigns update_marketing_campaigns_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_marketing_campaigns_updated_at BEFORE UPDATE ON public.marketing_campaigns FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: pre_festival_milestones update_pre_festival_milestones_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_pre_festival_milestones_updated_at BEFORE UPDATE ON public.pre_festival_milestones FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: pre_festival_tasks update_pre_festival_tasks_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_pre_festival_tasks_updated_at BEFORE UPDATE ON public.pre_festival_tasks FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: profiles update_profiles_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: team_members update_team_members_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_team_members_updated_at BEFORE UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -432,11 +698,91 @@ ALTER TABLE ONLY public.events
 
 
 --
+-- Name: pre_festival_tasks fk_milestone; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_tasks
+    ADD CONSTRAINT fk_milestone FOREIGN KEY (milestone_id) REFERENCES public.pre_festival_milestones(id) ON DELETE SET NULL;
+
+
+--
+-- Name: pre_festival_attachments pre_festival_attachments_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_attachments
+    ADD CONSTRAINT pre_festival_attachments_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.pre_festival_tasks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pre_festival_comments pre_festival_comments_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_comments
+    ADD CONSTRAINT pre_festival_comments_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.pre_festival_tasks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pre_festival_milestones pre_festival_milestones_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_milestones
+    ADD CONSTRAINT pre_festival_milestones_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pre_festival_subtasks pre_festival_subtasks_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_subtasks
+    ADD CONSTRAINT pre_festival_subtasks_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.pre_festival_tasks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pre_festival_task_history pre_festival_task_history_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_task_history
+    ADD CONSTRAINT pre_festival_task_history_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.pre_festival_tasks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pre_festival_tasks pre_festival_tasks_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pre_festival_tasks
+    ADD CONSTRAINT pre_festival_tasks_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE;
+
+
+--
 -- Name: profiles profiles_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: team_members team_members_festival_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.team_members
+    ADD CONSTRAINT team_members_festival_role_id_fkey FOREIGN KEY (festival_role_id) REFERENCES public.festival_roles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: team_members team_members_invited_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.team_members
+    ADD CONSTRAINT team_members_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: team_members team_members_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.team_members
+    ADD CONSTRAINT team_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
 
 
 --
@@ -487,6 +833,20 @@ CREATE POLICY "Admins can manage all roles" ON public.user_roles TO authenticate
 
 
 --
+-- Name: festival_roles Admins can manage roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can manage roles" ON public.festival_roles USING (public.has_role(auth.uid(), 'admin'::public.app_role));
+
+
+--
+-- Name: team_members Admins can manage team members; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can manage team members" ON public.team_members USING (public.has_role(auth.uid(), 'admin'::public.app_role));
+
+
+--
 -- Name: ticket_templates Admins can manage templates; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -501,10 +861,80 @@ CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT TO au
 
 
 --
+-- Name: marketing_campaigns Anyone can delete campaigns; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can delete campaigns" ON public.marketing_campaigns FOR DELETE USING (true);
+
+
+--
+-- Name: marketing_campaigns Anyone can insert campaigns; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can insert campaigns" ON public.marketing_campaigns FOR INSERT WITH CHECK (true);
+
+
+--
 -- Name: interested_users Anyone can submit interest; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Anyone can submit interest" ON public.interested_users FOR INSERT TO authenticated, anon WITH CHECK (true);
+
+
+--
+-- Name: marketing_campaigns Anyone can update campaigns; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can update campaigns" ON public.marketing_campaigns FOR UPDATE USING (true);
+
+
+--
+-- Name: marketing_campaigns Anyone can view campaigns; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can view campaigns" ON public.marketing_campaigns FOR SELECT USING (true);
+
+
+--
+-- Name: pre_festival_task_history Authenticated users can insert history; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert history" ON public.pre_festival_task_history FOR INSERT WITH CHECK (true);
+
+
+--
+-- Name: pre_festival_attachments Authenticated users can manage attachments; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can manage attachments" ON public.pre_festival_attachments USING (true);
+
+
+--
+-- Name: pre_festival_comments Authenticated users can manage comments; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can manage comments" ON public.pre_festival_comments USING (true);
+
+
+--
+-- Name: pre_festival_milestones Authenticated users can manage milestones; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can manage milestones" ON public.pre_festival_milestones USING (true);
+
+
+--
+-- Name: pre_festival_subtasks Authenticated users can manage subtasks; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can manage subtasks" ON public.pre_festival_subtasks USING (true);
+
+
+--
+-- Name: pre_festival_tasks Authenticated users can manage tasks; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can manage tasks" ON public.pre_festival_tasks USING (true);
 
 
 --
@@ -517,10 +947,66 @@ CREATE POLICY "Authenticated users can view allocations" ON public.ticket_provid
 
 
 --
+-- Name: pre_festival_attachments Authenticated users can view attachments; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view attachments" ON public.pre_festival_attachments FOR SELECT USING (true);
+
+
+--
+-- Name: pre_festival_comments Authenticated users can view comments; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view comments" ON public.pre_festival_comments FOR SELECT USING (true);
+
+
+--
 -- Name: events Authenticated users can view events; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Authenticated users can view events" ON public.events FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: pre_festival_task_history Authenticated users can view history; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view history" ON public.pre_festival_task_history FOR SELECT USING (true);
+
+
+--
+-- Name: pre_festival_milestones Authenticated users can view milestones; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view milestones" ON public.pre_festival_milestones FOR SELECT USING (true);
+
+
+--
+-- Name: festival_roles Authenticated users can view roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view roles" ON public.festival_roles FOR SELECT USING (true);
+
+
+--
+-- Name: pre_festival_subtasks Authenticated users can view subtasks; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view subtasks" ON public.pre_festival_subtasks FOR SELECT USING (true);
+
+
+--
+-- Name: pre_festival_tasks Authenticated users can view tasks; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view tasks" ON public.pre_festival_tasks FOR SELECT USING (true);
+
+
+--
+-- Name: team_members Authenticated users can view team members; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view team members" ON public.team_members FOR SELECT USING (true);
 
 
 --
@@ -667,16 +1153,70 @@ CREATE POLICY "Users can view their own roles" ON public.user_roles FOR SELECT T
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: festival_roles; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.festival_roles ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: interested_users; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.interested_users ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: marketing_campaigns; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.marketing_campaigns ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_attachments; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_attachments ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_comments; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_comments ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_milestones; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_milestones ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_subtasks; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_subtasks ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_task_history; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_task_history ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: pre_festival_tasks; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.pre_festival_tasks ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: profiles; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: team_members; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: ticket_imports; Type: ROW SECURITY; Schema: public; Owner: -
