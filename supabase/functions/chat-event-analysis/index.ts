@@ -6,7 +6,113 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Contexto rico del festival Primaverando
+// Web research command patterns
+const WEB_RESEARCH_PATTERNS = {
+  search: [
+    /^\/investigar\s+(.+)/i,
+    /^\/noticias\s+(.+)/i,
+    /^\/tendencias(?:\s+(.*))?/i,
+    /^\/competencia(?:\s+(.*))?/i,
+    /busca(?:r)? en (?:la )?web\s+(.+)/i,
+    /información actualizada (?:sobre|de)\s+(.+)/i,
+    /qué dice internet (?:sobre|de)\s+(.+)/i,
+  ],
+  scrape: [
+    /^\/scrape\s+(\S+)/i,
+    /^\/extraer\s+(\S+)/i,
+    /extrae(?:r)? (?:el )?contenido de\s+(\S+)/i,
+  ],
+};
+
+// Detect web research intent from user message
+function detectWebResearchIntent(message: string): { type: 'search' | 'scrape' | null; query: string; recencyFilter?: string } {
+  const trimmedMessage = message.trim();
+  
+  // Check for search patterns
+  for (const pattern of WEB_RESEARCH_PATTERNS.search) {
+    const match = trimmedMessage.match(pattern);
+    if (match) {
+      let query = match[1] || '';
+      let recencyFilter: string | undefined;
+      
+      // Check for news command (recent results)
+      if (trimmedMessage.startsWith('/noticias')) {
+        recencyFilter = 'week';
+        query = query || 'festivales universitarios España';
+      }
+      
+      // Default queries for specific commands
+      if (trimmedMessage.startsWith('/tendencias')) {
+        query = query || 'tendencias festivales universitarios España 2025';
+      }
+      if (trimmedMessage.startsWith('/competencia')) {
+        query = query || 'Icónica Santalucía Fest Puro Latino Interestelar Sevilla 2025';
+      }
+      
+      return { type: 'search', query, recencyFilter };
+    }
+  }
+  
+  // Check for scrape patterns
+  for (const pattern of WEB_RESEARCH_PATTERNS.scrape) {
+    const match = trimmedMessage.match(pattern);
+    if (match && match[1]) {
+      return { type: 'scrape', query: match[1] };
+    }
+  }
+  
+  return { type: null, query: '' };
+}
+
+// Call web-research edge function
+async function performWebResearch(
+  supabaseUrl: string,
+  serviceKey: string,
+  type: 'search' | 'scrape',
+  query: string,
+  options?: { recencyFilter?: string }
+): Promise<{ success: boolean; content?: string; citations?: string[]; error?: string }> {
+  try {
+    const body: any = { type };
+    
+    if (type === 'search') {
+      body.query = query;
+      if (options?.recencyFilter) {
+        body.options = { recencyFilter: options.recencyFilter };
+      }
+    } else {
+      body.url = query;
+    }
+    
+    console.log('Calling web-research function:', body);
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/web-research`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Web research error:', response.status, errorText);
+      return { success: false, error: `Error ${response.status}: ${errorText}` };
+    }
+    
+    const data = await response.json();
+    return {
+      success: data.success,
+      content: data.content,
+      citations: data.citations || [],
+      error: data.error,
+    };
+  } catch (error) {
+    console.error('Web research exception:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
 const PRIMAVERANDO_CONTEXT = `
 ## CONTEXTO FESTIVAL PRIMAVERANDO
 
@@ -164,6 +270,45 @@ serve(async (req) => {
 
     // Check if this is demo mode (local context provided)
     const isDemoMode = eventId.startsWith('demo-') || !!localContext;
+    
+    // Check for web research intent in the last user message
+    const lastUserMessage = messages[messages.length - 1];
+    let webResearchContext = '';
+    let webCitations: string[] = [];
+    
+    if (lastUserMessage && lastUserMessage.role === 'user') {
+      const intent = detectWebResearchIntent(lastUserMessage.content);
+      
+      if (intent.type) {
+        console.log('Web research intent detected:', intent);
+        
+        const webResult = await performWebResearch(
+          supabaseUrl,
+          supabaseKey,
+          intent.type,
+          intent.query,
+          intent.recencyFilter ? { recencyFilter: intent.recencyFilter } : undefined
+        );
+        
+        if (webResult.success && webResult.content) {
+          webCitations = webResult.citations || [];
+          webResearchContext = `
+## 🌐 INFORMACIÓN WEB EN TIEMPO REAL
+${webResult.content}
+
+## 📚 FUENTES CONSULTADAS
+${webCitations.map((url, i) => `${i + 1}. ${url}`).join('\n')}
+`;
+          console.log('Web research successful, citations:', webCitations.length);
+        } else {
+          console.log('Web research failed:', webResult.error);
+          webResearchContext = `
+## ⚠️ BÚSQUEDA WEB
+No se pudo obtener información de la web: ${webResult.error || 'Error desconocido'}
+`;
+        }
+      }
+    }
     
     let event: any = null;
     let tickets: any[] = [];
@@ -380,12 +525,15 @@ ${PRIMAVERANDO_CONTEXT}
 ## DATOS EN TIEMPO REAL DEL EVENTO
 ${JSON.stringify(eventContext, null, 2)}
 
+${webResearchContext}
+
 ## PERSONALIDAD Y TONO
 - Eres un experto en el sector de festivales españoles
 - Conoces profundamente a Primaverando y su historia
 - Hablas con confianza sobre el público universitario andaluz
 - Puedes comparar con otros festivales y dar contexto del mercado
 - Eres directo y práctico en tus recomendaciones
+- Cuando uses información de la web, SIEMPRE cita las fuentes
 
 ## FORMATO DE RESPUESTA
 
@@ -405,6 +553,11 @@ ${JSON.stringify(eventContext, null, 2)}
 **💡 Contexto del Mercado**
 [Insight sobre cómo se compara con otros festivales, tendencias del sector, o historial de Primaverando]
 
+${webCitations.length > 0 ? `
+---SOURCES---
+${webCitations.map((url, i) => `[${i + 1}] ${url}`).join('\n')}
+` : ''}
+
 ## REGLAS
 1. USA SOLO DATOS REALES del contexto. Nunca inventes números.
 2. Si no hay datos, di "Sin datos disponibles para [X]"
@@ -414,6 +567,7 @@ ${JSON.stringify(eventContext, null, 2)}
 6. Si ocupación <70%, es alerta. Si proveedor <50% de capacidad, es crítico.
 7. Contextualiza con el público universitario (18-30 años, Andalucía)
 8. Puedes mencionar artistas del cartel, competidores, o historial cuando sea relevante
+9. SI HAY FUENTES WEB, incluye al final del mensaje un bloque con las fuentes citadas
 
 ## COMANDOS DISPONIBLES
 /ventas - Análisis completo de ventas
@@ -422,7 +576,14 @@ ${JSON.stringify(eventContext, null, 2)}
 /zonas - Ocupación y revenue por zona
 /demografia - Perfil de compradores
 /proyecciones - Estimaciones de cierre
-/competencia - Comparativa con otros festivales sevillanos`;
+/competencia - Comparativa con otros festivales sevillanos
+
+## COMANDOS WEB (con Perplexity + Firecrawl)
+/investigar [tema] - Buscar información en la web
+/noticias [tema] - Noticias recientes (última semana)
+/scrape [url] - Extraer contenido de una URL
+/tendencias - Tendencias del sector festivales
+/competencia - Info actualizada de competidores`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
