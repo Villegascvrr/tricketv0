@@ -152,6 +152,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let accumulatedContent = "";
+      let textBuffer = ""; // Buffer for incomplete SSE lines
 
       if (!reader) {
         throw new Error('No se pudo iniciar el streaming');
@@ -161,32 +162,43 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        textBuffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content;
-              
-              if (content) {
-                accumulatedContent += content;
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    role: "assistant",
-                    content: accumulatedContent
-                  };
-                  return newMessages;
-                });
-              }
-            } catch (e) {
-              // Ignore JSON parse errors for partial chunks
+        // Process line-by-line as data arrives
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          // Handle CRLF
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          
+          // Skip SSE comments and empty lines
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+
+            if (content) {
+              accumulatedContent += content;
+              setMessages(prev => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = {
+                  role: "assistant",
+                  content: accumulatedContent
+                };
+                return newMessages;
+              });
             }
+          } catch {
+            // Incomplete JSON split across chunks - put it back and wait
+            textBuffer = line + '\n' + textBuffer;
+            break;
           }
         }
       }
