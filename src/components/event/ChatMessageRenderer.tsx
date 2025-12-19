@@ -1,11 +1,42 @@
 import { cn } from "@/lib/utils";
+import { ExternalLink, Globe } from "lucide-react";
 
 interface ChatMessageRendererProps {
   content: string;
   className?: string;
 }
 
+interface ParsedContent {
+  mainContent: string;
+  sources: { index: number; url: string }[];
+}
+
+// Extract sources from ---SOURCES--- block
+const extractSources = (text: string): ParsedContent => {
+  const sourcesMatch = text.match(/---SOURCES---\n([\s\S]*?)$/);
+  
+  if (!sourcesMatch) {
+    return { mainContent: text, sources: [] };
+  }
+  
+  const mainContent = text.replace(/---SOURCES---[\s\S]*$/, '').trim();
+  const sourcesBlock = sourcesMatch[1];
+  const sources: { index: number; url: string }[] = [];
+  
+  const sourceLines = sourcesBlock.split('\n').filter(l => l.trim());
+  for (const line of sourceLines) {
+    const match = line.match(/\[(\d+)\]\s*(\S+)/);
+    if (match) {
+      sources.push({ index: parseInt(match[1]), url: match[2] });
+    }
+  }
+  
+  return { mainContent, sources };
+};
+
 const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) => {
+  const { mainContent, sources } = extractSources(content);
+  
   // Parse markdown-like syntax for better formatting
   const parseContent = (text: string) => {
     const lines = text.split('\n');
@@ -18,20 +49,23 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       if (currentList.length > 0) {
         if (listType === 'numbered') {
           elements.push(
-            <ol key={keyCounter++} className="list-decimal list-inside space-y-1 my-2 ml-1">
+            <ol key={keyCounter++} className="space-y-2 my-3">
               {currentList.map((item, i) => (
-                <li key={i} className="text-sm leading-relaxed">
-                  {parseInline(item)}
+                <li key={i} className="flex items-start gap-3 text-sm leading-relaxed">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <span className="pt-0.5">{parseInline(item)}</span>
                 </li>
               ))}
             </ol>
           );
         } else {
           elements.push(
-            <ul key={keyCounter++} className="space-y-1.5 my-2">
+            <ul key={keyCounter++} className="space-y-2 my-3 ml-1">
               {currentList.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm leading-relaxed">
-                  <span className="text-primary mt-0.5">•</span>
+                <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                  <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2" />
                   <span>{parseInline(item)}</span>
                 </li>
               ))}
@@ -44,7 +78,6 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
     };
 
     const parseInline = (text: string): React.ReactNode => {
-      // Process inline formatting
       const parts: React.ReactNode[] = [];
       let remaining = text;
       let partKey = 0;
@@ -54,7 +87,6 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
         const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
         // Code: `text`
         const codeMatch = remaining.match(/`([^`]+)`/);
-        // Emoji numbers like 1️⃣ 2️⃣ 3️⃣
         
         if (boldMatch && (!codeMatch || boldMatch.index! < codeMatch.index!)) {
           if (boldMatch.index! > 0) {
@@ -91,25 +123,40 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       // Empty line
       if (!trimmedLine) {
         flushList();
-        elements.push(<div key={keyCounter++} className="h-2" />);
+        elements.push(<div key={keyCounter++} className="h-3" />);
         continue;
       }
 
-      // Headers with ** at start
+      // Section headers with emoji (📊 Análisis, 📈 Métricas, etc.)
+      const emojiHeaderMatch = trimmedLine.match(/^(\*\*)?([📊📈🎯💡⚠️✅💰🔍📰🌐])\s*(.+?)(\*\*)?$/);
+      if (emojiHeaderMatch) {
+        flushList();
+        const emoji = emojiHeaderMatch[2];
+        const headerText = emojiHeaderMatch[3].replace(/\*\*/g, '');
+        elements.push(
+          <div 
+            key={keyCounter++} 
+            className="flex items-center gap-2 mt-4 mb-2 pb-1.5 border-b border-border/50"
+          >
+            <span className="text-lg">{emoji}</span>
+            <h4 className="font-semibold text-sm text-foreground">{headerText}</h4>
+          </div>
+        );
+        continue;
+      }
+
+      // Headers with ** at start (without emoji)
       if (trimmedLine.match(/^\*\*[^*]+\*\*$/)) {
         flushList();
         const headerText = trimmedLine.replace(/\*\*/g, '');
         elements.push(
-          <h4 key={keyCounter++} className="font-semibold text-sm text-foreground mt-3 mb-1.5 flex items-center gap-2">
-            {headerText.includes('📊') || headerText.includes('💰') || headerText.includes('🎯') || headerText.includes('📈') || headerText.includes('⚠️') || headerText.includes('✅') || headerText.includes('💡') ? (
-              headerText
-            ) : (
-              <>
-                <span className="w-1 h-4 bg-primary rounded-full" />
-                {headerText}
-              </>
-            )}
-          </h4>
+          <div 
+            key={keyCounter++} 
+            className="flex items-center gap-2 mt-4 mb-2"
+          >
+            <span className="w-1 h-5 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+            <h4 className="font-semibold text-sm text-foreground">{headerText}</h4>
+          </div>
         );
         continue;
       }
@@ -118,10 +165,13 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       if (trimmedLine.match(/^[A-ZÁÉÍÓÚÑ].+:$/) && !trimmedLine.includes('•')) {
         flushList();
         elements.push(
-          <h4 key={keyCounter++} className="font-semibold text-sm text-foreground mt-3 mb-1.5 flex items-center gap-2">
-            <span className="w-1 h-4 bg-primary rounded-full" />
-            {trimmedLine}
-          </h4>
+          <div 
+            key={keyCounter++} 
+            className="flex items-center gap-2 mt-4 mb-2"
+          >
+            <span className="w-1 h-5 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+            <h4 className="font-semibold text-sm text-foreground">{trimmedLine}</h4>
+          </div>
         );
         continue;
       }
@@ -154,14 +204,14 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
       const emojiPrefix = trimmedLine.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}])/u);
       if (emojiPrefix) {
         elements.push(
-          <p key={keyCounter++} className="text-sm leading-relaxed my-1.5 flex items-start gap-2">
-            <span className="flex-shrink-0">{emojiPrefix[0]}</span>
+          <p key={keyCounter++} className="text-sm leading-relaxed my-2 flex items-start gap-2">
+            <span className="flex-shrink-0 text-base">{emojiPrefix[0]}</span>
             <span>{parseInline(trimmedLine.slice(emojiPrefix[0].length).trim())}</span>
           </p>
         );
       } else {
         elements.push(
-          <p key={keyCounter++} className="text-sm leading-relaxed my-1">
+          <p key={keyCounter++} className="text-sm leading-relaxed my-1.5 text-muted-foreground">
             {parseInline(trimmedLine)}
           </p>
         );
@@ -174,7 +224,42 @@ const ChatMessageRenderer = ({ content, className }: ChatMessageRendererProps) =
 
   return (
     <div className={cn("space-y-0", className)}>
-      {parseContent(content)}
+      {parseContent(mainContent)}
+      
+      {/* Sources section */}
+      {sources.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-border/50">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Globe className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-xs font-medium text-muted-foreground">Fuentes consultadas</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sources.map((source) => {
+              // Extract domain from URL
+              let domain = source.url;
+              try {
+                domain = new URL(source.url).hostname.replace('www.', '');
+              } catch {
+                // Keep original if parsing fails
+              }
+              
+              return (
+                <a
+                  key={source.index}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-500/20 transition-colors"
+                >
+                  <span className="font-medium">[{source.index}]</span>
+                  <span className="truncate max-w-[150px]">{domain}</span>
+                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
