@@ -8,132 +8,132 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm & Festive palette for Primaverando */
-    --background: 40 33% 98%;
-    --foreground: 20 14% 15%;
+    /* Primaverando Festival - Purple & Cyan palette */
+    --background: 270 30% 98%;
+    --foreground: 270 50% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 14% 15%;
+    --card-foreground: 270 50% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 15%;
+    --popover-foreground: 270 50% 10%;
 
-    /* Warm orange primary */
-    --primary: 24 95% 53%;
+    /* Vibrant purple primary */
+    --primary: 270 85% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 24 95% 45%;
+    --primary-hover: 270 85% 42%;
     
-    /* Mint green for success/positive */
-    --success: 158 64% 52%;
-    --success-foreground: 0 0% 100%;
+    /* Cyan for success/positive */
+    --success: 185 85% 55%;
+    --success-foreground: 270 50% 10%;
     
     /* Warm amber warning */
     --warning: 38 92% 50%;
-    --warning-foreground: 20 14% 15%;
+    --warning-foreground: 270 50% 10%;
     
-    /* Coral for danger */
-    --danger: 12 76% 61%;
+    /* Rose for danger */
+    --danger: 350 80% 55%;
     --danger-foreground: 0 0% 100%;
 
-    /* Soft warm secondary */
-    --secondary: 40 33% 96%;
-    --secondary-foreground: 20 14% 15%;
+    /* Light purple secondary */
+    --secondary: 270 40% 96%;
+    --secondary-foreground: 270 50% 10%;
 
-    --muted: 40 20% 94%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 270 20% 94%;
+    --muted-foreground: 270 20% 45%;
 
-    /* Mint accent */
-    --accent: 158 64% 52%;
-    --accent-foreground: 0 0% 100%;
+    /* Cyan accent */
+    --accent: 185 85% 55%;
+    --accent-foreground: 270 50% 10%;
 
-    --destructive: 12 76% 61%;
+    --destructive: 350 80% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 24 95% 53%;
+    --border: 270 20% 88%;
+    --input: 270 20% 88%;
+    --ring: 270 85% 50%;
 
     --radius: 0.5rem;
 
-    /* Sidebar with warm dark tones */
-    --sidebar-background: 20 14% 12%;
-    --sidebar-foreground: 40 33% 96%;
-    --sidebar-primary: 24 95% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 14% 18%;
-    --sidebar-accent-foreground: 40 33% 96%;
-    --sidebar-border: 20 14% 18%;
-    --sidebar-ring: 24 95% 53%;
+    /* Sidebar with deep purple tones */
+    --sidebar-background: 270 60% 15%;
+    --sidebar-foreground: 185 85% 85%;
+    --sidebar-primary: 185 85% 65%;
+    --sidebar-primary-foreground: 270 60% 15%;
+    --sidebar-accent: 270 50% 22%;
+    --sidebar-accent-foreground: 185 85% 85%;
+    --sidebar-border: 270 50% 22%;
+    --sidebar-ring: 185 85% 65%;
     
-    /* Chart colors - warm festive palette */
-    --chart-1: 24 95% 53%;
-    --chart-2: 158 64% 52%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 340 82% 52%;
-    --chart-5: 280 65% 60%;
+    /* Chart colors - purple & cyan festival palette */
+    --chart-1: 270 85% 50%;
+    --chart-2: 185 85% 55%;
+    --chart-3: 300 70% 55%;
+    --chart-4: 200 85% 50%;
+    --chart-5: 250 70% 60%;
     
-    /* Custom shadows with warm tones */
-    --shadow-sm: 0 1px 2px 0 hsl(20 14% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(20 14% 15% / 0.08);
-    --shadow-lg: 0 10px 15px -3px hsl(20 14% 15% / 0.1);
+    /* Custom shadows with purple tones */
+    --shadow-sm: 0 1px 2px 0 hsl(270 50% 10% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(270 50% 10% / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(270 50% 10% / 0.1);
     
-    /* Festival gradient */
-    --gradient-festival: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 50%, hsl(158 64% 52%) 100%);
+    /* Festival gradient - purple to cyan */
+    --gradient-festival: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(300 70% 55%) 50%, hsl(185 85% 55%) 100%);
   }
 
   .dark {
-    --background: 20 14% 10%;
-    --foreground: 40 33% 96%;
+    --background: 270 50% 8%;
+    --foreground: 185 50% 95%;
 
-    --card: 20 14% 14%;
-    --card-foreground: 40 33% 96%;
+    --card: 270 45% 12%;
+    --card-foreground: 185 50% 95%;
 
-    --popover: 20 14% 14%;
-    --popover-foreground: 40 33% 96%;
+    --popover: 270 45% 12%;
+    --popover-foreground: 185 50% 95%;
 
-    --primary: 24 95% 58%;
+    --primary: 270 85% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 24 95% 65%;
+    --primary-hover: 270 85% 68%;
     
-    --success: 158 64% 48%;
-    --success-foreground: 0 0% 100%;
+    --success: 185 85% 50%;
+    --success-foreground: 270 50% 8%;
     
     --warning: 38 92% 55%;
-    --warning-foreground: 20 14% 10%;
+    --warning-foreground: 270 50% 8%;
     
-    --danger: 12 76% 55%;
+    --danger: 350 80% 60%;
     --danger-foreground: 0 0% 100%;
 
-    --secondary: 20 14% 18%;
-    --secondary-foreground: 40 33% 96%;
+    --secondary: 270 40% 18%;
+    --secondary-foreground: 185 50% 95%;
 
-    --muted: 20 14% 18%;
-    --muted-foreground: 40 20% 65%;
+    --muted: 270 30% 18%;
+    --muted-foreground: 270 20% 65%;
 
-    --accent: 158 64% 48%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 185 85% 50%;
+    --accent-foreground: 270 50% 8%;
 
-    --destructive: 12 62% 40%;
-    --destructive-foreground: 40 33% 96%;
+    --destructive: 350 70% 45%;
+    --destructive-foreground: 185 50% 95%;
 
-    --border: 20 14% 22%;
-    --input: 20 14% 22%;
-    --ring: 24 95% 58%;
+    --border: 270 30% 22%;
+    --input: 270 30% 22%;
+    --ring: 270 85% 60%;
     
-    --sidebar-background: 20 14% 8%;
-    --sidebar-foreground: 40 33% 96%;
-    --sidebar-primary: 24 95% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 14% 14%;
-    --sidebar-accent-foreground: 40 33% 96%;
-    --sidebar-border: 20 14% 14%;
-    --sidebar-ring: 24 95% 58%;
+    --sidebar-background: 270 55% 6%;
+    --sidebar-foreground: 185 85% 85%;
+    --sidebar-primary: 185 85% 65%;
+    --sidebar-primary-foreground: 270 55% 6%;
+    --sidebar-accent: 270 45% 14%;
+    --sidebar-accent-foreground: 185 85% 85%;
+    --sidebar-border: 270 45% 14%;
+    --sidebar-ring: 185 85% 65%;
     
-    --chart-1: 24 95% 58%;
-    --chart-2: 158 64% 48%;
-    --chart-3: 38 92% 55%;
-    --chart-4: 340 82% 58%;
-    --chart-5: 280 65% 65%;
+    --chart-1: 270 85% 60%;
+    --chart-2: 185 85% 50%;
+    --chart-3: 300 70% 60%;
+    --chart-4: 200 85% 55%;
+    --chart-5: 250 70% 65%;
   }
 }
 
@@ -155,11 +155,11 @@ All colors MUST be HSL.
 
 @layer utilities {
   .gradient-festival {
-    background: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 50%, hsl(158 64% 52%) 100%);
+    background: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(300 70% 55%) 50%, hsl(185 85% 55%) 100%);
   }
   
   .text-gradient-festival {
-    background: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(38 92% 50%) 100%);
+    background: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(185 85% 55%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
