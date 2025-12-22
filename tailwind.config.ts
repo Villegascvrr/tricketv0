@@ -79,6 +79,15 @@ export default {
           "3": "hsl(var(--chart-3))",
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
+          "6": "hsl(var(--chart-6))",
+        },
+        festival: {
+          pink: "hsl(var(--festival-pink))",
+          coral: "hsl(var(--festival-coral))",
+          mint: "hsl(var(--festival-mint))",
+          teal: "hsl(var(--festival-teal))",
+          yellow: "hsl(var(--festival-yellow))",
+          orange: "hsl(var(--festival-orange))",
         },
       },
       borderRadius: {

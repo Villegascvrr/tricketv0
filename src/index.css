@@ -65,12 +65,24 @@ All colors MUST be HSL.
     --sidebar-border: 270 50% 22%;
     --sidebar-ring: 185 85% 65%;
     
-    /* Chart colors - purple & cyan festival palette */
+    /* Festival secondary colors - for sections and charts */
+    /* Pink/Coral palette */
+    --festival-pink: 340 80% 80%;
+    --festival-coral: 4 82% 56%;
+    /* Green/Teal palette */
+    --festival-mint: 155 75% 65%;
+    --festival-teal: 185 55% 25%;
+    /* Yellow/Orange palette */
+    --festival-yellow: 50 95% 70%;
+    --festival-orange: 25 75% 48%;
+    
+    /* Chart colors - festival multi-color palette */
     --chart-1: 270 85% 50%;
     --chart-2: 185 85% 55%;
-    --chart-3: 300 70% 55%;
-    --chart-4: 200 85% 50%;
-    --chart-5: 250 70% 60%;
+    --chart-3: 4 82% 56%;
+    --chart-4: 155 75% 65%;
+    --chart-5: 50 95% 70%;
+    --chart-6: 25 75% 48%;
     
     /* Custom shadows with purple tones */
     --shadow-sm: 0 1px 2px 0 hsl(270 50% 10% / 0.05);
@@ -129,11 +141,20 @@ All colors MUST be HSL.
     --sidebar-border: 270 45% 14%;
     --sidebar-ring: 185 85% 65%;
     
+    /* Festival secondary colors - dark mode */
+    --festival-pink: 340 75% 75%;
+    --festival-coral: 4 75% 55%;
+    --festival-mint: 155 70% 55%;
+    --festival-teal: 185 50% 35%;
+    --festival-yellow: 50 90% 65%;
+    --festival-orange: 25 70% 52%;
+    
     --chart-1: 270 85% 60%;
     --chart-2: 185 85% 50%;
-    --chart-3: 300 70% 60%;
-    --chart-4: 200 85% 55%;
-    --chart-5: 250 70% 65%;
+    --chart-3: 4 75% 55%;
+    --chart-4: 155 70% 55%;
+    --chart-5: 50 90% 65%;
+    --chart-6: 25 70% 52%;
   }
 }
 
