@@ -187,6 +187,104 @@ All colors MUST be HSL.
   }
 }
 
+/* Section-specific themes - override primary colors per section */
+@layer components {
+  /* Operations theme - Pink/Coral */
+  .theme-operations {
+    --primary: 340 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 340 80% 48%;
+    --accent: 4 82% 56%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 340 80% 55%;
+  }
+  
+  .dark .theme-operations {
+    --primary: 340 75% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 340 75% 72%;
+    --accent: 4 75% 60%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 340 75% 65%;
+  }
+  
+  /* Marketing theme - Green/Teal */
+  .theme-marketing {
+    --primary: 155 75% 40%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 155 75% 32%;
+    --accent: 185 55% 35%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 155 75% 40%;
+  }
+  
+  .dark .theme-marketing {
+    --primary: 155 70% 55%;
+    --primary-foreground: 0 0% 10%;
+    --primary-hover: 155 70% 62%;
+    --accent: 185 50% 45%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 155 70% 55%;
+  }
+  
+  /* Audience theme - Yellow/Orange */
+  .theme-audience {
+    --primary: 38 92% 50%;
+    --primary-foreground: 0 0% 10%;
+    --primary-hover: 38 92% 42%;
+    --accent: 25 75% 48%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 38 92% 50%;
+  }
+  
+  .dark .theme-audience {
+    --primary: 38 90% 55%;
+    --primary-foreground: 0 0% 10%;
+    --primary-hover: 38 90% 62%;
+    --accent: 25 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 38 90% 55%;
+  }
+  
+  /* Sales theme - Purple (main) */
+  .theme-sales {
+    --primary: 270 85% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 270 85% 42%;
+    --accent: 300 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 270 85% 50%;
+  }
+  
+  .dark .theme-sales {
+    --primary: 270 85% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 270 85% 68%;
+    --accent: 300 70% 60%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 270 85% 60%;
+  }
+  
+  /* Historical theme - Teal/Cyan */
+  .theme-historical {
+    --primary: 185 85% 40%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 185 85% 32%;
+    --accent: 185 55% 25%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 185 85% 40%;
+  }
+  
+  .dark .theme-historical {
+    --primary: 185 85% 50%;
+    --primary-foreground: 0 0% 10%;
+    --primary-hover: 185 85% 58%;
+    --accent: 185 50% 35%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 185 85% 50%;
+  }
+}
+
 /* Compact mode - tighter spacing for operational dashboards */
 @layer components {
   .compact-card {

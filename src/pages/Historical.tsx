@@ -283,7 +283,7 @@ const Historical = () => {
     : '0';
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 theme-historical">
       <div className="max-w-7xl mx-auto space-y-6">
         <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
         
