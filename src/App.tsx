@@ -24,15 +24,22 @@ import AppSidebar from "./components/AppSidebar";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
-const AppLayout = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider defaultOpen={true}>
-    <AppSidebar />
-    <ScrollToTop>{children}</ScrollToTop>
-  </SidebarProvider>
-);
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const { themeClass } = useTheme();
+  
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className={`flex min-h-screen w-full ${themeClass}`}>
+        <AppSidebar />
+        <ScrollToTop>{children}</ScrollToTop>
+      </div>
+    </SidebarProvider>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -42,8 +49,9 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              {/* Redirect root to dashboard */}
+            <ThemeProvider>
+              <Routes>
+                {/* Redirect root to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
               {/* Dashboard - Command Center */}
@@ -207,6 +215,7 @@ const App = () => (
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </ThemeProvider>
           </BrowserRouter>
         </TooltipProvider>
       </RecommendationStatusProvider>

@@ -197,6 +197,15 @@ All colors MUST be HSL.
     --accent: 4 82% 56%;
     --accent-foreground: 0 0% 100%;
     --ring: 340 80% 55%;
+    /* Sidebar overrides */
+    --sidebar-background: 340 50% 12%;
+    --sidebar-foreground: 340 40% 90%;
+    --sidebar-primary: 340 80% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 45% 20%;
+    --sidebar-accent-foreground: 340 40% 90%;
+    --sidebar-border: 340 45% 20%;
+    --sidebar-ring: 340 80% 55%;
   }
   
   .dark .theme-operations {
@@ -206,6 +215,14 @@ All colors MUST be HSL.
     --accent: 4 75% 60%;
     --accent-foreground: 0 0% 100%;
     --ring: 340 75% 65%;
+    --sidebar-background: 340 45% 8%;
+    --sidebar-foreground: 340 35% 90%;
+    --sidebar-primary: 340 75% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 40% 15%;
+    --sidebar-accent-foreground: 340 35% 90%;
+    --sidebar-border: 340 40% 15%;
+    --sidebar-ring: 340 75% 65%;
   }
   
   /* Marketing theme - Green/Teal */
@@ -216,6 +233,15 @@ All colors MUST be HSL.
     --accent: 185 55% 35%;
     --accent-foreground: 0 0% 100%;
     --ring: 155 75% 40%;
+    /* Sidebar overrides */
+    --sidebar-background: 155 45% 12%;
+    --sidebar-foreground: 155 40% 90%;
+    --sidebar-primary: 155 75% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 155 40% 20%;
+    --sidebar-accent-foreground: 155 40% 90%;
+    --sidebar-border: 155 40% 20%;
+    --sidebar-ring: 155 75% 40%;
   }
   
   .dark .theme-marketing {
@@ -225,6 +251,14 @@ All colors MUST be HSL.
     --accent: 185 50% 45%;
     --accent-foreground: 0 0% 100%;
     --ring: 155 70% 55%;
+    --sidebar-background: 155 40% 8%;
+    --sidebar-foreground: 155 35% 90%;
+    --sidebar-primary: 155 70% 55%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 155 35% 15%;
+    --sidebar-accent-foreground: 155 35% 90%;
+    --sidebar-border: 155 35% 15%;
+    --sidebar-ring: 155 70% 55%;
   }
   
   /* Audience theme - Yellow/Orange */
@@ -235,6 +269,15 @@ All colors MUST be HSL.
     --accent: 25 75% 48%;
     --accent-foreground: 0 0% 100%;
     --ring: 38 92% 50%;
+    /* Sidebar overrides */
+    --sidebar-background: 30 45% 12%;
+    --sidebar-foreground: 38 40% 90%;
+    --sidebar-primary: 38 92% 55%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 30 40% 20%;
+    --sidebar-accent-foreground: 38 40% 90%;
+    --sidebar-border: 30 40% 20%;
+    --sidebar-ring: 38 92% 50%;
   }
   
   .dark .theme-audience {
@@ -244,6 +287,14 @@ All colors MUST be HSL.
     --accent: 25 70% 55%;
     --accent-foreground: 0 0% 100%;
     --ring: 38 90% 55%;
+    --sidebar-background: 30 40% 8%;
+    --sidebar-foreground: 38 35% 90%;
+    --sidebar-primary: 38 90% 55%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 30 35% 15%;
+    --sidebar-accent-foreground: 38 35% 90%;
+    --sidebar-border: 30 35% 15%;
+    --sidebar-ring: 38 90% 55%;
   }
   
   /* Sales theme - Purple (main) */
@@ -254,6 +305,15 @@ All colors MUST be HSL.
     --accent: 300 70% 55%;
     --accent-foreground: 0 0% 100%;
     --ring: 270 85% 50%;
+    /* Sidebar overrides */
+    --sidebar-background: 270 60% 15%;
+    --sidebar-foreground: 270 40% 90%;
+    --sidebar-primary: 270 85% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 270 50% 22%;
+    --sidebar-accent-foreground: 270 40% 90%;
+    --sidebar-border: 270 50% 22%;
+    --sidebar-ring: 270 85% 50%;
   }
   
   .dark .theme-sales {
@@ -263,6 +323,14 @@ All colors MUST be HSL.
     --accent: 300 70% 60%;
     --accent-foreground: 0 0% 100%;
     --ring: 270 85% 60%;
+    --sidebar-background: 270 55% 6%;
+    --sidebar-foreground: 270 35% 90%;
+    --sidebar-primary: 270 85% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 270 45% 14%;
+    --sidebar-accent-foreground: 270 35% 90%;
+    --sidebar-border: 270 45% 14%;
+    --sidebar-ring: 270 85% 60%;
   }
   
   /* Historical theme - Teal/Cyan */
@@ -273,6 +341,15 @@ All colors MUST be HSL.
     --accent: 185 55% 25%;
     --accent-foreground: 0 0% 100%;
     --ring: 185 85% 40%;
+    /* Sidebar overrides */
+    --sidebar-background: 185 50% 12%;
+    --sidebar-foreground: 185 40% 90%;
+    --sidebar-primary: 185 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 185 45% 20%;
+    --sidebar-accent-foreground: 185 40% 90%;
+    --sidebar-border: 185 45% 20%;
+    --sidebar-ring: 185 85% 40%;
   }
   
   .dark .theme-historical {
@@ -282,6 +359,14 @@ All colors MUST be HSL.
     --accent: 185 50% 35%;
     --accent-foreground: 0 0% 100%;
     --ring: 185 85% 50%;
+    --sidebar-background: 185 45% 6%;
+    --sidebar-foreground: 185 35% 90%;
+    --sidebar-primary: 185 85% 50%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 185 40% 12%;
+    --sidebar-accent-foreground: 185 35% 90%;
+    --sidebar-border: 185 40% 12%;
+    --sidebar-ring: 185 85% 50%;
   }
 }
 
