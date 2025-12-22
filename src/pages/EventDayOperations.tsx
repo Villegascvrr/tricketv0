@@ -164,7 +164,7 @@ const EventDayOperations = () => {
   const totalRevenue = barStations.reduce((acc, b) => acc + b.revenue, 0);
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 theme-operations">
       <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Día del Festival" }]} />
         

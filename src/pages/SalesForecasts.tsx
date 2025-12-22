@@ -148,7 +148,7 @@ const SalesForecasts = () => {
   }, [currentDailyAverage, daysRemaining, ticketsSold, aforoTotal, targetTickets]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 theme-sales">
       <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
         
