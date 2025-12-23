@@ -82,7 +82,7 @@ const FestivalStatusOverview = ({ eventId = "demo-primaverando-2025" }: Festival
         status: ventasStatus,
         detail: `${ocupacion.toFixed(0)}% del objetivo`,
         tooltip: `${stats.totalSold.toLocaleString()} de ${stats.targetSales.toLocaleString()} entradas objetivo`,
-        route: "/dashboard",
+        route: "/sales",
       },
       {
         label: "Marketing",
@@ -98,7 +98,7 @@ const FestivalStatusOverview = ({ eventId = "demo-primaverando-2025" }: Festival
         status: "good" as StatusLevel,
         detail: "78% tareas cerradas",
         tooltip: "28 de 36 tareas pre-festival completadas",
-        route: "/pre-festival",
+        route: "/operations/pre-festival",
       },
       {
         label: "Personal",
@@ -114,7 +114,7 @@ const FestivalStatusOverview = ({ eventId = "demo-primaverando-2025" }: Festival
         status: "good" as StatusLevel,
         detail: "100% confirmados",
         tooltip: "Sonido, catering, seguridad y limpieza OK",
-        route: "/settings",
+        route: "/integrations",
       },
       {
         label: "Alertas IA",
