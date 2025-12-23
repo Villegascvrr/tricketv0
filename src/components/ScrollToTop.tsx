@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 interface ScrollToTopProps {
@@ -7,15 +7,14 @@ interface ScrollToTopProps {
 
 export function ScrollToTop({ children }: ScrollToTopProps) {
   const location = useLocation();
-  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    mainRef.current?.scrollTo(0, 0);
+    // Scroll window to top for mobile and any scrollable container
+    window.scrollTo(0, 0);
+    // Also try to scroll any parent with overflow
+    document.documentElement.scrollTo(0, 0);
+    document.body.scrollTo(0, 0);
   }, [location.pathname]);
 
-  return (
-    <main ref={mainRef} className="flex-1 min-w-0 overflow-auto">
-      {children}
-    </main>
-  );
+  return <>{children}</>;
 }

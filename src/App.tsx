@@ -36,11 +36,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider defaultOpen={true}>
       <div className={`flex flex-col md:flex-row min-h-screen w-full ${themeClass}`}>
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-auto">
           <MobileHeader />
-          <main className="flex-1">
-            <ScrollToTop>{children}</ScrollToTop>
-          </main>
+          <ScrollToTop>{children}</ScrollToTop>
         </div>
       </div>
     </SidebarProvider>
