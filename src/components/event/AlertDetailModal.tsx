@@ -84,11 +84,11 @@ export const AlertDetailModal = ({ recommendation, open, onOpenChange }: AlertDe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4 pr-8">
+          <div className="flex items-start justify-between gap-4">
             <div className="space-y-2 flex-1">
-              <DialogTitle className="text-lg leading-tight pr-4">
+              <DialogTitle className="text-lg leading-tight">
                 {recommendation.title}
               </DialogTitle>
               <div className="flex flex-wrap gap-2">
@@ -110,6 +110,14 @@ export const AlertDetailModal = ({ recommendation, open, onOpenChange }: AlertDe
                 )}
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground hover:text-foreground shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
         </DialogHeader>
 
