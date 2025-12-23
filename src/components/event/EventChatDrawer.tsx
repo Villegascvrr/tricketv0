@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe, RotateCcw } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe, RotateCcw, PanelLeftClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -252,9 +253,29 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
     { cmd: '/ayuda', desc: 'Ayuda', detail: 'Lista de todos los comandos disponibles.', category: 'help' },
   ];
 
+  const isMobile = useIsMobile();
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
+      <SheetContent 
+        side="right" 
+        className={cn(
+          "p-0 flex flex-col",
+          isMobile ? "w-full" : "w-full sm:max-w-none"
+        )}
+      >
+        {/* Desktop: Collapse button on the left edge */}
+        {!isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full z-50 h-20 w-8 rounded-l-lg rounded-r-none bg-background border border-r-0 border-border shadow-md hover:bg-muted"
+          >
+            <PanelLeftClose className="h-5 w-5" />
+          </Button>
+        )}
+        
         <SheetHeader className="p-6 pb-4 border-b">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-primary/10 rounded-lg">
