@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe, RotateCcw, PanelLeftClose } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Globe, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -253,29 +252,12 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
     { cmd: '/ayuda', desc: 'Ayuda', detail: 'Lista de todos los comandos disponibles.', category: 'help' },
   ];
 
-  const isMobile = useIsMobile();
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="right" 
-        className={cn(
-          "p-0 flex flex-col [&>button]:hidden",
-          isMobile ? "w-full" : "w-full sm:max-w-none overflow-visible"
-        )}
+        className="p-0 flex flex-col w-full sm:max-w-none [&>button]:hidden"
       >
-        {/* Desktop: Collapse button on the left edge */}
-        {!isMobile && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="fixed left-4 top-1/2 -translate-y-1/2 z-[60] h-12 w-12 rounded-full bg-background border border-border shadow-lg hover:bg-muted"
-          >
-            <PanelLeftClose className="h-5 w-5" />
-          </Button>
-        )}
-        
         <SheetHeader className="p-6 pb-4 border-b">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -298,6 +280,14 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
             >
               <RotateCcw className="h-4 w-4" />
               <span className="text-xs">Nueva</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
             </Button>
           </div>
         </SheetHeader>
