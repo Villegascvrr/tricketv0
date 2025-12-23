@@ -188,23 +188,23 @@ const Audience = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 theme-audience">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <div className="min-h-screen bg-background p-3 md:p-4 theme-audience">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
         
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold text-foreground">Público y Audiencia</h1>
-            <p className="text-xs text-muted-foreground">Segmentos accionables para decisiones de marketing y ventas</p>
+            <h1 className="text-base md:text-lg font-bold text-foreground">Público y Audiencia</h1>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Segmentos accionables para decisiones de marketing y ventas</p>
           </div>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-[10px] md:text-xs w-fit">
             {totalAsistentes.toLocaleString('es-ES')} entradas vendidas
           </Badge>
         </div>
 
         {/* Quick Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
           <Card>
             <CardContent className="pt-3 pb-2">
               <div className="flex items-center gap-2 mb-1">

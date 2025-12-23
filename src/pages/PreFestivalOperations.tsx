@@ -186,24 +186,24 @@ const PreFestivalOperations = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 theme-operations">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <div className="min-h-screen bg-background p-3 md:p-4 theme-operations">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Pre-Festival" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <div>
-            <h1 className="text-lg font-bold text-foreground">Operaciones Pre-Festival</h1>
-            <p className="text-xs text-muted-foreground">Gestión de producción, proveedores, personal y logística</p>
+            <h1 className="text-base md:text-lg font-bold text-foreground">Operaciones Pre-Festival</h1>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Gestión de producción, proveedores, personal y logística</p>
           </div>
-          <Badge variant="secondary" className="gap-1.5 text-xs">
+          <Badge variant="secondary" className="gap-1.5 text-[10px] md:text-xs w-fit">
             <Calendar className="h-3 w-3" />
             Faltan días para el festival
           </Badge>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
           <Card>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-2 mb-1">
@@ -272,45 +272,47 @@ const PreFestivalOperations = () => {
         </div>
 
         {/* Main Tabs */}
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
-          <TabsList className="bg-card border flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="tareas" className="gap-1.5 text-xs">
-              <ClipboardList className="h-3.5 w-3.5" />
-              Tareas
-            </TabsTrigger>
-            <TabsTrigger value="proveedores" className="gap-1.5 text-xs">
-              <Truck className="h-3.5 w-3.5" />
-              Proveedores
-            </TabsTrigger>
-            <TabsTrigger value="personal" className="gap-1.5 text-xs">
-              <Users className="h-3.5 w-3.5" />
-              Personal
-            </TabsTrigger>
-            <TabsTrigger value="produccion" className="gap-1.5 text-xs">
-              <Music className="h-3.5 w-3.5" />
-              Producción
-            </TabsTrigger>
-            <TabsTrigger value="logistica" className="gap-1.5 text-xs">
-              <HardHat className="h-3.5 w-3.5" />
-              Logística
-            </TabsTrigger>
-            <TabsTrigger value="calendario" className="gap-1.5 text-xs">
-              <Calendar className="h-3.5 w-3.5" />
-              Calendario
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-3 md:space-y-4">
+          <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
+            <TabsList className="bg-card border flex-nowrap h-auto gap-1 p-1 w-max md:w-auto">
+              <TabsTrigger value="tareas" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <ClipboardList className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Tareas</span>
+              </TabsTrigger>
+              <TabsTrigger value="proveedores" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <Truck className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Proveedores</span>
+              </TabsTrigger>
+              <TabsTrigger value="personal" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <Users className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Personal</span>
+              </TabsTrigger>
+              <TabsTrigger value="produccion" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <Music className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Producción</span>
+              </TabsTrigger>
+              <TabsTrigger value="logistica" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <HardHat className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Logística</span>
+              </TabsTrigger>
+              <TabsTrigger value="calendario" className="gap-1 md:gap-1.5 text-[10px] md:text-xs px-2 md:px-3">
+                <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden sm:inline">Calendario</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* ============ TAREAS TAB ============ */}
-          <TabsContent value="tareas" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-base font-semibold">Gestión de Tareas</h2>
-              <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
+          <TabsContent value="tareas" className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+              <h2 className="text-sm md:text-base font-semibold">Gestión de Tareas</h2>
+              <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
                 Nueva tarea
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
               <div className="lg:col-span-3 space-y-4">
                 {/* Filters */}
                 <Card>

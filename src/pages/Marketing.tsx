@@ -285,14 +285,14 @@ const Marketing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 theme-marketing">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <div className="min-h-screen bg-background p-3 md:p-4 theme-marketing">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Marketing & Campañas" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
           <div>
-            <h1 className="text-xl font-bold text-foreground mb-0.5">
+            <h1 className="text-lg md:text-xl font-bold text-foreground mb-0.5">
               Marketing & Campañas
             </h1>
             <p className="text-xs text-muted-foreground">
@@ -301,7 +301,7 @@ const Marketing = () => {
           </div>
           <Dialog open={isNewCampaignOpen} onOpenChange={setIsNewCampaignOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 h-7 text-xs">
+              <Button size="sm" className="gap-1.5 h-8 md:h-7 text-xs w-full sm:w-auto">
                 <Megaphone className="h-3.5 w-3.5" />
                 Nueva Campaña
               </Button>
