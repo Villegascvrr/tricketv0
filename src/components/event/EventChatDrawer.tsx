@@ -260,17 +260,17 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
       <SheetContent 
         side="right" 
         className={cn(
-          "p-0 flex flex-col",
-          isMobile ? "w-full" : "w-full sm:max-w-none"
+          "p-0 flex flex-col [&>button]:hidden",
+          isMobile ? "w-full" : "w-full sm:max-w-none overflow-visible"
         )}
       >
         {/* Desktop: Collapse button on the left edge */}
         {!isMobile && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => onOpenChange(false)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full z-50 h-20 w-8 rounded-l-lg rounded-r-none bg-background border border-r-0 border-border shadow-md hover:bg-muted"
+            className="fixed left-4 top-1/2 -translate-y-1/2 z-[60] h-12 w-12 rounded-full bg-background border border-border shadow-lg hover:bg-muted"
           >
             <PanelLeftClose className="h-5 w-5" />
           </Button>
@@ -287,20 +287,18 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
                 Análisis en tiempo real de {eventName}
               </p>
             </div>
-            {messages.length > 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setMessages([{
-                  role: "assistant",
-                  content: `¡Hola! 👋 Soy tu asistente de análisis para **${eventName}**. ${isDemo ? '\n\n🎪 *Modo Demo* - Usando datos de ejemplo de Primaverando 2025.\n\n' : ''}Puedo ayudarte a analizar datos, responder preguntas específicas y proporcionar insights sobre ventas, audiencia, canales y más. ¿En qué puedo ayudarte?`
-                }])}
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-              >
-                <RotateCcw className="h-4 w-4" />
-                <span className="text-xs">Nueva</span>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMessages([{
+                role: "assistant",
+                content: `¡Hola! 👋 Soy tu asistente de análisis para **${eventName}**. ${isDemo ? '\n\n🎪 *Modo Demo* - Usando datos de ejemplo de Primaverando 2025.\n\n' : ''}Puedo ayudarte a analizar datos, responder preguntas específicas y proporcionar insights sobre ventas, audiencia, canales y más. ¿En qué puedo ayudarte?`
+              }])}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span className="text-xs">Nueva</span>
+            </Button>
           </div>
         </SheetHeader>
 
