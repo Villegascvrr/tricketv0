@@ -148,21 +148,21 @@ const SalesForecasts = () => {
   }, [currentDailyAverage, daysRemaining, ticketsSold, aforoTotal, targetTickets]);
 
   return (
-    <div className="min-h-screen bg-background p-4 theme-sales">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <div className="min-h-screen bg-background p-3 md:p-4 theme-sales">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
           <div>
-            <h1 className="text-xl font-bold text-foreground mb-0.5">
+            <h1 className="text-lg md:text-xl font-bold text-foreground mb-0.5">
               Ventas & Previsiones
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               Análisis de ventas y proyecciones
             </p>
           </div>
-          <Badge variant="outline" className="text-xs px-2 py-0.5">
+          <Badge variant="outline" className="text-[10px] md:text-xs px-2 py-0.5 w-fit">
             <Calendar className="h-3 w-3 mr-1" />
             {daysRemaining} días para el festival
           </Badge>

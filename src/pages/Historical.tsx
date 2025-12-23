@@ -288,19 +288,19 @@ const Historical = () => {
         <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
         
         {/* Header */}
-        <div className="flex justify-between items-start mb-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
           <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Archivo Histórico Primaverando
+            <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+              <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+              Archivo Histórico
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Comparativas entre ediciones, aprendizajes documentados y evolución del festival
+            <p className="text-[10px] md:text-sm text-muted-foreground mt-1">
+              Comparativas entre ediciones y aprendizajes
             </p>
           </div>
-          <Badge variant="secondary" className="text-xs gap-1.5">
+          <Badge variant="secondary" className="text-[10px] md:text-xs gap-1.5 w-fit">
             <History className="h-3 w-3" />
-            5 ediciones (2019-2025)
+            5 ediciones
           </Badge>
         </div>
 

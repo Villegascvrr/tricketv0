@@ -138,38 +138,39 @@ export function TodayQuickView({
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
-      <CardHeader className={cn("py-4", !isMinimized && "pb-3")}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Zap className="h-5 w-5 text-primary" />
+      <CardHeader className={cn("py-3 md:py-4 px-3 md:px-6", !isMinimized && "pb-3")}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+              <Zap className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-base flex items-center gap-2">
-                Qué debería estar revisando hoy
+            <div className="min-w-0">
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 flex-wrap">
+                <span className="truncate">Vista rápida del día</span>
                 {stats.hasRealData && (
-                  <Badge variant="outline" className="text-[10px] gap-1">
+                  <Badge variant="outline" className="text-[10px] gap-1 hidden sm:flex">
                     <Database className="h-2.5 w-2.5" />
                     Datos reales
                   </Badge>
                 )}
               </CardTitle>
               {!isMinimized && (
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })} • Vista rápida de 2 minutos
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}
                 </p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge variant="outline" className="gap-1.5 text-xs whitespace-nowrap px-2.5 py-1">
-              <Calendar className="h-3 w-3" />
-              {stats.daysToFestival} días restantes
+          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+            <Badge variant="outline" className="gap-1 md:gap-1.5 text-[10px] md:text-xs whitespace-nowrap px-1.5 md:px-2.5 py-0.5 md:py-1">
+              <Calendar className="h-2.5 w-2.5 md:h-3 md:w-3" />
+              <span className="hidden sm:inline">{stats.daysToFestival} días</span>
+              <span className="sm:hidden">{stats.daysToFestival}d</span>
             </Badge>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-8 w-8 p-0 flex-shrink-0" 
+              className="h-7 w-7 md:h-8 md:w-8 p-0 flex-shrink-0" 
               onClick={toggleMinimized}
               title={isMinimized ? "Expandir vista rápida" : "Minimizar vista rápida"}
             >
@@ -180,9 +181,9 @@ export function TodayQuickView({
       </CardHeader>
 
       {!isMinimized && (
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-3 md:px-6">
         {/* 3 Critical Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {/* Metric 1: Sales vs Target */}
           <div className="p-4 rounded-lg border bg-card">
             <div className="flex items-center justify-between mb-2">
