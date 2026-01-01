@@ -59,7 +59,7 @@ const App = () => (
           <BrowserRouter>
             <ThemeProvider>
               <Routes>
-                {/* Auth page - public */}
+                {/* Auth page - available but not required */}
                 <Route path="/auth" element={<Auth />} />
                 
                 {/* Redirect root to dashboard */}
@@ -69,11 +69,9 @@ const App = () => (
                 <Route
                   path="/dashboard"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Dashboard />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Dashboard />
+                    </AppLayout>
                   }
                 />
 
@@ -81,11 +79,9 @@ const App = () => (
                 <Route
                   path="/sales"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <SalesForecasts />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <SalesForecasts />
+                    </AppLayout>
                   }
                 />
 
@@ -93,11 +89,9 @@ const App = () => (
                 <Route
                   path="/audience"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Audience />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Audience />
+                    </AppLayout>
                   }
                 />
 
@@ -105,11 +99,9 @@ const App = () => (
                 <Route
                   path="/marketing"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Marketing />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Marketing />
+                    </AppLayout>
                   }
                 />
 
@@ -117,11 +109,9 @@ const App = () => (
                 <Route
                   path="/weather"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <WeatherConditions />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <WeatherConditions />
+                    </AppLayout>
                   }
                 />
 
@@ -129,11 +119,9 @@ const App = () => (
                 <Route
                   path="/ai-recommendations"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <AIRecommendations />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <AIRecommendations />
+                    </AppLayout>
                   }
                 />
 
@@ -141,11 +129,9 @@ const App = () => (
                 <Route
                   path="/historical"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Historical />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Historical />
+                    </AppLayout>
                   }
                 />
 
@@ -153,11 +139,9 @@ const App = () => (
                 <Route
                   path="/scenario-planner"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <ScenarioPlanner />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <ScenarioPlanner />
+                    </AppLayout>
                   }
                 />
 
@@ -165,11 +149,9 @@ const App = () => (
                 <Route
                   path="/operations/pre-festival"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <PreFestivalOperations />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <PreFestivalOperations />
+                    </AppLayout>
                   }
                 />
 
@@ -177,11 +159,9 @@ const App = () => (
                 <Route
                   path="/operations/event-day"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <EventDayOperations />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <EventDayOperations />
+                    </AppLayout>
                   }
                 />
 
@@ -192,11 +172,9 @@ const App = () => (
                 <Route
                   path="/team"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Team />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Team />
+                    </AppLayout>
                   }
                 />
 
@@ -204,11 +182,9 @@ const App = () => (
                 <Route
                   path="/integrations"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Integrations />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Integrations />
+                    </AppLayout>
                   }
                 />
 
@@ -216,11 +192,9 @@ const App = () => (
                 <Route
                   path="/settings"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Settings />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Settings />
+                    </AppLayout>
                   }
                 />
 
@@ -228,11 +202,9 @@ const App = () => (
                 <Route
                   path="/profile"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Profile />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Profile />
+                    </AppLayout>
                   }
                 />
 
@@ -240,11 +212,9 @@ const App = () => (
                 <Route
                   path="/help"
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Help />
-                      </AppLayout>
-                    </ProtectedRoute>
+                    <AppLayout>
+                      <Help />
+                    </AppLayout>
                   }
                 />
 
