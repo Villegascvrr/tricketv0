@@ -17,9 +17,9 @@ import { TodayQuickView } from "@/components/event/TodayQuickView";
 import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 
-// Primaverando Festival 2025 - Single event configuration
+// Primaverando Festival 2025 - Using real Supabase event
 const PRIMAVERANDO_EVENT = {
-  id: "demo-primaverando-2025",
+  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   name: festivalData.nombre,
   type: "Festival",
   venue: festivalData.ubicacion,

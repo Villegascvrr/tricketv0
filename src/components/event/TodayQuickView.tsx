@@ -82,7 +82,7 @@ const getSuggestedActions = (recommendations: Recommendation[], stats: ReturnTyp
 };
 
 export function TodayQuickView({ 
-  eventId = "demo-primaverando-2025",
+  eventId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   onOpenRecommendations, 
   onOpenChat 
 }: TodayQuickViewProps) {
