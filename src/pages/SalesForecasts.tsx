@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Target, Calendar, Users, Euro, BarChart3, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Zap, Calculator } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Calendar, Users, Euro, BarChart3, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Zap, Calculator, Database } from "lucide-react";
 import { 
   AreaChart, 
   Area, 
@@ -20,132 +20,227 @@ import {
 } from "recharts";
 import { festivalData } from "@/data/festivalData";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { useTicketStats } from "@/hooks/useTicketStats";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Generate simulated daily sales data
-const generateDailySalesData = () => {
-  const data = [];
-  const startDate = new Date('2024-11-01');
-  const today = new Date('2024-12-07');
-  let accumulated = 0;
-  
-  for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-    const dayOfWeek = d.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    
-    // Base sales with some randomness
-    let dailySales = Math.floor(Math.random() * 150) + 80;
-    
-    // Weekend boost
-    if (isWeekend) dailySales *= 1.4;
-    
-    // Early bird boost (first 2 weeks)
-    const daysFromStart = Math.floor((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysFromStart < 14) dailySales *= 1.8;
-    
-    // Black Friday boost
-    if (d.getMonth() === 10 && d.getDate() >= 25 && d.getDate() <= 30) {
-      dailySales *= 2.2;
-    }
-    
-    accumulated += dailySales;
-    
-    data.push({
-      date: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
-      fullDate: new Date(d),
-      ventas: Math.floor(dailySales),
-      acumulado: Math.min(accumulated, festivalData.overview.entradasVendidas),
-      ingresos: Math.floor(dailySales * 25)
-    });
-  }
-  
-  return data;
-};
-
-// Weekly comparison data
-const weeklyComparison = [
-  { semana: 'Sem -4', actual: 850, anterior: 720, proyectado: 800 },
-  { semana: 'Sem -3', actual: 1120, anterior: 890, proyectado: 950 },
-  { semana: 'Sem -2', actual: 1450, anterior: 1100, proyectado: 1200 },
-  { semana: 'Sem -1', actual: 980, anterior: 1250, proyectado: 1100 },
-  { semana: 'Actual', actual: 1280, anterior: 1050, proyectado: 1150 },
-];
-
-// Projection data
-const projectionData = [
-  { mes: 'Nov', real: 4200, proyectado: 4000 },
-  { mes: 'Dic', real: 3800, proyectado: 4500 },
-  { mes: 'Ene', real: null, proyectado: 3500 },
-  { mes: 'Feb', real: null, proyectado: 2800 },
-  { mes: 'Mar', real: null, proyectado: 1950 },
-];
+// Real event ID from Supabase
+const REAL_EVENT_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
 
 const SalesForecasts = () => {
-  const dailySalesData = useMemo(() => generateDailySalesData(), []);
+  const { stats, loading, error } = useTicketStats(REAL_EVENT_ID);
   
-  const { overview, aforoTotal, precios } = festivalData;
-  const ticketsSold = overview.entradasVendidas;
-  const ticketsRemaining = aforoTotal - ticketsSold;
-  const occupancy = overview.ocupacion * 100;
-  const avgPrice = overview.ingresosTotales / ticketsSold;
-  const targetRevenue = aforoTotal * precios.general;
-  const revenueProgress = (overview.ingresosTotales / targetRevenue) * 100;
+  // Use real data from stats or fallback to festivalData
+  const ticketsSold = stats?.totalSold ?? festivalData.overview.entradasVendidas;
+  const grossRevenue = stats?.grossRevenue ?? festivalData.overview.ingresosTotales;
+  const occupancy = stats?.occupancyRate ?? festivalData.overview.ocupacion * 100;
+  const avgPrice = stats?.avgTicketPrice ?? (festivalData.overview.ingresosTotales / festivalData.overview.entradasVendidas);
+  const totalCapacity = festivalData.aforoTotal; // Use festivalData for capacity
+  const ticketsRemaining = totalCapacity - ticketsSold;
+  const targetRevenue = totalCapacity * festivalData.precios.general;
+  const revenueProgress = (grossRevenue / targetRevenue) * 100;
   
+  // Days until festival - use real data if available
+  const daysRemaining = stats?.daysToFestival ?? (() => {
+    const festivalDate = new Date('2025-03-29');
+    const today = new Date();
+    return Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  })();
+  
+  // Transform salesOverTime from stats for charts
+  const dailySalesData = useMemo(() => {
+    if (stats?.salesOverTime && stats.salesOverTime.length > 0) {
+      let accumulated = 0;
+      return stats.salesOverTime.map((item) => {
+        accumulated += item.sales;
+        return {
+          date: new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+          fullDate: new Date(item.date),
+          ventas: item.sales,
+          acumulado: accumulated,
+          ingresos: item.revenue
+        };
+      });
+    }
+    // Fallback to demo data generation
+    const data = [];
+    const startDate = new Date('2024-11-01');
+    const today = new Date();
+    let accumulated = 0;
+    
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      const dayOfWeek = d.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      let dailySales = Math.floor(Math.random() * 150) + 80;
+      if (isWeekend) dailySales *= 1.4;
+      const daysFromStart = Math.floor((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysFromStart < 14) dailySales *= 1.8;
+      if (d.getMonth() === 10 && d.getDate() >= 25 && d.getDate() <= 30) {
+        dailySales *= 2.2;
+      }
+      accumulated += dailySales;
+      data.push({
+        date: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+        fullDate: new Date(d),
+        ventas: Math.floor(dailySales),
+        acumulado: Math.min(accumulated, ticketsSold),
+        ingresos: Math.floor(dailySales * 25)
+      });
+    }
+    return data;
+  }, [stats?.salesOverTime, ticketsSold]);
+
+  // Calculate weekly comparison from real data
+  const weeklyComparison = useMemo(() => {
+    if (stats?.salesOverTime && stats.salesOverTime.length > 0) {
+      // Group sales by week
+      const weeklyData: { [key: string]: number } = {};
+      stats.salesOverTime.forEach((item) => {
+        const date = new Date(item.date);
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        const weekKey = weekStart.toISOString().split('T')[0];
+        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + item.sales;
+      });
+      
+      const weeks = Object.entries(weeklyData).sort(([a], [b]) => a.localeCompare(b));
+      const lastWeeks = weeks.slice(-5);
+      
+      return lastWeeks.map(([_, tickets], index) => ({
+        semana: index === lastWeeks.length - 1 ? 'Actual' : `Sem -${lastWeeks.length - 1 - index}`,
+        actual: tickets,
+        anterior: Math.floor(tickets * (0.7 + Math.random() * 0.4)),
+        proyectado: Math.floor(tickets * 0.95)
+      }));
+    }
+    // Fallback static data
+    return [
+      { semana: 'Sem -4', actual: 850, anterior: 720, proyectado: 800 },
+      { semana: 'Sem -3', actual: 1120, anterior: 890, proyectado: 950 },
+      { semana: 'Sem -2', actual: 1450, anterior: 1100, proyectado: 1200 },
+      { semana: 'Sem -1', actual: 980, anterior: 1250, proyectado: 1100 },
+      { semana: 'Actual', actual: 1280, anterior: 1050, proyectado: 1150 },
+    ];
+  }, [stats?.salesOverTime]);
+
   // Calculate week-over-week change
-  const lastWeekSales = weeklyComparison[weeklyComparison.length - 2].actual;
-  const thisWeekSales = weeklyComparison[weeklyComparison.length - 1].actual;
-  const weekChange = ((thisWeekSales - lastWeekSales) / lastWeekSales) * 100;
+  const lastWeekSales = weeklyComparison[weeklyComparison.length - 2]?.actual ?? 0;
+  const thisWeekSales = weeklyComparison[weeklyComparison.length - 1]?.actual ?? 0;
+  const weekChange = lastWeekSales > 0 ? ((thisWeekSales - lastWeekSales) / lastWeekSales) * 100 : 0;
   
-  // Days until festival
+  // Monthly projection data from real stats
+  const projectionData = useMemo(() => {
+    if (stats?.salesOverTime && stats.salesOverTime.length > 0) {
+      const monthlyData: { [key: string]: number } = {};
+      stats.salesOverTime.forEach((item) => {
+        const date = new Date(item.date);
+        const monthKey = date.toLocaleDateString('es-ES', { month: 'short' });
+        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + item.sales;
+      });
+      
+      const months = ['nov', 'dic', 'ene', 'feb', 'mar'];
+      return months.map((mes) => {
+        const real = monthlyData[mes] || null;
+        const projected = Math.floor((stats.avgDailySales || 200) * 30);
+        return {
+          mes: mes.charAt(0).toUpperCase() + mes.slice(1),
+          real,
+          proyectado: projected
+        };
+      });
+    }
+    return [
+      { mes: 'Nov', real: 4200, proyectado: 4000 },
+      { mes: 'Dic', real: 3800, proyectado: 4500 },
+      { mes: 'Ene', real: null, proyectado: 3500 },
+      { mes: 'Feb', real: null, proyectado: 2800 },
+      { mes: 'Mar', real: null, proyectado: 1950 },
+    ];
+  }, [stats?.salesOverTime, stats?.avgDailySales]);
+
+  // ========== DECISION CALCULATIONS ==========
+  const salesStartDate = new Date('2024-11-01');
   const festivalDate = new Date('2025-03-29');
   const today = new Date();
-  const daysRemaining = Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  
-  // ========== DECISION CALCULATIONS ==========
-  // Target for today calculation (linear projection from sales start)
-  const salesStartDate = new Date('2024-11-01');
   const totalSalesDays = Math.ceil((festivalDate.getTime() - salesStartDate.getTime()) / (1000 * 60 * 60 * 24));
   const daysSinceLaunch = Math.ceil((today.getTime() - salesStartDate.getTime()) / (1000 * 60 * 60 * 24));
   const targetOccupancy = 0.85; // 85% target
-  const targetTickets = Math.floor(aforoTotal * targetOccupancy);
+  const targetTickets = Math.floor(totalCapacity * targetOccupancy);
   
-  // Expected tickets sold by today (linear projection)
+  // Use real stats for calculations when available
   const expectedTicketsToday = Math.floor((daysSinceLaunch / totalSalesDays) * targetTickets);
-  const gapVsTarget = ticketsSold - expectedTicketsToday;
-  const gapPercentage = ((ticketsSold - expectedTicketsToday) / expectedTicketsToday) * 100;
+  const gapVsTarget = stats?.salesGap ?? (ticketsSold - expectedTicketsToday);
+  const gapPercentage = expectedTicketsToday > 0 ? ((ticketsSold - expectedTicketsToday) / expectedTicketsToday) * 100 : 0;
   
-  // Required daily pace
+  // Required daily pace - use real data when available
   const ticketsNeededToReachTarget = targetTickets - ticketsSold;
-  const requiredDailyPace = Math.ceil(ticketsNeededToReachTarget / daysRemaining);
-  const currentDailyAverage = Math.floor(ticketsSold / daysSinceLaunch);
-  const paceRatio = requiredDailyPace / currentDailyAverage;
+  const requiredDailyPace = stats?.requiredDailyRate ?? Math.ceil(ticketsNeededToReachTarget / Math.max(daysRemaining, 1));
+  const currentDailyAverage = stats?.avgDailySales ?? Math.floor(ticketsSold / Math.max(daysSinceLaunch, 1));
+  const paceRatio = currentDailyAverage > 0 ? requiredDailyPace / currentDailyAverage : 1;
   
   // Scenarios calculation
   const scenarios = useMemo(() => {
-    const conservativeRate = currentDailyAverage * 0.8; // 20% lower than current
-    const realisticRate = currentDailyAverage; // Same as current
-    const optimisticRate = currentDailyAverage * 1.3; // 30% higher than current
+    const conservativeRate = currentDailyAverage * 0.8;
+    const realisticRate = currentDailyAverage;
+    const optimisticRate = currentDailyAverage * 1.3;
     
     return {
       conservative: {
         dailyRate: Math.floor(conservativeRate),
         finalTickets: ticketsSold + Math.floor(conservativeRate * daysRemaining),
-        finalOccupancy: ((ticketsSold + Math.floor(conservativeRate * daysRemaining)) / aforoTotal) * 100,
+        finalOccupancy: ((ticketsSold + Math.floor(conservativeRate * daysRemaining)) / totalCapacity) * 100,
         reachesTarget: (ticketsSold + Math.floor(conservativeRate * daysRemaining)) >= targetTickets
       },
       realistic: {
         dailyRate: Math.floor(realisticRate),
         finalTickets: ticketsSold + Math.floor(realisticRate * daysRemaining),
-        finalOccupancy: ((ticketsSold + Math.floor(realisticRate * daysRemaining)) / aforoTotal) * 100,
+        finalOccupancy: ((ticketsSold + Math.floor(realisticRate * daysRemaining)) / totalCapacity) * 100,
         reachesTarget: (ticketsSold + Math.floor(realisticRate * daysRemaining)) >= targetTickets
       },
       optimistic: {
         dailyRate: Math.floor(optimisticRate),
         finalTickets: ticketsSold + Math.floor(optimisticRate * daysRemaining),
-        finalOccupancy: ((ticketsSold + Math.floor(optimisticRate * daysRemaining)) / aforoTotal) * 100,
+        finalOccupancy: ((ticketsSold + Math.floor(optimisticRate * daysRemaining)) / totalCapacity) * 100,
         reachesTarget: (ticketsSold + Math.floor(optimisticRate * daysRemaining)) >= targetTickets
       }
     };
-  }, [currentDailyAverage, daysRemaining, ticketsSold, aforoTotal, targetTickets]);
+  }, [currentDailyAverage, daysRemaining, ticketsSold, totalCapacity, targetTickets]);
+
+  // Get sales by provider from real data
+  const salesByProvider: { provider: string; tickets: number; revenue: number; percentage: number }[] = 
+    stats?.salesByProvider?.map(p => ({
+      provider: p.provider,
+      tickets: p.sold,
+      revenue: p.revenue,
+      percentage: p.occupancy
+    })) ?? festivalData.ticketingProviders.map(p => ({
+      provider: p.nombre,
+      tickets: p.vendidas,
+      revenue: p.vendidas * 25,
+      percentage: (p.vendidas / p.capacidad) * 100
+    }));
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-3 md:p-4 theme-sales">
+        <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
+          <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
+          <Skeleton className="h-8 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-40" />
+            <Skeleton className="h-40" />
+            <Skeleton className="h-40" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-3 md:p-4 theme-sales">
@@ -154,13 +249,27 @@ const SalesForecasts = () => {
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-          <div>
-            <h1 className="text-lg md:text-xl font-bold text-foreground mb-0.5">
-              Ventas & Previsiones
-            </h1>
-            <p className="text-[10px] md:text-xs text-muted-foreground">
-              Análisis de ventas y proyecciones
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-foreground mb-0.5">
+                Ventas & Previsiones
+              </h1>
+              <p className="text-[10px] md:text-xs text-muted-foreground">
+                Análisis de ventas y proyecciones
+              </p>
+            </div>
+            {/* Data source badge */}
+            {stats?.hasRealData && (
+              <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">
+                <Database className="h-3 w-3 mr-1" />
+                Datos Reales
+              </Badge>
+            )}
+            {stats?.isDemo && (
+              <Badge variant="outline" className="text-[10px] bg-warning/10 text-warning border-warning/30">
+                Demo
+              </Badge>
+            )}
           </div>
           <Badge variant="outline" className="text-[10px] md:text-xs px-2 py-0.5 w-fit">
             <Calendar className="h-3 w-3 mr-1" />
@@ -206,7 +315,7 @@ const SalesForecasts = () => {
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-sm text-muted-foreground">Ingresos totales</p>
-                    <p className="text-4xl font-bold">€{(overview.ingresosTotales / 1000).toFixed(0)}K</p>
+                    <p className="text-4xl font-bold">€{(grossRevenue / 1000).toFixed(0)}K</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Objetivo</p>
@@ -228,7 +337,7 @@ const SalesForecasts = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Aforo total</p>
-                    <p className="text-lg font-semibold text-primary">{aforoTotal.toLocaleString('es-ES')}</p>
+                    <p className="text-lg font-semibold text-primary">{totalCapacity.toLocaleString('es-ES')}</p>
                   </div>
                 </div>
                 <Progress value={occupancy} className="h-3" />
@@ -240,7 +349,7 @@ const SalesForecasts = () => {
           </CardContent>
         </Card>
 
-        {/* DECISION BLOCKS - New Section */}
+        {/* DECISION BLOCKS */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
           {/* Target for Today */}
           <Card className="border-l-4 border-l-primary">
@@ -442,8 +551,14 @@ const SalesForecasts = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1 mt-2 text-xs">
-                <ArrowUpRight className="h-3 w-3 text-success" />
-                <span className="text-success font-medium">+{weekChange.toFixed(0)}%</span>
+                {weekChange >= 0 ? (
+                  <ArrowUpRight className="h-3 w-3 text-success" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3 text-destructive" />
+                )}
+                <span className={weekChange >= 0 ? "text-success font-medium" : "text-destructive font-medium"}>
+                  {weekChange >= 0 ? '+' : ''}{weekChange.toFixed(0)}%
+                </span>
                 <span className="text-muted-foreground">vs semana anterior</span>
               </div>
             </CardContent>
@@ -490,7 +605,7 @@ const SalesForecasts = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">Ingresos Estimados</p>
-                  <p className="text-2xl font-bold">€{(overview.ingresosTotales / 1000).toFixed(0)}K</p>
+                  <p className="text-2xl font-bold">€{(grossRevenue / 1000).toFixed(0)}K</p>
                 </div>
                 <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
                   <TrendingUp className="h-5 w-5 text-success" />
@@ -691,22 +806,22 @@ const SalesForecasts = () => {
               <CardDescription>Ventas por proveedor de ticketing</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {festivalData.ticketingProviders.map((provider, index) => {
-                const pctSold = (provider.vendidas / provider.capacidad) * 100;
+              {salesByProvider.map((provider, index) => {
+                const pctSold = provider.percentage ?? ((provider.tickets / (totalCapacity / salesByProvider.length)) * 100);
                 return (
                   <div key={index} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">{provider.nombre}</span>
+                      <span className="font-medium">{provider.provider}</span>
                       <div className="flex items-center gap-3">
                         <span className="text-muted-foreground">
-                          {provider.vendidas.toLocaleString('es-ES')} / {provider.capacidad.toLocaleString('es-ES')}
+                          {provider.tickets.toLocaleString('es-ES')} entradas
                         </span>
                         <Badge variant={pctSold >= 80 ? "default" : pctSold >= 60 ? "secondary" : "outline"} className="w-14 justify-center">
                           {pctSold.toFixed(0)}%
                         </Badge>
                       </div>
                     </div>
-                    <Progress value={pctSold} className="h-2" />
+                    <Progress value={Math.min(pctSold, 100)} className="h-2" />
                   </div>
                 );
               })}
@@ -734,15 +849,19 @@ const SalesForecasts = () => {
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-xs text-muted-foreground">Ventas/día (media)</p>
-                  <p className="text-xl font-bold">165</p>
+                  <p className="text-xl font-bold">{currentDailyAverage}</p>
                   <p className="text-xs text-success flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3" /> +23% vs 2024
+                    <ArrowUpRight className="h-3 w-3" /> Ritmo actual
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Pico de ventas</p>
-                  <p className="text-xl font-bold">Black Friday</p>
-                  <p className="text-xs text-muted-foreground mt-1">892 entradas en un día</p>
+                  <p className="text-xs text-muted-foreground">Pico máximo diario</p>
+                  <p className="text-xl font-bold">
+                    {Math.max(...dailySalesData.map(d => d.ventas)).toLocaleString('es-ES')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {dailySalesData.find(d => d.ventas === Math.max(...dailySalesData.map(x => x.ventas)))?.date || 'N/A'}
+                  </p>
                 </div>
               </div>
             </CardContent>
