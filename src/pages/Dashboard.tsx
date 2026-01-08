@@ -14,29 +14,44 @@ import EventChatDrawer from "@/components/event/EventChatDrawer";
 import FestivalStatusOverview from "@/components/event/FestivalStatusOverview";
 import ExternalSignals from "@/components/event/ExternalSignals";
 import { TodayQuickView } from "@/components/event/TodayQuickView";
-import { festivalData } from "@/data/festivalData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
-
-// Primaverando Festival 2025 - Using real Supabase event
-const PRIMAVERANDO_EVENT = {
-  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  name: festivalData.nombre,
-  type: "Festival",
-  venue: festivalData.ubicacion,
-  start_date: "2025-03-29",
-  end_date: "2025-03-29",
-  total_capacity: festivalData.aforoTotal,
-};
+import { useEvent } from "@/contexts/EventContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const { selectedEvent, loading } = useEvent();
 
   // Generate local recommendations
   const recommendations = generateAIRecommendations();
   const criticalCount = recommendations.filter((r: any) => r.priority === 'high').length;
 
-  const event = PRIMAVERANDO_EVENT;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <Skeleton className="h-32 w-full mb-4" />
+        <Skeleton className="h-24 w-full mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!selectedEvent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">No hay eventos</h2>
+          <p className="text-muted-foreground mb-4">Crea tu primer evento para empezar</p>
+          <Button onClick={() => window.location.href = '/events/new'}>
+            Crear evento
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const event = selectedEvent;
 
   return (
     <div className="min-h-screen bg-background w-full">
