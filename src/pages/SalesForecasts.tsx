@@ -21,13 +21,13 @@ import {
 import { festivalData } from "@/data/festivalData";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { useTicketStats } from "@/hooks/useTicketStats";
+import { useEvent } from "@/contexts/EventContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Real event ID from Supabase
-const REAL_EVENT_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
-
 const SalesForecasts = () => {
-  const { stats, loading, error } = useTicketStats(REAL_EVENT_ID);
+  const { selectedEvent } = useEvent();
+  const eventId = selectedEvent?.id || "";
+  const { stats, loading, error } = useTicketStats(eventId);
   
   // Use real data from stats or fallback to festivalData
   const ticketsSold = stats?.totalSold ?? festivalData.overview.entradasVendidas;

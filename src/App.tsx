@@ -21,11 +21,13 @@ import ScenarioPlanner from "./pages/ScenarioPlanner";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import NewEvent from "./pages/NewEvent";
 import AppSidebar from "./components/AppSidebar";
 import MobileHeader from "./components/MobileHeader";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RecommendationStatusProvider } from "./contexts/RecommendationStatusContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { EventProvider } from "./contexts/EventContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -52,13 +54,14 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <RecommendationStatusProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ThemeProvider>
-              <Routes>
+      <EventProvider>
+        <RecommendationStatusProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ThemeProvider>
+                <Routes>
                 {/* Auth page - available but not required */}
                 <Route path="/auth" element={<Auth />} />
                 
@@ -218,8 +221,17 @@ const App = () => (
                   }
                 />
 
+                {/* New Event */}
+                <Route
+                  path="/events/new"
+                  element={
+                    <AppLayout>
+                      <NewEvent />
+                    </AppLayout>
+                  }
+                />
+
                 {/* Redirect old routes */}
-                <Route path="/events/*" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/ai-panel" element={<Navigate to="/ai-recommendations" replace />} />
                 <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
 
@@ -230,8 +242,9 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </RecommendationStatusProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+    </EventProvider>
+  </AuthProvider>
+</QueryClientProvider>
 );
 
 export default App;

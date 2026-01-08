@@ -18,9 +18,9 @@ import {
   Euro,
   ChevronRight,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  Database
 } from "lucide-react";
-import { festivalData } from "@/data/festivalData";
 import { 
   BarChart, 
   Bar, 
@@ -34,6 +34,9 @@ import {
   Pie 
 } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { useTicketStats } from "@/hooks/useTicketStats";
+import { useEvent } from "@/contexts/EventContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Actionable segments data - based on festival audience patterns
 const actionableSegments = [
@@ -135,31 +138,98 @@ const actionableSegments = [
   }
 ];
 
-// Geographic data for the chart
-const geographicData = [
-  { zona: 'Sevilla capital', asistentes: 5640, percent: 38, ticketMedio: 28 },
-  { zona: 'Área metropolitana', asistentes: 2970, percent: 20, ticketMedio: 25 },
-  { zona: 'Resto Andalucía', asistentes: 3570, percent: 24, ticketMedio: 24 },
-  { zona: 'Resto España', asistentes: 1785, percent: 12, ticketMedio: 32 },
-  { zona: 'Internacional', asistentes: 885, percent: 6, ticketMedio: 45 }
-];
-
-// Age segments with ticket preferences
-const ageSegments = [
-  { rango: '18-21', asistentes: 4455, percent: 30, ticketPref: 'Early Bird', avgPrice: 19 },
-  { rango: '22-25', asistentes: 4950, percent: 33, ticketPref: 'General', avgPrice: 24 },
-  { rango: '26-30', asistentes: 3465, percent: 23, ticketPref: 'General + VIP', avgPrice: 38 },
-  { rango: '31+', asistentes: 1980, percent: 14, ticketPref: 'VIP', avgPrice: 65 }
-];
-
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 const Audience = () => {
-  const { audiencia, overview } = festivalData;
+  const { selectedEvent } = useEvent();
+  const eventId = selectedEvent?.id || "";
+  const { stats, loading } = useTicketStats(eventId);
+  
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
   const [segmentsOpen, setSegmentsOpen] = useState(false);
   
-  const totalAsistentes = overview.entradasVendidas;
+  // Use real data from stats or fallback
+  const totalAsistentes = stats?.totalSold || 0;
+  const hasRealData = stats?.hasRealData || false;
+  
+  // Transform demographics data for charts
+  const provinceData = useMemo(() => {
+    if (stats?.demographics?.byProvince && stats.demographics.byProvince.length > 0) {
+      return stats.demographics.byProvince.map(p => ({
+        name: p.province,
+        value: p.count,
+        percent: p.percentage.toFixed(1)
+      }));
+    }
+    // Fallback data
+    return [
+      { name: 'Sevilla', value: 5640, percent: '38.0' },
+      { name: 'Cádiz', value: 1785, percent: '12.0' },
+      { name: 'Málaga', value: 1190, percent: '8.0' },
+      { name: 'Córdoba', value: 595, percent: '4.0' },
+      { name: 'Otros', value: 5640, percent: '38.0' }
+    ];
+  }, [stats?.demographics?.byProvince]);
+  
+  const ageData = useMemo(() => {
+    if (stats?.demographics?.byAge && stats.demographics.byAge.length > 0) {
+      return stats.demographics.byAge.map(a => ({
+        rango: a.range,
+        asistentes: a.count,
+        percent: Math.round(a.percentage),
+        ticketPref: a.range === '31+' ? 'VIP' : a.range === '26-30' ? 'General + VIP' : 'General',
+        avgPrice: a.range === '31+' ? 65 : a.range === '26-30' ? 38 : a.range === '22-25' ? 24 : 19
+      }));
+    }
+    // Fallback data
+    return [
+      { rango: '18-21', asistentes: 4455, percent: 30, ticketPref: 'Early Bird', avgPrice: 19 },
+      { rango: '22-25', asistentes: 4950, percent: 33, ticketPref: 'General', avgPrice: 24 },
+      { rango: '26-30', asistentes: 3465, percent: 23, ticketPref: 'General + VIP', avgPrice: 38 },
+      { rango: '31+', asistentes: 1980, percent: 14, ticketPref: 'VIP', avgPrice: 65 }
+    ];
+  }, [stats?.demographics?.byAge]);
+  
+  const contactStats = useMemo(() => {
+    if (stats?.demographics) {
+      return {
+        withEmail: stats.demographics.withEmail,
+        withPhone: stats.demographics.withPhone,
+        withMarketingConsent: stats.demographics.withMarketingConsent,
+        emailPercent: totalAsistentes > 0 ? Math.round((stats.demographics.withEmail / totalAsistentes) * 100) : 0,
+        phonePercent: totalAsistentes > 0 ? Math.round((stats.demographics.withPhone / totalAsistentes) * 100) : 0,
+        consentPercent: totalAsistentes > 0 ? Math.round((stats.demographics.withMarketingConsent / totalAsistentes) * 100) : 0,
+      };
+    }
+    // Fallback
+    return {
+      withEmail: 12450,
+      withPhone: 8920,
+      withMarketingConsent: 9800,
+      emailPercent: 84,
+      phonePercent: 60,
+      consentPercent: 66,
+    };
+  }, [stats?.demographics, totalAsistentes]);
+  
+  // Geographic data for detailed view
+  const geographicData = useMemo(() => {
+    if (stats?.demographics?.byProvince && stats.demographics.byProvince.length > 0) {
+      return stats.demographics.byProvince.slice(0, 5).map((p, i) => ({
+        zona: p.province,
+        asistentes: p.count,
+        percent: Math.round(p.percentage),
+        ticketMedio: 25 + (i * 3) // Estimate
+      }));
+    }
+    return [
+      { zona: 'Sevilla capital', asistentes: 5640, percent: 38, ticketMedio: 28 },
+      { zona: 'Área metropolitana', asistentes: 2970, percent: 20, ticketMedio: 25 },
+      { zona: 'Resto Andalucía', asistentes: 3570, percent: 24, ticketMedio: 24 },
+      { zona: 'Resto España', asistentes: 1785, percent: 12, ticketMedio: 32 },
+      { zona: 'Internacional', asistentes: 885, percent: 6, ticketMedio: 45 }
+    ];
+  }, [stats?.demographics?.byProvince]);
 
   // Calculate total potential from segments
   const totalPotential = useMemo(() => {
@@ -194,9 +264,17 @@ const Audience = () => {
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <h1 className="text-base md:text-lg font-bold text-foreground">Público y Audiencia</h1>
-            <p className="text-[10px] md:text-xs text-muted-foreground">Segmentos accionables para decisiones de marketing y ventas</p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-base md:text-lg font-bold text-foreground">Público y Audiencia</h1>
+              <p className="text-[10px] md:text-xs text-muted-foreground">Segmentos accionables para decisiones de marketing y ventas</p>
+            </div>
+            {hasRealData && (
+              <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">
+                <Database className="h-3 w-3 mr-1" />
+                Datos Reales
+              </Badge>
+            )}
           </div>
           <Badge variant="outline" className="text-[10px] md:text-xs w-fit">
             {totalAsistentes.toLocaleString('es-ES')} entradas vendidas
@@ -244,7 +322,7 @@ const Audience = () => {
                 <Euro className="h-4 w-4 text-primary" />
                 <span className="text-[11px] text-muted-foreground uppercase">Ticket Medio</span>
               </div>
-              <p className="text-xl font-bold">€{(overview.ingresosTotales / totalAsistentes).toFixed(0)}</p>
+              <p className="text-xl font-bold">€{stats?.avgTicketPrice?.toFixed(0) || 25}</p>
               <p className="text-[10px] text-muted-foreground">por asistente</p>
             </CardContent>
           </Card>
@@ -405,7 +483,7 @@ const Audience = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={audiencia.provincias.map(p => ({ name: p.nombre, value: p.asistentes, percent: ((p.asistentes / audiencia.totalAsistentes) * 100).toFixed(1) }))} layout="vertical" margin={{ left: 10, right: 10 }}>
+                <BarChart data={provinceData} layout="vertical" margin={{ left: 10, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" />
                   <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
@@ -425,7 +503,7 @@ const Audience = () => {
                     }}
                   />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {audiencia.provincias.map((entry, index) => (
+                    {provinceData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>
@@ -448,7 +526,7 @@ const Audience = () => {
                 <ResponsiveContainer width="45%" height={180}>
                   <PieChart>
                     <Pie
-                      data={ageSegments.map(a => ({ name: a.rango, value: a.asistentes, percent: a.percent }))}
+                      data={ageData.map(a => ({ name: a.rango, value: a.asistentes, percent: a.percent }))}
                       cx="50%"
                       cy="50%"
                       innerRadius={40}
@@ -456,7 +534,7 @@ const Audience = () => {
                       paddingAngle={2}
                       dataKey="value"
                     >
-                      {ageSegments.map((entry, index) => (
+                      {ageData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -476,7 +554,7 @@ const Audience = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex-1 space-y-2">
-                  {ageSegments.map((age, index) => (
+                  {ageData.map((age, index) => (
                     <div key={age.rango} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index] }} />
@@ -548,7 +626,7 @@ const Audience = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {ageSegments.map((age, index) => (
+                {ageData.map((age, index) => (
                   <div key={age.rango} className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -596,17 +674,17 @@ const Audience = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg bg-muted/30 text-center">
-                <p className="text-2xl font-bold">{((audiencia.contactStats.conEmail / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-2xl font-bold">{contactStats.emailPercent}%</p>
                 <p className="text-xs text-muted-foreground">Con email válido</p>
-                <p className="text-[10px] text-primary mt-1">{audiencia.contactStats.conEmail.toLocaleString('es-ES')} contactos</p>
+                <p className="text-[10px] text-primary mt-1">{contactStats.withEmail.toLocaleString('es-ES')} contactos</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 text-center">
-                <p className="text-2xl font-bold">{((audiencia.contactStats.conTelefono / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-2xl font-bold">{contactStats.phonePercent}%</p>
                 <p className="text-xs text-muted-foreground">Con teléfono</p>
-                <p className="text-[10px] text-primary mt-1">{audiencia.contactStats.conTelefono.toLocaleString('es-ES')} contactos</p>
+                <p className="text-[10px] text-primary mt-1">{contactStats.withPhone.toLocaleString('es-ES')} contactos</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 text-center">
-                <p className="text-2xl font-bold">{((audiencia.contactStats.consentimientoMarketing / audiencia.totalAsistentes) * 100).toFixed(0)}%</p>
+                <p className="text-2xl font-bold">{contactStats.consentPercent}%</p>
                 <p className="text-xs text-muted-foreground">Marketing consent</p>
                 <p className="text-[10px] text-success mt-1">Activables directamente</p>
               </div>

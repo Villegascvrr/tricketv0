@@ -47,9 +47,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import TryTricketModal from "@/components/TryTricketModal";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
+import { EventSelector } from "@/components/EventSelector";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEvent } from "@/contexts/EventContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { festivalData } from "@/data/festivalData";
 
 const mainItems = [
   {
@@ -146,6 +147,7 @@ export function AppSidebar() {
   const [chatOpen, setChatOpen] = useState(false);
   const [operationsOpen, setOperationsOpen] = useState(true);
   const { signOut, user } = useAuth();
+  const { selectedEvent } = useEvent();
   const { profile, teamMemberInfo } = useUserProfile();
 
   const getInitials = (name: string | null | undefined) => {
@@ -213,14 +215,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border transition-all duration-300">
-      <SidebarHeader className="border-b border-sidebar-border px-3 py-2">
-        <div className="flex items-center justify-between">
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex items-center justify-between px-3 py-2">
           {!collapsed && (
             <div className="flex-1">
               <h1 className="text-sm font-bold text-sidebar-foreground leading-tight">
-                Primaverando
+                Tricket
               </h1>
-              <p className="text-[10px] text-sidebar-foreground/60">Command Center 2025</p>
+              <p className="text-[10px] text-sidebar-foreground/60">Command Center</p>
             </div>
           )}
           <Button 
@@ -231,6 +233,10 @@ export function AppSidebar() {
           >
             {collapsed ? <Menu className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
           </Button>
+        </div>
+        {/* Event Selector */}
+        <div className={cn("border-t border-sidebar-border", collapsed ? "py-2" : "px-1 py-1")}>
+          <EventSelector collapsed={collapsed} />
         </div>
       </SidebarHeader>
 
@@ -426,11 +432,11 @@ export function AppSidebar() {
       <TryTricketModal open={tryModalOpen} onOpenChange={setTryModalOpen} />
       
       <EventChatDrawer
-        eventId="demo-primaverando-2025"
-        eventName={festivalData.nombre}
+        eventId={selectedEvent?.id || "demo"}
+        eventName={selectedEvent?.name || "Evento"}
         open={chatOpen}
         onOpenChange={setChatOpen}
-        isDemo={true}
+        isDemo={!selectedEvent}
       />
     </Sidebar>
   );
