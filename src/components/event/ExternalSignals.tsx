@@ -30,7 +30,7 @@ const ExternalSignals = () => {
 
   return (
     <div 
-      onClick={() => navigate("/integrations")}
+      onClick={() => navigate("/weather")}
       className="flex flex-wrap sm:flex-nowrap items-center gap-2 md:gap-3 p-2 md:p-2.5 rounded-lg border border-border/50 bg-card hover:bg-muted/40 cursor-pointer transition-all group"
     >
       <span className="text-[10px] md:text-[11px] font-medium text-muted-foreground whitespace-nowrap">Señales</span>
