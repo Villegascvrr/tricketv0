@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronDown, Plus, Calendar } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Check, ChevronDown, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -10,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,13 +19,42 @@ interface EventSelectorProps {
 
 export function EventSelector({ collapsed = false }: EventSelectorProps) {
   const { events, selectedEvent, loading, selectEvent } = useEvent();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   if (loading) {
     return (
       <div className={cn("px-3 py-2", collapsed && "px-1")}>
         <Skeleton className={cn("h-10 w-full", collapsed && "h-8 w-8")} />
+      </div>
+    );
+  }
+
+  // Si solo hay un evento, mostrarlo como info sin dropdown
+  if (events.length <= 1) {
+    if (collapsed) {
+      return (
+        <div className="flex justify-center py-2">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Calendar className="h-4 w-4 text-primary" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="px-3 py-2">
+        {selectedEvent ? (
+          <div className="text-left">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate leading-tight">
+              {selectedEvent.name}
+            </p>
+            <p className="text-[10px] text-sidebar-foreground/60 truncate leading-tight">
+              {format(new Date(selectedEvent.start_date), "d 'de' MMMM, yyyy", { locale: es })}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Sin eventos configurados</p>
+        )}
       </div>
     );
   }
@@ -67,17 +94,6 @@ export function EventSelector({ collapsed = false }: EventSelectorProps) {
               </div>
             </DropdownMenuItem>
           ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => {
-              navigate('/events/new');
-              setOpen(false);
-            }}
-            className="cursor-pointer"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Crear evento
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -108,57 +124,28 @@ export function EventSelector({ collapsed = false }: EventSelectorProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px]">
-        {events.length === 0 ? (
-          <div className="p-3 text-center">
-            <p className="text-sm text-muted-foreground mb-2">No hay eventos</p>
-            <Button 
-              size="sm" 
-              onClick={() => {
-                navigate('/events/new');
-                setOpen(false);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Crear primer evento
-            </Button>
-          </div>
-        ) : (
-          <>
-            {events.map((event) => (
-              <DropdownMenuItem
-                key={event.id}
-                onClick={() => {
-                  selectEvent(event.id);
-                  setOpen(false);
-                }}
-                className="cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{event.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(event.start_date), "d MMM yyyy", { locale: es })} • {event.venue}
-                    </p>
-                  </div>
-                  {selectedEvent?.id === event.id && (
-                    <Check className="h-4 w-4 text-primary ml-2 shrink-0" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                navigate('/events/new');
-                setOpen(false);
-              }}
-              className="cursor-pointer"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear nuevo evento
-            </DropdownMenuItem>
-          </>
-        )}
+        {events.map((event) => (
+          <DropdownMenuItem
+            key={event.id}
+            onClick={() => {
+              selectEvent(event.id);
+              setOpen(false);
+            }}
+            className="cursor-pointer"
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{event.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(event.start_date), "d MMM yyyy", { locale: es })} • {event.venue}
+                </p>
+              </div>
+              {selectedEvent?.id === event.id && (
+                <Check className="h-4 w-4 text-primary ml-2 shrink-0" />
+              )}
+            </div>
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

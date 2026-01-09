@@ -7,8 +7,7 @@ import {
   Instagram,
   ExternalLink,
   CheckCircle2,
-  Clock,
-  AlertCircle
+  Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -69,21 +68,21 @@ const ExternalDataSection = () => {
         return (
           <Badge className="bg-success/10 text-success border-success/20 gap-1">
             <CheckCircle2 className="h-3 w-3" />
-            Conectado
+            Sincronizado
           </Badge>
         );
       case 'demo':
         return (
           <Badge className="bg-primary/10 text-primary border-primary/20 gap-1">
-            <Clock className="h-3 w-3" />
-            Demo
+            <CheckCircle2 className="h-3 w-3" />
+            Datos demo
           </Badge>
         );
       case 'pending':
         return (
           <Badge variant="outline" className="text-muted-foreground gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Pendiente
+            <Clock className="h-3 w-3" />
+            En configuración
           </Badge>
         );
     }
@@ -93,7 +92,7 @@ const ExternalDataSection = () => {
     <div>
       <h2 className="text-sm font-semibold text-foreground mb-3">Datos Externos</h2>
       <p className="text-xs text-muted-foreground mb-4">
-        Fuentes de datos externas que enriquecen el análisis y las recomendaciones del festival
+        Fuentes de datos externas configuradas por Tricket para enriquecer el análisis
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -123,27 +122,25 @@ const ExternalDataSection = () => {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Última actualización</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {source.status === 'pending' ? 'Estado' : 'Última actualización'}
+                  </p>
                   <p className="text-xs font-medium">
-                    {source.lastUpdate || 'Sin datos'}
+                    {source.status === 'pending' 
+                      ? 'Configuración por Tricket en proceso' 
+                      : source.lastUpdate || 'Sin datos'}
                   </p>
                 </div>
                 
                 <Button 
-                  variant={source.status === 'pending' ? 'outline' : 'default'}
+                  variant="outline"
                   size="sm" 
                   className="gap-1.5 h-7 text-xs"
                   onClick={() => navigate(source.route)}
                   disabled={source.status === 'pending'}
                 >
-                  {source.status === 'pending' ? (
-                    'Conectar'
-                  ) : (
-                    <>
-                      Ver datos
-                      <ExternalLink className="h-3 w-3" />
-                    </>
-                  )}
+                  Ver datos
+                  <ExternalLink className="h-3 w-3" />
                 </Button>
               </div>
             </CardContent>
