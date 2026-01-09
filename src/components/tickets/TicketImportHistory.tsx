@@ -54,13 +54,14 @@ export const TicketImportHistory = ({ eventId }: TicketImportHistoryProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Historial de Importaciones</CardTitle>
-          <CardDescription>No hay importaciones registradas</CardDescription>
+          <CardTitle className="text-base">Historial de Sincronizaciones</CardTitle>
+          <CardDescription>Datos gestionados por Tricket</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">Importa tu primer archivo de tickets para ver el historial aquí</p>
+            <p className="text-sm">Los datos de tickets se sincronizan automáticamente</p>
+            <p className="text-xs mt-1">Gestionado por el equipo de Tricket</p>
           </div>
         </CardContent>
       </Card>
@@ -75,9 +76,9 @@ export const TicketImportHistory = ({ eventId }: TicketImportHistoryProps) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base">Historial de Importaciones</CardTitle>
+            <CardTitle className="text-base">Historial de Sincronizaciones</CardTitle>
             <CardDescription>
-              {imports.length} importaciones · {totalImported.toLocaleString()} tickets totales
+              {imports.length} sincronizaciones · {totalImported.toLocaleString()} tickets · Gestionado por Tricket
               {totalErrors > 0 && ` · ${totalErrors} errores`}
             </CardDescription>
           </div>

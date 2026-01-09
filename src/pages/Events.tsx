@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Calendar, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Calendar, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
@@ -151,15 +150,9 @@ const Events = () => {
               Mis Eventos
             </h1>
             <p className="text-muted-foreground">
-              Gestiona y analiza tus eventos de ticketing
+              Eventos configurados por el equipo de Tricket
             </p>
           </div>
-          <Link to="/events/new">
-            <Button size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
-              Nuevo Evento
-            </Button>
-          </Link>
         </div>
 
         {/* Filter Badges */}
@@ -215,7 +208,7 @@ const Events = () => {
             <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">
               {filter === "all"
-                ? "No hay eventos todavía"
+                ? "Sin eventos configurados"
                 : `No hay eventos ${
                     filter === "active"
                       ? "activos"
@@ -224,18 +217,15 @@ const Events = () => {
                       : "finalizados"
                   }`}
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-2">
               {filter === "all"
-                ? "Comienza creando tu primer evento"
+                ? "El equipo de Tricket está configurando tu festival"
                 : "Intenta con otro filtro"}
             </p>
             {filter === "all" && (
-              <Link to="/events/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear Evento
-                </Button>
-              </Link>
+              <p className="text-xs text-muted-foreground">
+                Contacta a tu account manager para más información
+              </p>
             )}
           </Card>
         ) : (

@@ -40,12 +40,18 @@ const Dashboard = () => {
   if (!selectedEvent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">No hay eventos</h2>
-          <p className="text-muted-foreground mb-4">Crea tu primer evento para empezar</p>
-          <Button onClick={() => window.location.href = '/events/new'}>
-            Crear evento
-          </Button>
+        <div className="text-center max-w-md px-4">
+          <div className="bg-primary/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <Brain className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Configurando tu festival</h2>
+          <p className="text-muted-foreground mb-4">
+            El equipo de Tricket está preparando tu Command Center. 
+            Pronto tendrás acceso a todos los datos y análisis de tu evento.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            ¿Tienes dudas? Contacta a tu account manager de Tricket.
+          </p>
         </div>
       </div>
     );
