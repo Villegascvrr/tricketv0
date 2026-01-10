@@ -448,6 +448,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          event_id: string | null
           festival_role_id: string | null
           id: string
           invited_at: string | null
@@ -463,6 +464,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          event_id?: string | null
           festival_role_id?: string | null
           id?: string
           invited_at?: string | null
@@ -478,6 +480,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          event_id?: string | null
           festival_role_id?: string | null
           id?: string
           invited_at?: string | null
@@ -491,6 +494,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "team_members_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_members_festival_role_id_fkey"
             columns: ["festival_role_id"]
