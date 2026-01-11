@@ -116,6 +116,92 @@ export type Database = {
         }
         Relationships: []
       }
+      invitation_code_uses: {
+        Row: {
+          code_id: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          code_id: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          code_id?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_code_uses_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "invitation_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitation_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          current_uses: number
+          event_id: string
+          expires_at: string | null
+          festival_role_id: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          current_uses?: number
+          event_id: string
+          expires_at?: string | null
+          festival_role_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          current_uses?: number
+          event_id?: string
+          expires_at?: string | null
+          festival_role_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_codes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_codes_festival_role_id_fkey"
+            columns: ["festival_role_id"]
+            isOneToOne: false
+            referencedRelation: "festival_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_campaigns: {
         Row: {
           budget: number | null
@@ -453,6 +539,7 @@ export type Database = {
           id: string
           invited_at: string | null
           invited_by: string | null
+          is_owner: boolean
           joined_at: string | null
           last_activity: string | null
           name: string | null
@@ -469,6 +556,7 @@ export type Database = {
           id?: string
           invited_at?: string | null
           invited_by?: string | null
+          is_owner?: boolean
           joined_at?: string | null
           last_activity?: string | null
           name?: string | null
@@ -485,6 +573,7 @@ export type Database = {
           id?: string
           invited_at?: string | null
           invited_by?: string | null
+          is_owner?: boolean
           joined_at?: string | null
           last_activity?: string | null
           name?: string | null
