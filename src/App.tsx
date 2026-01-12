@@ -30,6 +30,15 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { EventProvider } from "./contexts/EventContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import {
+  AdminLayout,
+  AdminDashboard,
+  AdminEvents,
+  AdminUsers,
+  AdminInvitationCodes,
+  AdminRoles,
+  AdminAuditLogs,
+} from "./pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -234,6 +243,16 @@ const App = () => (
                 {/* Redirect old routes */}
                 <Route path="/ai-panel" element={<Navigate to="/ai-recommendations" replace />} />
                 <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+
+                {/* Admin Panel */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="events" element={<AdminEvents />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="invitation-codes" element={<AdminInvitationCodes />} />
+                  <Route path="roles" element={<AdminRoles />} />
+                  <Route path="audit-logs" element={<AdminAuditLogs />} />
+                </Route>
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />
