@@ -19,7 +19,8 @@ import {
   FlaskConical,
   MessageCircle,
   User,
-  CloudSun
+  CloudSun,
+  Shield
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -116,6 +117,11 @@ const operationsItems = [
 // Operations items moved above mainItems
 
 const secondaryItems = [
+  {
+    title: "Global Admin",
+    url: "/admin",
+    icon: Shield
+  },
   {
     title: "Equipo & Permisos",
     url: "/team",

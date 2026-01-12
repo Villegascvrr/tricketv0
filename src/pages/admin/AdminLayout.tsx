@@ -57,7 +57,7 @@ export default function AdminLayout() {
             </NavLink>
           </Button>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1">
           {adminNavItems.map((item) => (
             <NavLink
