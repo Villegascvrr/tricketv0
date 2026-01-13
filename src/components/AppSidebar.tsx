@@ -152,9 +152,17 @@ export function AppSidebar() {
   const [tryModalOpen, setTryModalOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [operationsOpen, setOperationsOpen] = useState(true);
-  const { signOut, user } = useAuth();
+  const { signOut, user, isAdmin } = useAuth();
   const { selectedEvent } = useEvent();
   const { profile, teamMemberInfo } = useUserProfile();
+
+  // Filter secondary items - only show admin link to global admins
+  const filteredSecondaryItems = secondaryItems.filter(item => {
+    if (item.url === "/admin") {
+      return isAdmin;
+    }
+    return true;
+  });
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return user?.email?.charAt(0).toUpperCase() || 'U';
@@ -368,7 +376,7 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="space-y-0 px-2">
-              {secondaryItems.map(renderMenuItem)}
+              {filteredSecondaryItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
