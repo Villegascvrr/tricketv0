@@ -34,6 +34,7 @@ import { Users, Search, MoreHorizontal, Shield, ShieldOff, Eye } from "lucide-re
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface UserProfile {
   id: string;
@@ -46,6 +47,7 @@ interface UserProfile {
 
 export default function AdminUsers() {
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [search, setSearch] = useState("");
   const [roleChangeUser, setRoleChangeUser] = useState<UserProfile | null>(null);
   const [targetRole, setTargetRole] = useState<"admin" | "user" | null>(null);
@@ -89,7 +91,7 @@ export default function AdminUsers() {
 
   // Update role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: "admin" | "user" }) => {
+    mutationFn: async ({ userId, newRole, oldRole, email }: { userId: string; newRole: "admin" | "user"; oldRole: "admin" | "user"; email: string | null }) => {
       // Check if user already has a role
       const { data: existing } = await supabase
         .from("user_roles")
@@ -111,10 +113,18 @@ export default function AdminUsers() {
           .insert({ user_id: userId, role: newRole });
         if (error) throw error;
       }
+      return { userId, newRole, oldRole, email };
     },
-    onSuccess: () => {
+    onSuccess: ({ userId, newRole, oldRole, email }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("Rol actualizado correctamente");
+      logAction({
+        action: "update_role",
+        entity_type: "user_role",
+        entity_id: userId,
+        old_value: { role: oldRole, email },
+        new_value: { role: newRole, email },
+      });
       setRoleChangeUser(null);
       setTargetRole(null);
     },
@@ -261,7 +271,12 @@ export default function AdminUsers() {
               onClick={() =>
                 roleChangeUser &&
                 targetRole &&
-                updateRoleMutation.mutate({ userId: roleChangeUser.id, newRole: targetRole })
+                updateRoleMutation.mutate({ 
+                  userId: roleChangeUser.id, 
+                  newRole: targetRole,
+                  oldRole: roleChangeUser.role || "user",
+                  email: roleChangeUser.email 
+                })
               }
             >
               Confirmar
