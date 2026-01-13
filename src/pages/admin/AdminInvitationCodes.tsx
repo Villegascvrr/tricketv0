@@ -37,6 +37,7 @@ import { Key, Plus, Copy, Search, Ban, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface InvitationCode {
   id: string;
@@ -65,6 +66,7 @@ interface FestivalRole {
 export default function AdminInvitationCodes() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCode, setNewCode] = useState({
@@ -161,7 +163,7 @@ export default function AdminInvitationCodes() {
         ? new Date(Date.now() + parseInt(newCode.expires_days) * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
-      const { error } = await supabase.from("invitation_codes").insert({
+      const { data, error } = await supabase.from("invitation_codes").insert({
         code,
         event_id: newCode.event_id,
         festival_role_id: newCode.is_owner ? null : newCode.festival_role_id || null,
@@ -169,15 +171,22 @@ export default function AdminInvitationCodes() {
         expires_at: expiresAt,
         created_by: user?.id,
         is_active: true,
-      });
+      }).select().single();
 
       if (error) throw error;
-      return code;
+      return { code, data };
     },
-    onSuccess: (code) => {
+    onSuccess: ({ code, data }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-invitation-codes"] });
       toast.success(`Código creado: ${code}`);
       navigator.clipboard.writeText(code);
+      const eventName = events?.find(e => e.id === newCode.event_id)?.name;
+      logAction({
+        action: "create",
+        entity_type: "invitation_code",
+        entity_id: data.id,
+        new_value: { code, event_name: eventName, is_owner: newCode.is_owner, max_uses: newCode.max_uses || "unlimited" },
+      });
       setIsDialogOpen(false);
       setNewCode({ event_id: "", festival_role_id: "", max_uses: "", expires_days: "", is_owner: false });
     },
@@ -188,16 +197,23 @@ export default function AdminInvitationCodes() {
 
   // Toggle active mutation
   const toggleActiveMutation = useMutation({
-    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+    mutationFn: async ({ id, is_active, code }: { id: string; is_active: boolean; code: string }) => {
       const { error } = await supabase
         .from("invitation_codes")
         .update({ is_active })
         .eq("id", id);
       if (error) throw error;
+      return { id, is_active, code };
     },
-    onSuccess: () => {
+    onSuccess: ({ id, is_active, code }) => {
       queryClient.invalidateQueries({ queryKey: ["admin-invitation-codes"] });
       toast.success("Estado actualizado");
+      logAction({
+        action: is_active ? "activate" : "deactivate",
+        entity_type: "invitation_code",
+        entity_id: id,
+        new_value: { code, is_active },
+      });
     },
     onError: (error: Error) => {
       toast.error("Error: " + error.message);
@@ -420,6 +436,7 @@ export default function AdminInvitationCodes() {
                           toggleActiveMutation.mutate({
                             id: code.id,
                             is_active: !code.is_active,
+                            code: code.code,
                           })
                         }
                       >

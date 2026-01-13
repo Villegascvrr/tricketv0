@@ -39,6 +39,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface FestivalRole {
   id: string;
@@ -64,6 +65,7 @@ const iconOptions = ["Users", "Shield", "Ticket", "Megaphone", "Calendar", "Sett
 
 export default function AdminRoles() {
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<FestivalRole | null>(null);
   const [formData, setFormData] = useState({
@@ -103,21 +105,30 @@ export default function AdminRoles() {
           })
           .eq("id", data.id);
         if (error) throw error;
+        return { ...data, isUpdate: true };
       } else {
         // Create
-        const { error } = await supabase.from("festival_roles").insert({
+        const { data: newRole, error } = await supabase.from("festival_roles").insert({
           name: data.name,
           description: data.description || null,
           icon: data.icon,
           color: data.color,
           permissions: data.permissions,
-        });
+        }).select().single();
         if (error) throw error;
+        return { ...data, id: newRole.id, isUpdate: false };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["admin-festival-roles"] });
-      toast.success(editingRole ? "Rol actualizado" : "Rol creado");
+      toast.success(result.isUpdate ? "Rol actualizado" : "Rol creado");
+      logAction({
+        action: result.isUpdate ? "update" : "create",
+        entity_type: "festival_role",
+        entity_id: result.id,
+        old_value: result.isUpdate && editingRole ? { name: editingRole.name, permissions: editingRole.permissions } : undefined,
+        new_value: { name: result.name, permissions: result.permissions },
+      });
       handleCloseDialog();
     },
     onError: (error: Error) => {
@@ -127,13 +138,20 @@ export default function AdminRoles() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("festival_roles").delete().eq("id", id);
+    mutationFn: async (role: FestivalRole) => {
+      const { error } = await supabase.from("festival_roles").delete().eq("id", role.id);
       if (error) throw error;
+      return role;
     },
-    onSuccess: () => {
+    onSuccess: (deletedRole) => {
       queryClient.invalidateQueries({ queryKey: ["admin-festival-roles"] });
       toast.success("Rol eliminado");
+      logAction({
+        action: "delete",
+        entity_type: "festival_role",
+        entity_id: deletedRole.id,
+        old_value: { name: deletedRole.name, permissions: deletedRole.permissions },
+      });
     },
     onError: (error: Error) => {
       toast.error("Error: " + error.message);
@@ -292,7 +310,7 @@ export default function AdminRoles() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deleteMutation.mutate(role.id)}
+                        onClick={() => deleteMutation.mutate(role)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

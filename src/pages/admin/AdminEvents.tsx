@@ -36,6 +36,7 @@ import { Calendar, Search, Trash2, Edit, Eye, Users } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface Event {
   id: string;
@@ -53,6 +54,7 @@ interface Event {
 
 export default function AdminEvents() {
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [search, setSearch] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<Event | null>(null);
@@ -100,13 +102,20 @@ export default function AdminEvents() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("events").delete().eq("id", id);
+    mutationFn: async (event: Event) => {
+      const { error } = await supabase.from("events").delete().eq("id", event.id);
       if (error) throw error;
+      return event;
     },
-    onSuccess: () => {
+    onSuccess: (deletedEvent) => {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
       toast.success("Evento eliminado correctamente");
+      logAction({
+        action: "delete",
+        entity_type: "event",
+        entity_id: deletedEvent.id,
+        old_value: { name: deletedEvent.name, venue: deletedEvent.venue, type: deletedEvent.type },
+      });
       setDeleteEvent(null);
     },
     onError: (error: Error) => {
@@ -298,7 +307,7 @@ export default function AdminEvents() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteEvent && deleteMutation.mutate(deleteEvent.id)}
+              onClick={() => deleteEvent && deleteMutation.mutate(deleteEvent)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Eliminar
