@@ -18,13 +18,16 @@ import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { useEvent } from "@/contexts/EventContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
+
 const Dashboard = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const { selectedEvent, loading } = useEvent();
+  const { config, isDemo } = useFestivalConfig();
 
   // Generate local recommendations
-  const recommendations = generateAIRecommendations();
+  const recommendations = generateAIRecommendations(config);
   const criticalCount = recommendations.filter((r: any) => r.priority === 'high').length;
 
   if (loading) {
@@ -46,7 +49,7 @@ const Dashboard = () => {
           </div>
           <h2 className="text-xl font-semibold mb-2">Configurando tu festival</h2>
           <p className="text-muted-foreground mb-4">
-            El equipo de Tricket está preparando tu Command Center. 
+            El equipo de Tricket está preparando tu Command Center.
             Pronto tendrás acceso a todos los datos y análisis de tu evento.
           </p>
           <p className="text-xs text-muted-foreground">
@@ -63,14 +66,14 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background w-full">
       {/* Hero Header - Limpio y profesional */}
       <div className="relative h-32 md:h-40 overflow-hidden w-full">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1920&q=80')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
-        
+
         <div className="absolute bottom-0 left-0 right-0 px-4 md:px-6 pb-4">
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-3">
             <div className="min-w-0">
@@ -87,9 +90,9 @@ const Dashboard = () => {
                 <span className="hidden md:inline">{event.total_capacity?.toLocaleString()} personas</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button 
+              <Button
                 onClick={() => setChatOpen(true)}
                 variant="outline"
                 size="sm"
@@ -98,7 +101,7 @@ const Dashboard = () => {
                 <MessageCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Consultar IA</span>
               </Button>
-              <Button 
+              <Button
                 onClick={() => setDrawerOpen(true)}
                 size="sm"
                 className="h-8 px-2 md:px-3 gap-1.5 md:gap-2 rounded-lg text-xs font-medium shadow-md"
@@ -118,13 +121,13 @@ const Dashboard = () => {
 
       <div className="p-4 space-y-4">
         {/* Today's Quick View - 2 minute check-in */}
-        <TodayQuickView 
-          onOpenRecommendations={() => setDrawerOpen(true)} 
-          onOpenChat={() => setChatOpen(true)} 
+        <TodayQuickView
+          onOpenRecommendations={() => setDrawerOpen(true)}
+          onOpenChat={() => setChatOpen(true)}
         />
 
         {/* Festival Status Overview - Priority 1 */}
-        <FestivalStatusOverview />
+        <FestivalStatusOverview eventId={event.id} />
 
         {/* External Signals - Compact, lower priority */}
         <ExternalSignals />
@@ -139,8 +142,8 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="summary">
-            <EventSummary 
-              eventId={event.id} 
+            <EventSummary
+              eventId={event.id}
               totalCapacity={event.total_capacity}
               onOpenDrawer={() => setDrawerOpen(true)}
             />
@@ -160,11 +163,11 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="recommendations">
-            <EventRecommendations 
-              eventId={event.id} 
+            <EventRecommendations
+              eventId={event.id}
               recommendations={recommendations}
               isLoading={false}
-              onRefresh={() => {}}
+              onRefresh={() => { }}
             />
           </TabsContent>
 
@@ -182,7 +185,7 @@ const Dashboard = () => {
         isLoading={false}
         eventName={event.name}
         eventDate={format(new Date(event.start_date), "d 'de' MMMM 'de' yyyy", { locale: es })}
-        onRefresh={() => {}}
+        onRefresh={() => { }}
       />
 
       {/* AI Chat Drawer */}
@@ -191,7 +194,7 @@ const Dashboard = () => {
         eventName={event.name}
         open={chatOpen}
         onOpenChange={setChatOpen}
-        isDemo={true}
+        isDemo={isDemo}
       />
     </div>
   );

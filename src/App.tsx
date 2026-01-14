@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import NewEvent from "./pages/NewEvent";
+import Landing from "./pages/Landing";
 import AppSidebar from "./components/AppSidebar";
 import MobileHeader from "./components/MobileHeader";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -44,7 +45,7 @@ const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { themeClass } = useTheme();
-  
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className={`flex flex-col md:flex-row min-h-screen w-full ${themeClass}`}>
@@ -71,199 +72,199 @@ const App = () => (
             <BrowserRouter>
               <ThemeProvider>
                 <Routes>
-                {/* Auth page - available but not required */}
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Redirect root to dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-                {/* Dashboard - Command Center */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <AppLayout>
-                      <Dashboard />
-                    </AppLayout>
-                  }
-                />
+                  {/* Auth page - available but not required */}
+                  <Route path="/auth" element={<Auth />} />
 
-                {/* Ventas & Previsiones */}
-                <Route
-                  path="/sales"
-                  element={
-                    <AppLayout>
-                      <SalesForecasts />
-                    </AppLayout>
-                  }
-                />
+                  {/* Redirect root to dashboard */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-                {/* Público y Audiencia */}
-                <Route
-                  path="/audience"
-                  element={
-                    <AppLayout>
-                      <Audience />
-                    </AppLayout>
-                  }
-                />
+                  {/* Dashboard - Command Center */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <AppLayout>
+                        <Dashboard />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Marketing & Campañas */}
-                <Route
-                  path="/marketing"
-                  element={
-                    <AppLayout>
-                      <Marketing />
-                    </AppLayout>
-                  }
-                />
+                  {/* Ventas & Previsiones */}
+                  <Route
+                    path="/sales"
+                    element={
+                      <AppLayout>
+                        <SalesForecasts />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Condiciones Externas - Clima */}
-                <Route
-                  path="/weather"
-                  element={
-                    <AppLayout>
-                      <WeatherConditions />
-                    </AppLayout>
-                  }
-                />
+                  {/* Público y Audiencia */}
+                  <Route
+                    path="/audience"
+                    element={
+                      <AppLayout>
+                        <Audience />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Recomendaciones IA */}
-                <Route
-                  path="/ai-recommendations"
-                  element={
-                    <AppLayout>
-                      <AIRecommendations />
-                    </AppLayout>
-                  }
-                />
+                  {/* Marketing & Campañas */}
+                  <Route
+                    path="/marketing"
+                    element={
+                      <AppLayout>
+                        <Marketing />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Histórico & Comparativas */}
-                <Route
-                  path="/historical"
-                  element={
-                    <AppLayout>
-                      <Historical />
-                    </AppLayout>
-                  }
-                />
+                  {/* Condiciones Externas - Clima */}
+                  <Route
+                    path="/weather"
+                    element={
+                      <AppLayout>
+                        <WeatherConditions />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Scenario Planner */}
-                <Route
-                  path="/scenario-planner"
-                  element={
-                    <AppLayout>
-                      <ScenarioPlanner />
-                    </AppLayout>
-                  }
-                />
+                  {/* Recomendaciones IA */}
+                  <Route
+                    path="/ai-recommendations"
+                    element={
+                      <AppLayout>
+                        <AIRecommendations />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Operaciones Pre-Festival */}
-                <Route
-                  path="/operations/pre-festival"
-                  element={
-                    <AppLayout>
-                      <PreFestivalOperations />
-                    </AppLayout>
-                  }
-                />
+                  {/* Histórico & Comparativas */}
+                  <Route
+                    path="/historical"
+                    element={
+                      <AppLayout>
+                        <Historical />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Operaciones Día del Festival */}
-                <Route
-                  path="/operations/event-day"
-                  element={
-                    <AppLayout>
-                      <EventDayOperations />
-                    </AppLayout>
-                  }
-                />
+                  {/* Scenario Planner */}
+                  <Route
+                    path="/scenario-planner"
+                    element={
+                      <AppLayout>
+                        <ScenarioPlanner />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Redirect old operations route */}
-                <Route path="/operations" element={<Navigate to="/operations/pre-festival" replace />} />
+                  {/* Operaciones Pre-Festival */}
+                  <Route
+                    path="/operations/pre-festival"
+                    element={
+                      <AppLayout>
+                        <PreFestivalOperations />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Equipo & Permisos */}
-                <Route
-                  path="/team"
-                  element={
-                    <AppLayout>
-                      <Team />
-                    </AppLayout>
-                  }
-                />
+                  {/* Operaciones Día del Festival */}
+                  <Route
+                    path="/operations/event-day"
+                    element={
+                      <AppLayout>
+                        <EventDayOperations />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Integraciones */}
-                <Route
-                  path="/integrations"
-                  element={
-                    <AppLayout>
-                      <Integrations />
-                    </AppLayout>
-                  }
-                />
+                  {/* Redirect old operations route */}
+                  <Route path="/operations" element={<Navigate to="/operations/pre-festival" replace />} />
 
-                {/* Configuración */}
-                <Route
-                  path="/settings"
-                  element={
-                    <AppLayout>
-                      <Settings />
-                    </AppLayout>
-                  }
-                />
+                  {/* Equipo & Permisos */}
+                  <Route
+                    path="/team"
+                    element={
+                      <AppLayout>
+                        <Team />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Mi Perfil */}
-                <Route
-                  path="/profile"
-                  element={
-                    <AppLayout>
-                      <Profile />
-                    </AppLayout>
-                  }
-                />
+                  {/* Integraciones */}
+                  <Route
+                    path="/integrations"
+                    element={
+                      <AppLayout>
+                        <Integrations />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Help - hidden from menu but accessible */}
-                <Route
-                  path="/help"
-                  element={
-                    <AppLayout>
-                      <Help />
-                    </AppLayout>
-                  }
-                />
+                  {/* Configuración */}
+                  <Route
+                    path="/settings"
+                    element={
+                      <AppLayout>
+                        <Settings />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* New Event */}
-                <Route
-                  path="/events/new"
-                  element={
-                    <AppLayout>
-                      <NewEvent />
-                    </AppLayout>
-                  }
-                />
+                  {/* Mi Perfil */}
+                  <Route
+                    path="/profile"
+                    element={
+                      <AppLayout>
+                        <Profile />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Redirect old routes */}
-                <Route path="/ai-panel" element={<Navigate to="/ai-recommendations" replace />} />
-                <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+                  {/* Help - hidden from menu but accessible */}
+                  <Route
+                    path="/help"
+                    element={
+                      <AppLayout>
+                        <Help />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* Admin Panel */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="events" element={<AdminEvents />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="invitation-codes" element={<AdminInvitationCodes />} />
-                  <Route path="roles" element={<AdminRoles />} />
-                  <Route path="audit-logs" element={<AdminAuditLogs />} />
-                </Route>
+                  {/* New Event */}
+                  <Route
+                    path="/events/new"
+                    element={
+                      <AppLayout>
+                        <NewEvent />
+                      </AppLayout>
+                    }
+                  />
 
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ThemeProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </RecommendationStatusProvider>
-    </EventProvider>
-  </AuthProvider>
-</QueryClientProvider>
+                  {/* Redirect old routes */}
+                  <Route path="/ai-panel" element={<Navigate to="/ai-recommendations" replace />} />
+                  <Route path="/templates" element={<Navigate to="/dashboard" replace />} />
+
+                  {/* Admin Panel */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="events" element={<AdminEvents />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="invitation-codes" element={<AdminInvitationCodes />} />
+                    <Route path="roles" element={<AdminRoles />} />
+                    <Route path="audit-logs" element={<AdminAuditLogs />} />
+                  </Route>
+
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ThemeProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </RecommendationStatusProvider>
+      </EventProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 export default App;

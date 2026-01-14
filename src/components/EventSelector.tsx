@@ -34,7 +34,9 @@ export function EventSelector({ collapsed = false }: EventSelectorProps) {
 
   // Festival cliente: mostrar solo info del evento sin selector
   // (cuando hay 1 evento O cuando el usuario no es admin)
-  if (!isAdmin || events.length <= 1) {
+  // PROVISIONAL: Permitir selector a todos para ver demo
+  // if (!isAdmin || events.length <= 1) {
+  if (events.length <= 1) {
     if (collapsed) {
       return (
         <div className="flex justify-center py-2">

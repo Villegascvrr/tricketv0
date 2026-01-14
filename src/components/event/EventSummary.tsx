@@ -7,7 +7,8 @@ import AIBadge from "./AIBadge";
 import Sparkline from "@/components/ui/sparkline";
 import { cn } from "@/lib/utils";
 import ProgressBar from "@/components/ui/progress-bar";
-import { festivalData, calculateProviderOccupancy, calculateProviderRemaining } from "@/data/festivalData";
+import { calculateProviderOccupancy, calculateProviderRemaining } from "@/data/demoData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -91,12 +92,13 @@ const getPerformanceColor = (percentage: number) => {
 };
 
 const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProps) => {
+  const { config: festivalData } = useFestivalConfig();
   const { stats, loading } = useTicketStats(eventId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerContext, setDrawerContext] = useState<{ type: 'provider' | 'zone' | 'ageSegment' | 'global'; value: string } | undefined>(undefined);
 
   // Generate AI recommendations
-  const recommendations: AIRecommendation[] = generateAIRecommendations();
+  const recommendations: AIRecommendation[] = generateAIRecommendations(festivalData);
 
   const getRecommendationsForScope = (scope: string, targetKey?: string) => {
     return recommendations.filter(r => {
@@ -154,7 +156,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
     ocupacion: p.capacity ? `${p.occupancy.toFixed(1)}%` : 'N/D',
     restantes: p.capacity ? (p.capacity - p.sold).toLocaleString() : 'N/D',
     ingresos: p.revenue,
-    trend: stats.salesOverTime.slice(-7).map(d => 
+    trend: stats.salesOverTime.slice(-7).map(d =>
       Math.round(d.sales * (stats.totalSold > 0 ? p.sold / stats.totalSold : 0))
     ),
   }));
@@ -165,7 +167,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
     aforo: z.capacity,
     ocupacion: z.capacity ? z.occupancy.toFixed(1) : '0',
     ingresos: z.revenue,
-    trend: stats.salesOverTime.slice(-7).map(d => 
+    trend: stats.salesOverTime.slice(-7).map(d =>
       Math.round(d.sales * (stats.totalSold > 0 ? z.sold / stats.totalSold : 0))
     ),
   }));
@@ -190,7 +192,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <p className={cn(
                 "text-2xl font-bold mb-0.5",
                 kpis.occupancyRate >= 70 ? "text-success" :
-                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+                  kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )}>
                 {kpis.totalSold.toLocaleString()}
               </p>
@@ -203,12 +205,12 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
             <div className={cn(
               "p-2 rounded-lg",
               kpis.occupancyRate >= 70 ? "bg-success/10" :
-              kpis.occupancyRate >= 30 ? "bg-warning/10" : "bg-danger/10"
+                kpis.occupancyRate >= 30 ? "bg-warning/10" : "bg-danger/10"
             )}>
               <Users className={cn(
                 "h-5 w-5",
                 kpis.occupancyRate >= 70 ? "text-success" :
-                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+                  kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )} />
             </div>
           </div>
@@ -217,7 +219,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
         <Card className={cn(
           "p-4 border-2 hover:border-success/50 transition-colors",
           getOccupancyBgClass(kpis.occupancyRate).includes("success") ? "border-success/30" :
-          getOccupancyBgClass(kpis.occupancyRate).includes("warning") ? "border-warning/30" : "border-danger/30"
+            getOccupancyBgClass(kpis.occupancyRate).includes("warning") ? "border-warning/30" : "border-danger/30"
         )}>
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
@@ -243,7 +245,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <Target className={cn(
                 "h-5 w-5",
                 kpis.occupancyRate >= 70 ? "text-success" :
-                kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
+                  kpis.occupancyRate >= 30 ? "text-warning" : "text-danger"
               )} />
             </div>
           </div>
@@ -264,7 +266,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 })}
               </p>
               <p className="text-xs text-muted-foreground">
-                Precio promedio: {kpis.totalSold > 0 ? 
+                Precio promedio: {kpis.totalSold > 0 ?
                   (kpis.grossRevenue / kpis.totalSold).toLocaleString("es-ES", {
                     style: "currency",
                     currency: "EUR",
@@ -341,8 +343,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   <Cell key={`cell-${index}`} fill={color} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ fontSize: 11 }} 
+              <Tooltip
+                contentStyle={{ fontSize: 11 }}
                 formatter={(value: number) => `€${value.toLocaleString()}`}
               />
             </PieChart>
@@ -445,13 +447,13 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               <Tooltip contentStyle={{ fontSize: 11 }} />
               <Bar dataKey="vendidas">
                 {providerData.map((entry, index) => {
-                  const occupancy = entry.capacidad 
-                    ? (entry.vendidas / entry.capacidad) * 100 
+                  const occupancy = entry.capacidad
+                    ? (entry.vendidas / entry.capacidad) * 100
                     : 50;
                   return (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={getOccupancyColor(occupancy)} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={getOccupancyColor(occupancy)}
                     />
                   );
                 })}
@@ -478,12 +480,12 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               {providerData.map((row) => {
                 const providerRecs = getRecommendationsForScope("provider", row.ticketera);
                 const hasCritical = getCriticalCount(providerRecs) > 0;
-                const occupancyNum = row.capacidad 
-                  ? (row.vendidas / row.capacidad) * 100 
+                const occupancyNum = row.capacidad
+                  ? (row.vendidas / row.capacidad) * 100
                   : 0;
                 return (
-                  <tr 
-                    key={row.ticketera} 
+                  <tr
+                    key={row.ticketera}
                     className={cn(
                       "border-b transition-colors",
                       hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
@@ -507,8 +509,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                     </td>
                     <td className="py-2">
                       {row.capacidad ? (
-                        <ProgressBar 
-                          value={row.vendidas} 
+                        <ProgressBar
+                          value={row.vendidas}
                           max={row.capacidad}
                           showLabel={false}
                         />
@@ -576,9 +578,9 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                 {channelData.map((entry, index) => {
                   const percentage = parseFloat(entry.porcentaje);
                   return (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={getPerformanceColor(percentage)} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={getPerformanceColor(percentage)}
                     />
                   );
                 })}
@@ -603,8 +605,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                   const hasCritical = getCriticalCount(channelRecs) > 0;
                   const percentage = parseFloat(row.porcentaje);
                   return (
-                    <tr 
-                      key={row.canal} 
+                    <tr
+                      key={row.canal}
                       className={cn(
                         "border-b transition-colors",
                         hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
@@ -630,7 +632,7 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                       <td className={cn(
                         "text-right font-semibold",
                         percentage >= 15 ? "text-success" :
-                        percentage >= 5 ? "text-warning" : "text-danger"
+                          percentage >= 5 ? "text-warning" : "text-danger"
                       )}>
                         {row.porcentaje}%
                       </td>
@@ -684,12 +686,12 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
               {zoneData.map((row) => {
                 const zoneRecs = getRecommendationsForScope("zone", row.zona);
                 const hasCritical = getCriticalCount(zoneRecs) > 0;
-                const occupancyNum = row.ocupacion !== "N/D" 
-                  ? parseFloat(row.ocupacion) 
+                const occupancyNum = row.ocupacion !== "N/D"
+                  ? parseFloat(row.ocupacion)
                   : 0;
                 return (
-                  <tr 
-                    key={row.zona} 
+                  <tr
+                    key={row.zona}
                     className={cn(
                       "border-b transition-colors",
                       hasCritical && "bg-danger/5 border-danger/20 animate-fade-in",
@@ -713,8 +715,8 @@ const EventSummary = ({ eventId, totalCapacity, onOpenDrawer }: EventSummaryProp
                     </td>
                     <td className="py-2">
                       {row.aforo ? (
-                        <ProgressBar 
-                          value={row.vendidas} 
+                        <ProgressBar
+                          value={row.vendidas}
                           max={row.aforo}
                           showLabel={false}
                         />

@@ -3,9 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Users, 
-  Shield, 
+import {
+  Users,
+  Shield,
   AlertTriangle,
   Clock,
   MapPin,
@@ -31,97 +31,97 @@ import {
 } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 
-// Quick stats for event day
-const liveStats = [
-  { label: 'Asistentes dentro', value: '12,450', max: '20,000', icon: Users, percentage: 62, trend: '+850/h' },
-  { label: 'Tiempo espera acceso', value: '8 min', max: '15 min', icon: Timer, percentage: 53, trend: 'Normal' },
-  { label: 'Incidencias activas', value: '2', max: null, icon: AlertTriangle, percentage: null, trend: '2 resueltas' },
-  { label: 'Staff operativo', value: '247', max: '267', icon: UserCheck, percentage: 92, trend: '92%' },
-];
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
-// Access points with real-time data
-const accessPoints = [
-  { id: 'A1', name: 'Acceso Principal Norte', lanes: 8, status: 'operational', flow: 1200, maxFlow: 1500, waitTime: 8, queue: 450 },
-  { id: 'A2', name: 'Acceso Principal Sur', lanes: 6, status: 'operational', flow: 850, maxFlow: 1100, waitTime: 6, queue: 280 },
-  { id: 'A3', name: 'Acceso VIP', lanes: 2, status: 'operational', flow: 120, maxFlow: 200, waitTime: 2, queue: 15 },
-  { id: 'A4', name: 'Acceso Proveedores', lanes: 2, status: 'operational', flow: 45, maxFlow: 100, waitTime: 1, queue: 5 },
-  { id: 'E1', name: 'Salida Emergencia 1', lanes: 4, status: 'standby', flow: 0, maxFlow: 2000, waitTime: 0, queue: 0 },
-  { id: 'E2', name: 'Salida Emergencia 2', lanes: 4, status: 'standby', flow: 0, maxFlow: 2000, waitTime: 0, queue: 0 },
-];
+// ============ MOCK DATA ============
 
-// Staff by area (live)
-const liveStaffByArea = [
-  { area: 'Seguridad', expected: 85, present: 78, icon: Shield, color: 'text-red-500', bgColor: 'bg-red-500/10' },
-  { area: 'Accesos', expected: 45, present: 42, icon: DoorOpen, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-  { area: 'Barras', expected: 65, present: 58, icon: UtensilsCrossed, color: 'text-amber-500', bgColor: 'bg-amber-500/10' },
-  { area: 'Limpieza', expected: 35, present: 35, icon: Droplets, color: 'text-cyan-500', bgColor: 'bg-cyan-500/10' },
-  { area: 'Técnico', expected: 25, present: 22, icon: Zap, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
-  { area: 'Coordinación', expected: 12, present: 12, icon: Radio, color: 'text-green-500', bgColor: 'bg-green-500/10' },
-];
+const MOCK_DATA = {
+  liveStats: [
+    { label: 'Asistentes dentro', value: '12,450', max: '20,000', icon: Users, percentage: 62, trend: '+850/h' },
+    { label: 'Tiempo espera acceso', value: '8 min', max: '15 min', icon: Timer, percentage: 53, trend: 'Normal' },
+    { label: 'Incidencias activas', value: '2', max: null, icon: AlertTriangle, percentage: null, trend: '2 resueltas' },
+    { label: 'Staff operativo', value: '247', max: '267', icon: UserCheck, percentage: 92, trend: '92%' },
+  ],
 
-// Live incidents
-const liveIncidents = [
-  { 
-    id: 1, 
-    time: '20:45', 
-    type: 'medical', 
-    severity: 'medium',
-    location: 'Zona Pista - Sector 3',
-    description: 'Asistente con síntomas de deshidratación',
-    status: 'attending',
-    assignedTo: 'Equipo Médico 2'
-  },
-  { 
-    id: 2, 
-    time: '20:32', 
-    type: 'security', 
-    severity: 'low',
-    location: 'Acceso Principal Norte',
-    description: 'Intento de acceso con entrada duplicada',
-    status: 'resolved',
-    assignedTo: 'Seguridad Accesos'
-  },
-  { 
-    id: 3, 
-    time: '20:15', 
-    type: 'technical', 
-    severity: 'high',
-    location: 'Barra Grada',
-    description: 'Fallo en TPV - Sistema de pago caído',
-    status: 'attending',
-    assignedTo: 'Técnico IT 1'
-  },
-  { 
-    id: 4, 
-    time: '19:58', 
-    type: 'logistics', 
-    severity: 'medium',
-    location: 'Barra Pista Norte',
-    description: 'Stock bajo de agua embotellada',
-    status: 'resolved',
-    assignedTo: 'Logística'
-  },
-];
+  accessPoints: [
+    { id: 'A1', name: 'Acceso Principal Norte', lanes: 8, status: 'operational', flow: 1200, maxFlow: 1500, waitTime: 8, queue: 450 },
+    { id: 'A2', name: 'Acceso Principal Sur', lanes: 6, status: 'operational', flow: 850, maxFlow: 1100, waitTime: 6, queue: 280 },
+    { id: 'A3', name: 'Acceso VIP', lanes: 2, status: 'operational', flow: 120, maxFlow: 200, waitTime: 2, queue: 15 },
+    { id: 'A4', name: 'Acceso Proveedores', lanes: 2, status: 'operational', flow: 45, maxFlow: 100, waitTime: 1, queue: 5 },
+    { id: 'E1', name: 'Salida Emergencia 1', lanes: 4, status: 'standby', flow: 0, maxFlow: 2000, waitTime: 0, queue: 0 },
+    { id: 'E2', name: 'Salida Emergencia 2', lanes: 4, status: 'standby', flow: 0, maxFlow: 2000, waitTime: 0, queue: 0 },
+  ],
 
-// Venue zones with live occupancy
-const venueZones = [
-  { id: 'main-stage', name: 'Escenario Principal', capacity: 15000, current: 8500, status: 'normal', icon: Volume2 },
-  { id: 'pista', name: 'Zona Pista', capacity: 25000, current: 12000, status: 'normal', icon: Users },
-  { id: 'vip', name: 'Área VIP', capacity: 2000, current: 1650, status: 'high', icon: Shield },
-  { id: 'food-court', name: 'Food Court', capacity: 5000, current: 2800, status: 'normal', icon: UtensilsCrossed },
-  { id: 'grada-lat', name: 'Grada Lateral', capacity: 4000, current: 2200, status: 'normal', icon: LayoutGrid },
-  { id: 'grada-sup', name: 'Grada Superior', capacity: 2500, current: 1800, status: 'high', icon: LayoutGrid },
-];
+  liveStaffByArea: [
+    { area: 'Seguridad', expected: 85, present: 78, icon: Shield, color: 'text-red-500', bgColor: 'bg-red-500/10' },
+    { area: 'Accesos', expected: 45, present: 42, icon: DoorOpen, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
+    { area: 'Barras', expected: 65, present: 58, icon: UtensilsCrossed, color: 'text-amber-500', bgColor: 'bg-amber-500/10' },
+    { area: 'Limpieza', expected: 35, present: 35, icon: Droplets, color: 'text-cyan-500', bgColor: 'bg-cyan-500/10' },
+    { area: 'Técnico', expected: 25, present: 22, icon: Zap, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    { area: 'Coordinación', expected: 12, present: 12, icon: Radio, color: 'text-green-500', bgColor: 'bg-green-500/10' },
+  ],
 
-// Bar consumption data
-const barStations = [
-  { id: 'B1', name: 'Barra Central', transactions: 1250, revenue: 8750, stock: 72, staffPresent: 12 },
-  { id: 'B2', name: 'Barra Pista Norte', transactions: 890, revenue: 6230, stock: 65, staffPresent: 8 },
-  { id: 'B3', name: 'Barra Pista Sur', transactions: 920, revenue: 6440, stock: 78, staffPresent: 8 },
-  { id: 'B4', name: 'Barra VIP', transactions: 420, revenue: 5040, stock: 85, staffPresent: 6 },
-  { id: 'B5', name: 'Barra Grada', transactions: 380, revenue: 2660, stock: 45, staffPresent: 5 },
-  { id: 'B6', name: 'Punto de Agua', transactions: 1800, revenue: 0, stock: 90, staffPresent: 4 },
-];
+  liveIncidents: [
+    {
+      id: 1,
+      time: '20:45',
+      type: 'medical',
+      severity: 'medium',
+      location: 'Zona Pista - Sector 3',
+      description: 'Asistente con síntomas de deshidratación',
+      status: 'attending',
+      assignedTo: 'Equipo Médico 2'
+    },
+    {
+      id: 2,
+      time: '20:32',
+      type: 'security',
+      severity: 'low',
+      location: 'Acceso Principal Norte',
+      description: 'Intento de acceso con entrada duplicada',
+      status: 'resolved',
+      assignedTo: 'Seguridad Accesos'
+    },
+    {
+      id: 3,
+      time: '20:15',
+      type: 'technical',
+      severity: 'high',
+      location: 'Barra Grada',
+      description: 'Fallo en TPV - Sistema de pago caído',
+      status: 'attending',
+      assignedTo: 'Técnico IT 1'
+    },
+    {
+      id: 4,
+      time: '19:58',
+      type: 'logistics',
+      severity: 'medium',
+      location: 'Barra Pista Norte',
+      description: 'Stock bajo de agua embotellada',
+      status: 'resolved',
+      assignedTo: 'Logística'
+    },
+  ],
+
+  venueZones: [
+    { id: 'main-stage', name: 'Escenario Principal', capacity: 15000, current: 8500, status: 'normal', icon: Volume2 },
+    { id: 'pista', name: 'Zona Pista', capacity: 25000, current: 12000, status: 'normal', icon: Users },
+    { id: 'vip', name: 'Área VIP', capacity: 2000, current: 1650, status: 'high', icon: Shield },
+    { id: 'food-court', name: 'Food Court', capacity: 5000, current: 2800, status: 'normal', icon: UtensilsCrossed },
+    { id: 'grada-lat', name: 'Grada Lateral', capacity: 4000, current: 2200, status: 'normal', icon: LayoutGrid },
+    { id: 'grada-sup', name: 'Grada Superior', capacity: 2500, current: 1800, status: 'high', icon: LayoutGrid },
+  ],
+
+  barStations: [
+    { id: 'B1', name: 'Barra Central', transactions: 1250, revenue: 8750, stock: 72, staffPresent: 12 },
+    { id: 'B2', name: 'Barra Pista Norte', transactions: 890, revenue: 6230, stock: 65, staffPresent: 8 },
+    { id: 'B3', name: 'Barra Pista Sur', transactions: 920, revenue: 6440, stock: 78, staffPresent: 8 },
+    { id: 'B4', name: 'Barra VIP', transactions: 420, revenue: 5040, stock: 85, staffPresent: 6 },
+    { id: 'B5', name: 'Barra Grada', transactions: 380, revenue: 2660, stock: 45, staffPresent: 5 },
+    { id: 'B6', name: 'Punto de Agua', transactions: 1800, revenue: 0, stock: 90, staffPresent: 4 },
+  ],
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -158,6 +158,15 @@ const getSeverityColor = (severity: string) => {
 };
 
 const EventDayOperations = () => {
+  const { isDemo } = useFestivalConfig();
+
+  // Derived data based on demo mode
+  const liveStats = isDemo ? MOCK_DATA.liveStats : [];
+  const accessPoints = isDemo ? MOCK_DATA.accessPoints : [];
+  const liveStaffByArea = isDemo ? MOCK_DATA.liveStaffByArea : [];
+  const liveIncidents = isDemo ? MOCK_DATA.liveIncidents : [];
+  const venueZones = isDemo ? MOCK_DATA.venueZones : [];
+  const barStations = isDemo ? MOCK_DATA.barStations : [];
   const totalExpected = liveStaffByArea.reduce((acc, s) => acc + s.expected, 0);
   const totalPresent = liveStaffByArea.reduce((acc, s) => acc + s.present, 0);
   const totalTransactions = barStations.reduce((acc, b) => acc + b.transactions, 0);
@@ -167,7 +176,7 @@ const EventDayOperations = () => {
     <div className="min-h-screen bg-background p-4 theme-operations">
       <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Día del Festival" }]} />
-        
+
         {/* Header */}
         <div className="flex justify-between items-center mb-1">
           <div>
@@ -225,13 +234,13 @@ const EventDayOperations = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {liveIncidents.map((incident) => (
-                <div 
-                  key={incident.id} 
+                <div
+                  key={incident.id}
                   className={`p-4 rounded-lg border-2 ${getSeverityColor(incident.severity)}`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Badge 
+                      <Badge
                         variant={incident.status === 'resolved' ? 'secondary' : 'default'}
                         className="text-[10px] uppercase"
                       >
@@ -361,9 +370,9 @@ const EventDayOperations = () => {
                       <p className="font-medium text-sm mb-1">{zone.name}</p>
                       <p className="text-xl font-bold">{(zone.current / 1000).toFixed(1)}K</p>
                       <p className="text-xs text-muted-foreground mb-2">de {(zone.capacity / 1000).toFixed(0)}K</p>
-                      <Progress 
-                        value={occupancy} 
-                        className={`h-2 ${occupancy > 80 ? '[&>div]:bg-warning' : ''}`} 
+                      <Progress
+                        value={occupancy}
+                        className={`h-2 ${occupancy > 80 ? '[&>div]:bg-warning' : ''}`}
                       />
                       <p className="text-xs mt-1 font-medium">{occupancy.toFixed(0)}%</p>
                     </CardContent>
@@ -419,9 +428,9 @@ const EventDayOperations = () => {
                             {bar.stock}%
                           </span>
                         </div>
-                        <Progress 
-                          value={bar.stock} 
-                          className={`h-1.5 ${bar.stock < 50 ? '[&>div]:bg-destructive' : bar.stock < 70 ? '[&>div]:bg-warning' : ''}`} 
+                        <Progress
+                          value={bar.stock}
+                          className={`h-1.5 ${bar.stock < 50 ? '[&>div]:bg-destructive' : bar.stock < 70 ? '[&>div]:bg-warning' : ''}`}
                         />
                       </div>
                     </div>

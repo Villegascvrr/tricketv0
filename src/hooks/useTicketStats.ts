@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { festivalData } from '@/data/festivalData';
+import { demoFestivalData } from '@/data/demoData';
+import { FestivalData } from '@/types/festival';
 import { differenceInDays, subDays, format, startOfDay } from 'date-fns';
 
 export interface TicketStats {
@@ -9,22 +10,22 @@ export interface TicketStats {
   grossRevenue: number;
   occupancyRate: number;
   avgTicketPrice: number;
-  
+
   // Target metrics
   targetSales: number;
   salesGap: number;
   targetProgress: number;
-  
+
   // Trend metrics
   yesterdaySales: number;
   avgDailySales: number;
   salesTrend: number; // percentage vs average
   last7DaysSales: number;
-  
+
   // Time metrics
   daysToFestival: number;
   requiredDailyRate: number; // to meet target
-  
+
   // By provider
   salesByProvider: {
     provider: string;
@@ -33,7 +34,7 @@ export interface TicketStats {
     capacity: number | null;
     occupancy: number;
   }[];
-  
+
   // By zone
   salesByZone: {
     zone: string;
@@ -42,7 +43,7 @@ export interface TicketStats {
     capacity: number | null;
     occupancy: number;
   }[];
-  
+
   // By channel
   salesByChannel: {
     channel: string;
@@ -50,7 +51,7 @@ export interface TicketStats {
     revenue: number;
     percentage: number;
   }[];
-  
+
   // Sales over time
   salesOverTime: {
     date: string;
@@ -59,7 +60,7 @@ export interface TicketStats {
     revenue: number;
     cumulative: number;
   }[];
-  
+
   // Demographics
   demographics: {
     byAge: { range: string; count: number; percentage: number }[];
@@ -69,7 +70,7 @@ export interface TicketStats {
     withPhone: number;
     withMarketingConsent: number;
   };
-  
+
   // Data source
   isDemo: boolean;
   hasRealData: boolean;
@@ -105,8 +106,8 @@ export const useTicketStats = (eventId: string) => {
       } catch (err) {
         console.error('Error fetching ticket stats:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
-        // Fallback to demo data on error
-        setStats(generateDemoStats());
+        // Fallback to empty state on error, NOT demo data
+        setStats(null);
       } finally {
         setLoading(false);
       }
@@ -122,14 +123,14 @@ export const useTicketStats = (eventId: string) => {
 
 // Generate demo stats from festivalData
 function generateDemoStats(): TicketStats {
-  const { overview, ticketingProviders, zones, audiencia } = festivalData;
-  
+  const { overview, ticketingProviders, zones, audiencia } = demoFestivalData;
+
   const daysToFestival = differenceInDays(FESTIVAL_DATE, REFERENCE_DATE);
   const totalSold = overview.entradasVendidas;
   const grossRevenue = overview.ingresosTotales;
   const targetSales = overview.objetivoVentas || TARGET_SALES;
   const salesGap = targetSales - totalSold;
-  
+
   // Sales by provider
   const salesByProvider = ticketingProviders.map(p => ({
     provider: p.nombre,
@@ -138,7 +139,7 @@ function generateDemoStats(): TicketStats {
     capacity: p.capacidad,
     occupancy: (p.vendidas / p.capacidad) * 100,
   }));
-  
+
   // Sales by zone
   const salesByZone = zones.map(z => ({
     zone: z.zona,
@@ -147,7 +148,7 @@ function generateDemoStats(): TicketStats {
     capacity: z.aforo,
     occupancy: (z.vendidas / z.aforo) * 100,
   }));
-  
+
   // Simulated channel distribution
   const channelDistribution = [
     { channel: 'Online', percentage: 45 },
@@ -156,29 +157,29 @@ function generateDemoStats(): TicketStats {
     { channel: 'Taquilla', percentage: 8 },
     { channel: 'Corporativo', percentage: 4 },
   ];
-  
+
   const salesByChannel = channelDistribution.map(c => ({
     channel: c.channel,
     sold: Math.round(totalSold * (c.percentage / 100)),
     revenue: Math.round(grossRevenue * (c.percentage / 100)),
     percentage: c.percentage,
   }));
-  
+
   // Generate sales over time (last 30 days)
   const salesOverTime = generateSimulatedSalesOverTime(totalSold, grossRevenue, 30);
-  
+
   // Yesterday and average calculations
   const yesterdaySales = overview.ventasAyer || 342;
   const avgDailySales = overview.mediaVentasDiaria || 285;
   const salesTrend = ((yesterdaySales - avgDailySales) / avgDailySales) * 100;
   const last7DaysSales = salesOverTime.slice(-7).reduce((sum, d) => sum + d.sales, 0);
-  
+
   // Required daily rate to meet target
   const requiredDailyRate = salesGap > 0 ? Math.ceil(salesGap / daysToFestival) : 0;
-  
+
   // Demographics from audiencia
   const totalAudiencia = audiencia.totalAsistentes;
-  
+
   return {
     totalSold,
     grossRevenue,
@@ -227,7 +228,43 @@ function generateDemoStats(): TicketStats {
 async function fetchRealStats(eventId: string): Promise<TicketStats> {
   const now = new Date();
   const daysToFestival = differenceInDays(FESTIVAL_DATE, now);
-  
+
+  // Validate UUID format to prevent database errors
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(eventId)) {
+    console.warn(`Invalid UUID format for event ID: ${eventId}. Returning empty stats.`);
+    return {
+      totalSold: 0,
+      grossRevenue: 0,
+      occupancyRate: 0,
+      avgTicketPrice: 0,
+      targetSales: TARGET_SALES,
+      salesGap: TARGET_SALES,
+      targetProgress: 0,
+      yesterdaySales: 0,
+      avgDailySales: 0,
+      salesTrend: 0,
+      last7DaysSales: 0,
+      daysToFestival,
+      requiredDailyRate: 0,
+      salesByProvider: [],
+      salesByZone: [],
+      salesByChannel: [],
+      salesOverTime: [],
+      demographics: {
+        byAge: [],
+        byProvince: [],
+        byCity: [],
+        withEmail: 0,
+        withPhone: 0,
+        withMarketingConsent: 0,
+      },
+      isDemo: false,
+      hasRealData: true,
+      lastUpdated: new Date()
+    };
+  }
+
   // Fetch all tickets for this event
   const { data: tickets, error } = await supabase
     .from('tickets')
@@ -237,17 +274,45 @@ async function fetchRealStats(eventId: string): Promise<TicketStats> {
 
   if (error) throw error;
 
-  // If no tickets, return empty stats with demo fallback
+  // If no tickets, return empty stats schema but DO NOT use demo data
   if (!tickets || tickets.length === 0) {
-    const demoStats = generateDemoStats();
-    return { ...demoStats, hasRealData: false, isDemo: false };
+    return {
+      totalSold: 0,
+      grossRevenue: 0,
+      occupancyRate: 0,
+      avgTicketPrice: 0,
+      targetSales: TARGET_SALES,
+      salesGap: TARGET_SALES,
+      targetProgress: 0,
+      yesterdaySales: 0,
+      avgDailySales: 0,
+      salesTrend: 0,
+      last7DaysSales: 0,
+      daysToFestival,
+      requiredDailyRate: 0,
+      salesByProvider: [],
+      salesByZone: [],
+      salesByChannel: [],
+      salesOverTime: [],
+      demographics: {
+        byAge: [],
+        byProvince: [],
+        byCity: [],
+        withEmail: 0,
+        withPhone: 0,
+        withMarketingConsent: 0,
+      },
+      isDemo: false,
+      hasRealData: true, // It is real data, just empty
+      lastUpdated: new Date()
+    };
   }
 
   const totalSold = tickets.length;
   const grossRevenue = tickets.reduce((sum, t) => sum + Number(t.price || 0), 0);
   const targetSales = TARGET_SALES;
   const salesGap = targetSales - totalSold;
-  
+
   // Fetch provider allocations for capacity
   const { data: allocations } = await supabase
     .from('ticket_provider_allocations')
@@ -320,7 +385,7 @@ async function fetchRealStats(eventId: string): Promise<TicketStats> {
     const sales = dayTickets.length;
     const revenue = dayTickets.reduce((sum, t) => sum + Number(t.price || 0), 0);
     cumulative += sales;
-    
+
     return {
       date,
       dateLabel: format(new Date(date), 'd MMM'),
@@ -336,7 +401,7 @@ async function fetchRealStats(eventId: string): Promise<TicketStats> {
   const last7DaysSales = salesOverTime.slice(-7).reduce((sum, d) => sum + d.sales, 0);
   const avgDailySales = Math.round(last7DaysSales / 7);
   const salesTrend = avgDailySales > 0 ? ((yesterdaySales - avgDailySales) / avgDailySales) * 100 : 0;
-  
+
   // Required daily rate
   const requiredDailyRate = salesGap > 0 && daysToFestival > 0 ? Math.ceil(salesGap / daysToFestival) : 0;
 
@@ -355,7 +420,7 @@ async function fetchRealStats(eventId: string): Promise<TicketStats> {
   return {
     totalSold,
     grossRevenue,
-    occupancyRate: (totalSold / festivalData.aforoTotal) * 100,
+    occupancyRate: (totalSold / 20000) * 100,
     avgTicketPrice: totalSold > 0 ? grossRevenue / totalSold : 0,
     targetSales,
     salesGap,
@@ -407,19 +472,19 @@ function generateSimulatedSalesOverTime(totalSold: number, totalRevenue: number,
   const result: TicketStats['salesOverTime'] = [];
   const avgPrice = totalSold > 0 ? totalRevenue / totalSold : 25;
   let cumulative = 0;
-  
+
   const dailyAvg = totalSold / days;
-  
+
   for (let i = 0; i < days; i++) {
     const date = subDays(new Date(), days - 1 - i);
     const accelerationFactor = 1 + (i / days) * 1.5;
     const weekendBoost = (date.getDay() === 0 || date.getDay() === 6) ? 1.3 : 1;
     const variance = 0.7 + Math.random() * 0.6;
-    
+
     const sales = Math.round(dailyAvg * accelerationFactor * weekendBoost * variance);
     const revenue = Math.round(sales * avgPrice);
     cumulative += sales;
-    
+
     result.push({
       date: format(date, 'yyyy-MM-dd'),
       dateLabel: format(date, 'd MMM'),
@@ -428,11 +493,11 @@ function generateSimulatedSalesOverTime(totalSold: number, totalRevenue: number,
       cumulative,
     });
   }
-  
+
   // Normalize to match total
   const scaleFactor = totalSold / cumulative;
   let runningTotal = 0;
-  
+
   return result.map(d => {
     const scaledSales = Math.round(d.sales * scaleFactor);
     runningTotal += scaledSales;

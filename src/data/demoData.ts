@@ -1,8 +1,7 @@
-// ÚNICA FUENTE DE DATOS - Primaverando Festival 2025
-// Todos los componentes deben importar y usar esta estructura
+import { FestivalData } from '@/types/festival';
 
-export const festivalData = {
-  nombre: 'Primaverando Festival 2025',
+export const demoFestivalData: FestivalData = {
+  nombre: 'Festival Demo Tricket',
   aforoTotal: 20000,
   fecha: '29 de marzo de 2025',
   ubicacion: 'Live Sur Stadium, Estadio La Cartuja, Sevilla',
@@ -50,11 +49,11 @@ export const festivalData = {
     }
   ],
   zones: [
-    { zona: 'Pista General',     aforo: 10000, vendidas: 7420, ingresos: 170660 },
-    { zona: 'Grada Lateral',     aforo: 4000,  vendidas: 2980, ingresos: 68540 },
-    { zona: 'Zona VIP',          aforo: 2000,  vendidas: 1850, ingresos: 66600 },
-    { zona: 'Grada Superior',    aforo: 2500,  vendidas: 1720, ingresos: 39560 },
-    { zona: 'Acceso Preferente', aforo: 1500,  vendidas: 880,  ingresos: 25890 }
+    { zona: 'Pista General', aforo: 10000, vendidas: 7420, ingresos: 170660 },
+    { zona: 'Grada Lateral', aforo: 4000, vendidas: 2980, ingresos: 68540 },
+    { zona: 'Zona VIP', aforo: 2000, vendidas: 1850, ingresos: 66600 },
+    { zona: 'Grada Superior', aforo: 2500, vendidas: 1720, ingresos: 39560 },
+    { zona: 'Acceso Preferente', aforo: 1500, vendidas: 880, ingresos: 25890 }
   ],
   // Datos de audiencia (base: 1.000 asistentes encuestados)
   audiencia: {
@@ -91,7 +90,7 @@ export const festivalData = {
   },
   // Información adicional del festival
   artistas2025: [
-    'Villalobos', 'Henry Méndez', 'Q2', 'Alvama Ice', 
+    'Villalobos', 'Henry Méndez', 'Q2', 'Alvama Ice',
     'Danny Romero', 'Lucho RK', 'Barce'
   ],
   generos: ['Música Urbana/Trap', 'Reggaetón', 'Pop Comercial', 'Electrónica', 'Flamenquito'],
@@ -190,44 +189,44 @@ export const calculateZoneOccupancy = (vendidas: number, aforo: number) => {
 
 // Contexto completo para IA
 export const getAIContext = () => {
-  const { overview, ticketingProviders, zones, audiencia, artistas2025, generos, precios, historico, problematicaOperativa, estrategiaComercial, incidentesHistoricos, recomendacionesMejora, contextoMercado } = festivalData;
-  
+  const { overview, ticketingProviders, zones, audiencia, artistas2025, generos, precios, historico, problematicaOperativa, estrategiaComercial, incidentesHistoricos, recomendacionesMejora, contextoMercado } = demoFestivalData;
+
   return `
-## CONTEXTO DEL EVENTO: ${festivalData.nombre}
+## CONTEXTO DEL EVENTO: ${demoFestivalData.nombre}
 
 ### Información General
-- **Fecha:** ${festivalData.fecha}
-- **Ubicación:** ${festivalData.ubicacion}
-- **Horario:** ${festivalData.horario}
-- **Organizador:** ${festivalData.organizador}
+- **Fecha:** ${demoFestivalData.fecha}
+- **Ubicación:** ${demoFestivalData.ubicacion}
+- **Horario:** ${demoFestivalData.horario}
+- **Organizador:** ${demoFestivalData.organizador}
 - **Edición:** ${historico.edicion} (desde ${historico.anioInicio})
 - **Posicionamiento:** ${historico.posicionamiento}
 
 ### Métricas Principales
-- **Aforo Total:** ${festivalData.aforoTotal.toLocaleString('es-ES')} personas
+- **Aforo Total:** ${demoFestivalData.aforoTotal.toLocaleString('es-ES')} personas
 - **Entradas Vendidas:** ${overview.entradasVendidas.toLocaleString('es-ES')}
 - **Ocupación:** ${(overview.ocupacion * 100).toFixed(1)}%
 - **Ingresos Totales:** €${overview.ingresosTotales.toLocaleString('es-ES')}
 - **Ticket Promedio:** €${(overview.ingresosTotales / overview.entradasVendidas).toFixed(2)}
 
 ### Ventas por Proveedor de Ticketing
-${ticketingProviders.map(p => `- **${p.nombre}:** ${p.vendidas.toLocaleString('es-ES')}/${p.capacidad.toLocaleString('es-ES')} vendidas (${((p.vendidas/p.capacidad)*100).toFixed(1)}%) - €${p.ingresos.toLocaleString('es-ES')}`).join('\n')}
+${ticketingProviders.map(p => `- **${p.nombre}:** ${p.vendidas.toLocaleString('es-ES')}/${p.capacidad.toLocaleString('es-ES')} vendidas (${((p.vendidas / p.capacidad) * 100).toFixed(1)}%) - €${p.ingresos.toLocaleString('es-ES')}`).join('\n')}
 
 ### Ocupación por Zona
-${zones.map(z => `- **${z.zona}:** ${z.vendidas.toLocaleString('es-ES')}/${z.aforo.toLocaleString('es-ES')} (${((z.vendidas/z.aforo)*100).toFixed(1)}%) - €${z.ingresos.toLocaleString('es-ES')}`).join('\n')}
+${zones.map(z => `- **${z.zona}:** ${z.vendidas.toLocaleString('es-ES')}/${z.aforo.toLocaleString('es-ES')} (${((z.vendidas / z.aforo) * 100).toFixed(1)}%) - €${z.ingresos.toLocaleString('es-ES')}`).join('\n')}
 
 ### Perfil de Audiencia
 - **Público objetivo:** Estudiantes universitarios (20-30 años)
 - **Procedencia principal:** Sevilla y Andalucía
 - **Con email:** ${audiencia.contactStats.conEmail} (100%)
-- **Con teléfono:** ${audiencia.contactStats.conTelefono} (${((audiencia.contactStats.conTelefono/audiencia.totalAsistentes)*100).toFixed(0)}%)
-- **Consentimiento marketing:** ${audiencia.contactStats.consentimientoMarketing} (${((audiencia.contactStats.consentimientoMarketing/audiencia.totalAsistentes)*100).toFixed(0)}%)
+- **Con teléfono:** ${audiencia.contactStats.conTelefono} (${((audiencia.contactStats.conTelefono / audiencia.totalAsistentes) * 100).toFixed(0)}%)
+- **Consentimiento marketing:** ${audiencia.contactStats.consentimientoMarketing} (${((audiencia.contactStats.consentimientoMarketing / audiencia.totalAsistentes) * 100).toFixed(0)}%)
 
 **Distribución por edad:**
-${audiencia.edades.map(e => `- ${e.rango} años: ${e.asistentes} (${((e.asistentes/audiencia.totalAsistentes)*100).toFixed(1)}%)`).join('\n')}
+${audiencia.edades.map(e => `- ${e.rango} años: ${e.asistentes} (${((e.asistentes / audiencia.totalAsistentes) * 100).toFixed(1)}%)`).join('\n')}
 
 **Top provincias:**
-${audiencia.provincias.slice(0, 5).map(p => `- ${p.nombre}: ${p.asistentes} (${((p.asistentes/audiencia.totalAsistentes)*100).toFixed(1)}%)`).join('\n')}
+${audiencia.provincias.slice(0, 5).map(p => `- ${p.nombre}: ${p.asistentes} (${((p.asistentes / audiencia.totalAsistentes) * 100).toFixed(1)}%)`).join('\n')}
 
 ### Cartel 2025
 ${artistas2025.join(', ')}

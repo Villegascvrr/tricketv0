@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Plus, Search, List, LayoutGrid, Calendar, AlertTriangle, 
+import {
+  Plus, Search, List, LayoutGrid, Calendar, AlertTriangle,
   CheckCircle2, Clock, XCircle, Users, Truck, HardHat, Music,
   ClipboardList, Euro, FileCheck, MapPin, Shield, Ticket, MessageSquare,
   Clapperboard, ArrowRight, CircleDot, RefreshCw
@@ -26,78 +26,82 @@ import { AlertsPanel } from "@/components/prefestival/AlertsPanel";
 import { areaLabels, statusLabels, priorityLabels, TaskArea, TaskStatus, TaskPriority } from "@/data/preFestivalMockData";
 import { cn } from "@/lib/utils";
 
-// ============ ORIGINAL DATA ============
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
-const vendors = [
-  { id: 1, name: 'SoundPro Audio Systems', category: 'Sonido', budget: 45000, paid: 22500, status: 'contracted', deliverables: 4, delivered: 2, deadline: '15 Mar' },
-  { id: 2, name: 'LightStage Productions', category: 'Iluminación', budget: 32000, paid: 16000, status: 'contracted', deliverables: 3, delivered: 1, deadline: '20 Mar' },
-  { id: 3, name: 'SecurEvent Andalucía', category: 'Seguridad', budget: 28000, paid: 14000, status: 'contracted', deliverables: 5, delivered: 3, deadline: '25 Mar' },
-  { id: 4, name: 'FoodTruck Collective', category: 'Catering', budget: 15000, paid: 0, status: 'pending', deliverables: 2, delivered: 0, deadline: '28 Mar' },
-  { id: 5, name: 'CleanMax Services', category: 'Limpieza', budget: 12000, paid: 6000, status: 'contracted', deliverables: 2, delivered: 1, deadline: '27 Mar' },
-];
+// ============ MOCK DATA ============
 
-const staffRoles = [
-  { role: 'Coordinador General', required: 2, confirmed: 2, pending: 0, docs: true },
-  { role: 'Jefe de Seguridad', required: 3, confirmed: 3, pending: 0, docs: true },
-  { role: 'Responsable Accesos', required: 4, confirmed: 3, pending: 1, docs: true },
-  { role: 'Coordinador Barras', required: 2, confirmed: 2, pending: 0, docs: true },
-  { role: 'Técnico de Sonido', required: 6, confirmed: 4, pending: 2, docs: false },
-  { role: 'Técnico de Iluminación', required: 4, confirmed: 4, pending: 0, docs: true },
-  { role: 'Personal Seguridad', required: 85, confirmed: 72, pending: 13, docs: false },
-  { role: 'Personal Accesos', required: 45, confirmed: 38, pending: 7, docs: false },
-  { role: 'Personal Barras', required: 65, confirmed: 52, pending: 13, docs: false },
-  { role: 'Personal Limpieza', required: 35, confirmed: 30, pending: 5, docs: true },
-];
+const MOCK_DATA = {
+  vendors: [
+    { id: 1, name: 'SoundPro Audio Systems', category: 'Sonido', budget: 45000, paid: 22500, status: 'contracted', deliverables: 4, delivered: 2, deadline: '15 Mar' },
+    { id: 2, name: 'LightStage Productions', category: 'Iluminación', budget: 32000, paid: 16000, status: 'contracted', deliverables: 3, delivered: 1, deadline: '20 Mar' },
+    { id: 3, name: 'SecurEvent Andalucía', category: 'Seguridad', budget: 28000, paid: 14000, status: 'contracted', deliverables: 5, delivered: 3, deadline: '25 Mar' },
+    { id: 4, name: 'FoodTruck Collective', category: 'Catering', budget: 15000, paid: 0, status: 'pending', deliverables: 2, delivered: 0, deadline: '28 Mar' },
+    { id: 5, name: 'CleanMax Services', category: 'Limpieza', budget: 12000, paid: 6000, status: 'contracted', deliverables: 2, delivered: 1, deadline: '27 Mar' },
+  ],
 
-const productionItems = [
-  { id: 1, name: 'Escenario Principal', category: 'Escenarios', status: 'in_progress', progress: 65, deadline: '26 Mar', responsible: 'SoundPro' },
-  { id: 2, name: 'Rider Villalobos', category: 'Riders', status: 'pending', progress: 30, deadline: '20 Mar', responsible: 'Producción' },
-  { id: 3, name: 'Rider Henry Méndez', category: 'Riders', status: 'completed', progress: 100, deadline: '15 Mar', responsible: 'Producción' },
-  { id: 4, name: 'Sistema PA Pista', category: 'Sonido', status: 'in_progress', progress: 80, deadline: '27 Mar', responsible: 'SoundPro' },
-  { id: 5, name: 'Iluminación VIP', category: 'Iluminación', status: 'completed', progress: 100, deadline: '22 Mar', responsible: 'LightStage' },
-];
+  staffRoles: [
+    { role: 'Coordinador General', required: 2, confirmed: 2, pending: 0, docs: true },
+    { role: 'Jefe de Seguridad', required: 3, confirmed: 3, pending: 0, docs: true },
+    { role: 'Responsable Accesos', required: 4, confirmed: 3, pending: 1, docs: true },
+    { role: 'Coordinador Barras', required: 2, confirmed: 2, pending: 0, docs: true },
+    { role: 'Técnico de Sonido', required: 6, confirmed: 4, pending: 2, docs: false },
+    { role: 'Técnico de Iluminación', required: 4, confirmed: 4, pending: 0, docs: true },
+    { role: 'Personal Seguridad', required: 85, confirmed: 72, pending: 13, docs: false },
+    { role: 'Personal Accesos', required: 45, confirmed: 38, pending: 7, docs: false },
+    { role: 'Personal Barras', required: 65, confirmed: 52, pending: 13, docs: false },
+    { role: 'Personal Limpieza', required: 35, confirmed: 30, pending: 5, docs: true },
+  ],
 
-const logisticsItems = [
-  { name: 'Permiso Ayuntamiento Sevilla', status: 'approved', date: '15 Ene' },
-  { name: 'Licencia Espectáculos Públicos', status: 'approved', date: '28 Ene' },
-  { name: 'Plan de Evacuación', status: 'pending', date: '10 Mar' },
-  { name: 'Seguro de Responsabilidad Civil', status: 'approved', date: '5 Feb' },
-  { name: 'Contrato Recinto La Cartuja', status: 'approved', date: '20 Dic' },
-  { name: 'Coordinación Policía Local', status: 'in_progress', date: '20 Mar' },
-  { name: 'Coordinación Servicios Sanitarios', status: 'approved', date: '1 Mar' },
-  { name: 'Plan de Tráfico y Aparcamiento', status: 'pending', date: '15 Mar' },
-];
+  productionItems: [
+    { id: 1, name: 'Escenario Principal', category: 'Escenarios', status: 'in_progress', progress: 65, deadline: '26 Mar', responsible: 'SoundPro' },
+    { id: 2, name: 'Rider Villalobos', category: 'Riders', status: 'pending', progress: 30, deadline: '20 Mar', responsible: 'Producción' },
+    { id: 3, name: 'Rider Henry Méndez', category: 'Riders', status: 'completed', progress: 100, deadline: '15 Mar', responsible: 'Producción' },
+    { id: 4, name: 'Sistema PA Pista', category: 'Sonido', status: 'in_progress', progress: 80, deadline: '27 Mar', responsible: 'SoundPro' },
+    { id: 5, name: 'Iluminación VIP', category: 'Iluminación', status: 'completed', progress: 100, deadline: '22 Mar', responsible: 'LightStage' },
+  ],
 
-const calendarMilestones = [
-  { date: '15 Ene', title: 'Permisos municipales aprobados', status: 'completed' },
-  { date: '1 Feb', title: 'Cierre contratos proveedores principales', status: 'completed' },
-  { date: '15 Feb', title: 'Lanzamiento venta Early Bird', status: 'completed' },
-  { date: '1 Mar', title: 'Confirmación cartel completo', status: 'completed' },
-  { date: '10 Mar', title: 'Cierre contratación staff', status: 'in_progress' },
-  { date: '20 Mar', title: 'Recepción riders artistas', status: 'pending' },
-  { date: '25 Mar', title: 'Inicio montaje recinto', status: 'pending' },
-  { date: '28 Mar', title: 'Pruebas técnicas generales', status: 'pending' },
-  { date: '29 Mar', title: '🎉 DÍA DEL FESTIVAL', status: 'pending' },
-];
+  logisticsItems: [
+    { name: 'Permiso Ayuntamiento Sevilla', status: 'approved', date: '15 Ene' },
+    { name: 'Licencia Espectáculos Públicos', status: 'approved', date: '28 Ene' },
+    { name: 'Plan de Evacuación', status: 'pending', date: '10 Mar' },
+    { name: 'Seguro de Responsabilidad Civil', status: 'approved', date: '5 Feb' },
+    { name: 'Contrato Recinto La Cartuja', status: 'approved', date: '20 Dic' },
+    { name: 'Coordinación Policía Local', status: 'in_progress', date: '20 Mar' },
+    { name: 'Coordinación Servicios Sanitarios', status: 'approved', date: '1 Mar' },
+    { name: 'Plan de Tráfico y Aparcamiento', status: 'pending', date: '15 Mar' },
+  ],
 
-const preProductionChecklist = [
-  { id: 1, task: 'Contratos artistas firmados', completed: true, category: 'Legal' },
-  { id: 2, task: 'Seguros contratados', completed: true, category: 'Legal' },
-  { id: 3, task: 'Plan de seguridad aprobado', completed: true, category: 'Seguridad' },
-  { id: 4, task: 'Equipos de sonido reservados', completed: true, category: 'Producción' },
-  { id: 5, task: 'Catering confirmado', completed: false, category: 'Servicios' },
-  { id: 6, task: 'Señalización diseñada', completed: true, category: 'Producción' },
-  { id: 7, task: 'Acreditaciones impresas', completed: false, category: 'Accesos' },
-  { id: 8, task: 'Formación staff completada', completed: false, category: 'RRHH' },
-  { id: 9, task: 'Prueba sistemas ticketing', completed: true, category: 'Tecnología' },
-  { id: 10, task: 'Comunicación emergencias establecida', completed: true, category: 'Seguridad' },
-];
+  calendarMilestones: [
+    { date: '15 Ene', title: 'Permisos municipales aprobados', status: 'completed' },
+    { date: '1 Feb', title: 'Cierre contratos proveedores principales', status: 'completed' },
+    { date: '15 Feb', title: 'Lanzamiento venta Early Bird', status: 'completed' },
+    { date: '1 Mar', title: 'Confirmación cartel completo', status: 'completed' },
+    { date: '10 Mar', title: 'Cierre contratación staff', status: 'in_progress' },
+    { date: '20 Mar', title: 'Recepción riders artistas', status: 'pending' },
+    { date: '25 Mar', title: 'Inicio montaje recinto', status: 'pending' },
+    { date: '28 Mar', title: 'Pruebas técnicas generales', status: 'pending' },
+    { date: '29 Mar', title: '🎉 DÍA DEL FESTIVAL', status: 'pending' },
+  ],
 
-const preEventIssues = [
-  { id: 1, title: 'Retraso entrega estructura escenario', severity: 'high', area: 'Producción', status: 'open', daysOpen: 5, assignedTo: 'Carlos M.' },
-  { id: 2, title: 'Pendiente confirmación 13 guardias seguridad', severity: 'medium', area: 'RRHH', status: 'in_progress', daysOpen: 3, assignedTo: 'Laura S.' },
-  { id: 3, title: 'Rider técnico Villalobos incompleto', severity: 'medium', area: 'Producción', status: 'in_progress', daysOpen: 8, assignedTo: 'Miguel R.' },
-];
+  preProductionChecklist: [
+    { id: 1, task: 'Contratos artistas firmados', completed: true, category: 'Legal' },
+    { id: 2, task: 'Seguros contratados', completed: true, category: 'Legal' },
+    { id: 3, task: 'Plan de seguridad aprobado', completed: true, category: 'Seguridad' },
+    { id: 4, task: 'Equipos de sonido reservados', completed: true, category: 'Producción' },
+    { id: 5, task: 'Catering confirmado', completed: false, category: 'Servicios' },
+    { id: 6, task: 'Señalización diseñada', completed: true, category: 'Producción' },
+    { id: 7, task: 'Acreditaciones impresas', completed: false, category: 'Accesos' },
+    { id: 8, task: 'Formación staff completada', completed: false, category: 'RRHH' },
+    { id: 9, task: 'Prueba sistemas ticketing', completed: true, category: 'Tecnología' },
+    { id: 10, task: 'Comunicación emergencias establecida', completed: true, category: 'Seguridad' },
+  ],
+
+  preEventIssues: [
+    { id: 1, title: 'Retraso entrega estructura escenario', severity: 'high', area: 'Producción', status: 'open', daysOpen: 5, assignedTo: 'Carlos M.' },
+    { id: 2, title: 'Pendiente confirmación 13 guardias seguridad', severity: 'medium', area: 'RRHH', status: 'in_progress', daysOpen: 3, assignedTo: 'Laura S.' },
+    { id: 3, title: 'Rider técnico Villalobos incompleto', severity: 'medium', area: 'Producción', status: 'in_progress', daysOpen: 8, assignedTo: 'Miguel R.' },
+  ],
+};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -140,12 +144,23 @@ const areaIcons: Record<TaskArea, React.ReactNode> = {
 };
 
 const PreFestivalOperations = () => {
+  const { isDemo, eventId } = useFestivalConfig();
+
+  // Derived data based on demo mode
+  const vendors = isDemo ? MOCK_DATA.vendors : [];
+  const staffRoles = isDemo ? MOCK_DATA.staffRoles : [];
+  const productionItems = isDemo ? MOCK_DATA.productionItems : [];
+  const logisticsItems = isDemo ? MOCK_DATA.logisticsItems : [];
+  const calendarMilestones = isDemo ? MOCK_DATA.calendarMilestones : [];
+  const preProductionChecklist = isDemo ? MOCK_DATA.preProductionChecklist : [];
+  const preEventIssues = isDemo ? MOCK_DATA.preEventIssues : [];
+
   const {
     tasks, allTasks, milestones, tasksByStatus, stats, alerts, teamMembers,
     viewMode, setViewMode, filters, setFilters,
     addTask, updateTask, deleteTask, addSubtask, toggleSubtask, addComment, addAttachment,
     isLoading, error
-  } = usePreFestivalTasksSupabase();
+  } = usePreFestivalTasksSupabase(eventId, isDemo);
 
   const [selectedTask, setSelectedTask] = useState<PreFestivalTask | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -189,7 +204,7 @@ const PreFestivalOperations = () => {
     <div className="min-h-screen bg-background p-3 md:p-4 theme-operations">
       <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Operaciones", href: "#" }, { label: "Pre-Festival" }]} />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <div>
@@ -321,15 +336,15 @@ const PreFestivalOperations = () => {
                       <div className="flex-1 min-w-[200px]">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="Buscar tareas..." 
+                          <Input
+                            placeholder="Buscar tareas..."
                             className="pl-9 h-9"
                             value={filters.search}
                             onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                           />
                         </div>
                       </div>
-                      
+
                       <Select value={filters.area} onValueChange={(v) => setFilters(f => ({ ...f, area: v as TaskArea | 'all' }))}>
                         <SelectTrigger className="w-[130px] h-9">
                           <SelectValue placeholder="Área" />
@@ -341,7 +356,7 @@ const PreFestivalOperations = () => {
                           ))}
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v as TaskStatus | 'all' }))}>
                         <SelectTrigger className="w-[110px] h-9">
                           <SelectValue placeholder="Estado" />
@@ -550,7 +565,7 @@ const PreFestivalOperations = () => {
                   ))}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Checklist Pre-Producción</CardTitle>
@@ -592,7 +607,7 @@ const PreFestivalOperations = () => {
                   ))}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Issues / Bloqueos</CardTitle>
@@ -636,12 +651,12 @@ const PreFestivalOperations = () => {
                         <div className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10",
                           milestone.status === 'completed' ? "bg-success text-success-foreground" :
-                          milestone.status === 'in_progress' ? "bg-warning text-warning-foreground" :
-                          "bg-muted text-muted-foreground"
+                            milestone.status === 'in_progress' ? "bg-warning text-warning-foreground" :
+                              "bg-muted text-muted-foreground"
                         )}>
                           {milestone.status === 'completed' ? <CheckCircle2 className="h-4 w-4" /> :
-                           milestone.status === 'in_progress' ? <Clock className="h-4 w-4" /> :
-                           <CircleDot className="h-4 w-4" />}
+                            milestone.status === 'in_progress' ? <Clock className="h-4 w-4" /> :
+                              <CircleDot className="h-4 w-4" />}
                         </div>
                         <div className="flex-1 pb-4">
                           <div className="flex items-center gap-2">
@@ -660,9 +675,9 @@ const PreFestivalOperations = () => {
         </Tabs>
       </div>
 
-      <TaskDetailDrawer 
-        task={selectedTask} 
-        open={detailOpen} 
+      <TaskDetailDrawer
+        task={selectedTask}
+        open={detailOpen}
         onOpenChange={setDetailOpen}
         onUpdate={updateTask}
         onAddSubtask={addSubtask}
@@ -670,7 +685,7 @@ const PreFestivalOperations = () => {
         onAddComment={addComment}
         onAddAttachment={addAttachment}
       />
-      
+
       <TaskCreateDialog open={createOpen} onOpenChange={setCreateOpen} onSubmit={handleCreateTask} />
     </div>
   );

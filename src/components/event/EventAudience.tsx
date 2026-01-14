@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { festivalData } from "@/data/festivalData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 interface EventAudienceProps {
   eventId: string;
@@ -68,6 +68,7 @@ const CHART_COLORS = [
 ];
 
 const EventAudience = ({ eventId }: EventAudienceProps) => {
+  const { config } = useFestivalConfig();
   const [loading, setLoading] = useState(true);
   const [provinceData, setProvinceData] = useState<GeographicData[]>([]);
   const [cityData, setCityData] = useState<GeographicData[]>([]);
@@ -92,20 +93,35 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
 
   useEffect(() => {
     loadAudienceData();
-  }, [eventId]);
+  }, [eventId, config]);
 
   const loadAudienceData = () => {
     setLoading(true);
-    
-    // Usar datos de festivalData.audiencia
-    const { audiencia } = festivalData;
+
+    // Usar datos de config.audiencia
+    const { audiencia } = config;
     const total = audiencia.totalAsistentes;
+
+    // Check if there is actual data
+    if (total === 0) {
+      setLoading(false);
+      setProvinceData([]);
+      setCityData([]);
+      setAgeData([]);
+      setContactStats({
+        emailPercentage: 0,
+        phonePercentage: 0,
+        marketingConsentPercentage: 0,
+        totalTickets: 0,
+      });
+      return;
+    }
 
     // Cargar datos de provincias
     const provinceArray = audiencia.provincias.map(p => ({
       location: p.nombre,
       count: p.asistentes,
-      percentage: (p.asistentes / total) * 100
+      percentage: total > 0 ? (p.asistentes / total) * 100 : 0
     }));
     setProvinceData(provinceArray);
 
@@ -113,7 +129,7 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
     const cityArray = audiencia.ciudades.map(c => ({
       location: c.nombre,
       count: c.asistentes,
-      percentage: (c.asistentes / total) * 100
+      percentage: total > 0 ? (c.asistentes / total) * 100 : 0
     }));
     setCityData(cityArray);
 
@@ -121,15 +137,15 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
     const ageArray = audiencia.edades.map(e => ({
       range: e.rango,
       count: e.asistentes,
-      percentage: (e.asistentes / total) * 100
+      percentage: total > 0 ? (e.asistentes / total) * 100 : 0
     }));
     setAgeData(ageArray);
 
     // Cargar estadísticas de contacto
     setContactStats({
-      emailPercentage: (audiencia.contactStats.conEmail / total) * 100,
-      phonePercentage: (audiencia.contactStats.conTelefono / total) * 100,
-      marketingConsentPercentage: (audiencia.contactStats.consentimientoMarketing / total) * 100,
+      emailPercentage: total > 0 ? (audiencia.contactStats.conEmail / total) * 100 : 0,
+      phonePercentage: total > 0 ? (audiencia.contactStats.conTelefono / total) * 100 : 0,
+      marketingConsentPercentage: total > 0 ? (audiencia.contactStats.consentimientoMarketing / total) * 100 : 0,
       totalTickets: total,
     });
 
@@ -257,6 +273,20 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
     );
   }
 
+  if (contactStats.totalTickets === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed rounded-lg border-muted">
+        <div className="p-4 mb-4 rounded-full bg-muted/50">
+          <Users className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-medium">No hay datos de audiencia</h3>
+        <p className="max-w-md mt-2 text-sm text-muted-foreground">
+          Aún no se han registrado ventas o asistentes para este evento. Los datos de audiencia aparecerán aquí cuando comience la venta de entradas.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Contact Stats KPIs */}
@@ -313,7 +343,7 @@ const EventAudience = ({ eventId }: EventAudienceProps) => {
               <p className="text-xs text-muted-foreground mt-0.5">
                 {Math.round(
                   (contactStats.marketingConsentPercentage / 100) *
-                    contactStats.totalTickets
+                  contactStats.totalTickets
                 )}{" "}
                 / {contactStats.totalTickets}
               </p>

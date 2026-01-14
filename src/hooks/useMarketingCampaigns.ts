@@ -35,12 +35,43 @@ const fetchCampaigns = async (): Promise<MarketingCampaign[]> => {
   return (data || []) as MarketingCampaign[];
 };
 
-export function useMarketingCampaigns() {
+export function useMarketingCampaigns(eventId?: string, isDemo: boolean = false) {
   const queryClient = useQueryClient();
 
   const { data: campaigns = [], isLoading, error } = useQuery({
-    queryKey: ['marketing-campaigns'],
-    queryFn: fetchCampaigns,
+    queryKey: ['marketing-campaigns', eventId, isDemo],
+    queryFn: async () => {
+      // Validate UUID if not demo
+      if (!isDemo && eventId) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(eventId)) {
+          console.warn(`Invalid UUID format for marketing campaigns event ID: ${eventId}. Returning empty list.`);
+          return [] as MarketingCampaign[];
+        }
+      }
+
+      let query = supabase
+        .from('marketing_campaigns')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!isDemo && eventId) {
+        query = query.eq('event_id', eventId);
+      } else if (isDemo) {
+        // For demo, we ideally only want rows without specific event_id or tagged as demo
+        // For now, let's assume global rows are demo rows to preserve legacy behavior, 
+        // but arguably we should filter. 
+        // If we strictly want isolation: 
+        // query = query.is('event_id', null); 
+        // But doing so might hide existing demo data if column doesn't exist or is ignored.
+        // Let's stick to: if Real event, filter STRICTLY. If Demo, take all (fallback).
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as MarketingCampaign[];
+    },
+    enabled: !!eventId || isDemo
   });
 
   const addCampaignMutation = useMutation({
@@ -63,6 +94,7 @@ export function useMarketingCampaigns() {
           ctr: campaign.ctr || 0,
           observation: campaign.observation || null,
           team_notes: campaign.team_notes || null,
+          event_id: !isDemo ? eventId : null // Associate with event if real
         })
         .select()
         .single();

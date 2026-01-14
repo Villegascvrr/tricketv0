@@ -12,6 +12,16 @@ export interface Event {
   total_capacity: number | null;
 }
 
+const DEMO_EVENT: Event = {
+  id: 'demo-event-id',
+  name: 'Festival Demo Tricket',
+  type: 'Festival',
+  venue: 'Live Sur Stadium',
+  start_date: '2025-03-29',
+  end_date: '2025-03-30',
+  total_capacity: 20000
+};
+
 interface EventContextType {
   events: Event[];
   selectedEvent: Event | null;
@@ -33,6 +43,16 @@ export const useEvent = () => {
   return context;
 };
 
+const PRIMAVERANDO_EVENT: Event = {
+  id: 'primaverando-2025',
+  name: 'Primaverando Festival 2025',
+  type: 'Festival',
+  venue: 'Parque del Alamillo, Sevilla',
+  start_date: '2025-03-29',
+  end_date: '2025-03-29',
+  total_capacity: 25000
+};
+
 export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
@@ -51,12 +71,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           .order('start_date', { ascending: false });
 
         if (error) throw error;
-        
+
         const fetchedEvents = data || [];
-        setEvents(fetchedEvents);
-        selectInitialEvent(fetchedEvents);
+        // Inject Demo event for Admins if not already present (virtual event)
+        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025')];
+        setEvents(allEvents);
+        selectInitialEvent(allEvents);
       } else if (user) {
-        // Festival cliente: solo ver eventos asignados via team_members
+        // Festival cliente: ver eventos asignados + DEMO
         const { data: teamData, error: teamError } = await supabase
           .from('team_members')
           .select('event_id')
@@ -66,44 +88,26 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (teamError) throw teamError;
 
         const eventIds = teamData?.map(t => t.event_id).filter(Boolean) as string[] || [];
-        
-        if (eventIds.length > 0) {
-          const { data: eventsData, error: eventsError } = await supabase
-            .from('events')
-            .select('id, name, type, venue, start_date, end_date, total_capacity')
-            .in('id', eventIds)
-            .order('start_date', { ascending: false });
 
-          if (eventsError) throw eventsError;
-          
-          const fetchedEvents = eventsData || [];
-          setEvents(fetchedEvents);
-          selectInitialEvent(fetchedEvents);
-        } else {
-          // Usuario sin eventos asignados - mostrar todos (demo/desarrollo)
-          const { data, error } = await supabase
-            .from('events')
-            .select('id, name, type, venue, start_date, end_date, total_capacity')
-            .order('start_date', { ascending: false });
-
-          if (error) throw error;
-          
-          const fetchedEvents = data || [];
-          setEvents(fetchedEvents);
-          selectInitialEvent(fetchedEvents);
-        }
-      } else {
-        // Usuario no autenticado - mostrar eventos públicos (demo)
-        const { data, error } = await supabase
+        // PROVISIONAL: Always inject Primaverando + Demo for everyone
+        const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select('id, name, type, venue, start_date, end_date, total_capacity')
+          .in('id', eventIds)
           .order('start_date', { ascending: false });
 
-        if (error) throw error;
-        
-        const fetchedEvents = data || [];
-        setEvents(fetchedEvents);
-        selectInitialEvent(fetchedEvents);
+        if (eventsError) throw eventsError;
+
+        const fetchedEvents = eventsData || [];
+        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025')];
+
+        setEvents(allEvents);
+        selectInitialEvent(allEvents);
+      } else {
+        // Usuario no autenticado - mostrar eventos públicos (en este caso solo Demo)
+        // PROVISIONAL: Solo mostrar demo event si no hay usuario
+        setEvents([PRIMAVERANDO_EVENT, DEMO_EVENT]);
+        selectInitialEvent([PRIMAVERANDO_EVENT, DEMO_EVENT]);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -122,7 +126,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
     }
-    
+
     // Select first event if available
     if (fetchedEvents.length > 0) {
       setSelectedEvent(fetchedEvents[0]);

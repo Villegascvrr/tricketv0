@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, TrendingDown, Target, Calendar, Users, Euro, BarChart3, ArrowUpRight, ArrowDownRight, AlertTriangle, CheckCircle2, Zap, Calculator, Database } from "lucide-react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -18,34 +18,35 @@ import {
   Legend,
   ComposedChart
 } from "recharts";
-import { festivalData } from "@/data/festivalData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { useTicketStats } from "@/hooks/useTicketStats";
 import { useEvent } from "@/contexts/EventContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const SalesForecasts = () => {
+  const { config: festivalData, isDemo } = useFestivalConfig();
   const { selectedEvent } = useEvent();
   const eventId = selectedEvent?.id || "";
   const { stats, loading, error } = useTicketStats(eventId);
-  
+
   // Use real data from stats or fallback to festivalData
   const ticketsSold = stats?.totalSold ?? festivalData.overview.entradasVendidas;
   const grossRevenue = stats?.grossRevenue ?? festivalData.overview.ingresosTotales;
   const occupancy = stats?.occupancyRate ?? festivalData.overview.ocupacion * 100;
-  const avgPrice = stats?.avgTicketPrice ?? (festivalData.overview.ingresosTotales / festivalData.overview.entradasVendidas);
+  const avgPrice = stats?.avgTicketPrice ?? (festivalData.overview.ingresosTotales && festivalData.overview.entradasVendidas ? festivalData.overview.ingresosTotales / festivalData.overview.entradasVendidas : 0);
   const totalCapacity = festivalData.aforoTotal; // Use festivalData for capacity
   const ticketsRemaining = totalCapacity - ticketsSold;
   const targetRevenue = totalCapacity * festivalData.precios.general;
-  const revenueProgress = (grossRevenue / targetRevenue) * 100;
-  
+  const revenueProgress = targetRevenue > 0 ? (grossRevenue / targetRevenue) * 100 : 0;
+
   // Days until festival - use real data if available
   const daysRemaining = stats?.daysToFestival ?? (() => {
     const festivalDate = new Date('2025-03-29');
     const today = new Date();
     return Math.ceil((festivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   })();
-  
+
   // Transform salesOverTime from stats for charts
   const dailySalesData = useMemo(() => {
     if (stats?.salesOverTime && stats.salesOverTime.length > 0) {
@@ -61,33 +62,38 @@ const SalesForecasts = () => {
         };
       });
     }
-    // Fallback to demo data generation
-    const data = [];
-    const startDate = new Date('2024-11-01');
-    const today = new Date();
-    let accumulated = 0;
-    
-    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-      const dayOfWeek = d.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      let dailySales = Math.floor(Math.random() * 150) + 80;
-      if (isWeekend) dailySales *= 1.4;
-      const daysFromStart = Math.floor((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysFromStart < 14) dailySales *= 1.8;
-      if (d.getMonth() === 10 && d.getDate() >= 25 && d.getDate() <= 30) {
-        dailySales *= 2.2;
+
+    // Only generate fallback data for DEMO
+    if (isDemo) {
+      const data = [];
+      const startDate = new Date('2024-11-01');
+      const today = new Date();
+      let accumulated = 0;
+
+      for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+        const dayOfWeek = d.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        let dailySales = Math.floor(Math.random() * 150) + 80;
+        if (isWeekend) dailySales *= 1.4;
+        const daysFromStart = Math.floor((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysFromStart < 14) dailySales *= 1.8;
+        if (d.getMonth() === 10 && d.getDate() >= 25 && d.getDate() <= 30) {
+          dailySales *= 2.2;
+        }
+        accumulated += dailySales;
+        data.push({
+          date: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+          fullDate: new Date(d),
+          ventas: Math.floor(dailySales),
+          acumulado: Math.min(accumulated, ticketsSold),
+          ingresos: Math.floor(dailySales * 25)
+        });
       }
-      accumulated += dailySales;
-      data.push({
-        date: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
-        fullDate: new Date(d),
-        ventas: Math.floor(dailySales),
-        acumulado: Math.min(accumulated, ticketsSold),
-        ingresos: Math.floor(dailySales * 25)
-      });
+      return data;
     }
-    return data;
-  }, [stats?.salesOverTime, ticketsSold]);
+
+    return [];
+  }, [stats?.salesOverTime, ticketsSold, isDemo]);
 
   // Calculate weekly comparison from real data
   const weeklyComparison = useMemo(() => {
@@ -101,10 +107,10 @@ const SalesForecasts = () => {
         const weekKey = weekStart.toISOString().split('T')[0];
         weeklyData[weekKey] = (weeklyData[weekKey] || 0) + item.sales;
       });
-      
+
       const weeks = Object.entries(weeklyData).sort(([a], [b]) => a.localeCompare(b));
       const lastWeeks = weeks.slice(-5);
-      
+
       return lastWeeks.map(([_, tickets], index) => ({
         semana: index === lastWeeks.length - 1 ? 'Actual' : `Sem -${lastWeeks.length - 1 - index}`,
         actual: tickets,
@@ -113,20 +119,23 @@ const SalesForecasts = () => {
       }));
     }
     // Fallback static data
-    return [
-      { semana: 'Sem -4', actual: 850, anterior: 720, proyectado: 800 },
-      { semana: 'Sem -3', actual: 1120, anterior: 890, proyectado: 950 },
-      { semana: 'Sem -2', actual: 1450, anterior: 1100, proyectado: 1200 },
-      { semana: 'Sem -1', actual: 980, anterior: 1250, proyectado: 1100 },
-      { semana: 'Actual', actual: 1280, anterior: 1050, proyectado: 1150 },
-    ];
-  }, [stats?.salesOverTime]);
+    if (isDemo) {
+      return [
+        { semana: 'Sem -4', actual: 850, anterior: 720, proyectado: 800 },
+        { semana: 'Sem -3', actual: 1120, anterior: 890, proyectado: 950 },
+        { semana: 'Sem -2', actual: 1450, anterior: 1100, proyectado: 1200 },
+        { semana: 'Sem -1', actual: 980, anterior: 1250, proyectado: 1100 },
+        { semana: 'Actual', actual: 1280, anterior: 1050, proyectado: 1150 },
+      ];
+    }
+    return [];
+  }, [stats?.salesOverTime, isDemo]);
 
   // Calculate week-over-week change
   const lastWeekSales = weeklyComparison[weeklyComparison.length - 2]?.actual ?? 0;
   const thisWeekSales = weeklyComparison[weeklyComparison.length - 1]?.actual ?? 0;
   const weekChange = lastWeekSales > 0 ? ((thisWeekSales - lastWeekSales) / lastWeekSales) * 100 : 0;
-  
+
   // Monthly projection data from real stats
   const projectionData = useMemo(() => {
     if (stats?.salesOverTime && stats.salesOverTime.length > 0) {
@@ -136,7 +145,7 @@ const SalesForecasts = () => {
         const monthKey = date.toLocaleDateString('es-ES', { month: 'short' });
         monthlyData[monthKey] = (monthlyData[monthKey] || 0) + item.sales;
       });
-      
+
       const months = ['nov', 'dic', 'ene', 'feb', 'mar'];
       return months.map((mes) => {
         const real = monthlyData[mes] || null;
@@ -148,14 +157,17 @@ const SalesForecasts = () => {
         };
       });
     }
-    return [
-      { mes: 'Nov', real: 4200, proyectado: 4000 },
-      { mes: 'Dic', real: 3800, proyectado: 4500 },
-      { mes: 'Ene', real: null, proyectado: 3500 },
-      { mes: 'Feb', real: null, proyectado: 2800 },
-      { mes: 'Mar', real: null, proyectado: 1950 },
-    ];
-  }, [stats?.salesOverTime, stats?.avgDailySales]);
+    if (isDemo) {
+      return [
+        { mes: 'Nov', real: 4200, proyectado: 4000 },
+        { mes: 'Dic', real: 3800, proyectado: 4500 },
+        { mes: 'Ene', real: null, proyectado: 3500 },
+        { mes: 'Feb', real: null, proyectado: 2800 },
+        { mes: 'Mar', real: null, proyectado: 1950 },
+      ];
+    }
+    return [];
+  }, [stats?.salesOverTime, stats?.avgDailySales, isDemo]);
 
   // ========== DECISION CALCULATIONS ==========
   const salesStartDate = new Date('2024-11-01');
@@ -165,24 +177,24 @@ const SalesForecasts = () => {
   const daysSinceLaunch = Math.ceil((today.getTime() - salesStartDate.getTime()) / (1000 * 60 * 60 * 24));
   const targetOccupancy = 0.85; // 85% target
   const targetTickets = Math.floor(totalCapacity * targetOccupancy);
-  
+
   // Use real stats for calculations when available
   const expectedTicketsToday = Math.floor((daysSinceLaunch / totalSalesDays) * targetTickets);
   const gapVsTarget = stats?.salesGap ?? (ticketsSold - expectedTicketsToday);
   const gapPercentage = expectedTicketsToday > 0 ? ((ticketsSold - expectedTicketsToday) / expectedTicketsToday) * 100 : 0;
-  
+
   // Required daily pace - use real data when available
   const ticketsNeededToReachTarget = targetTickets - ticketsSold;
   const requiredDailyPace = stats?.requiredDailyRate ?? Math.ceil(ticketsNeededToReachTarget / Math.max(daysRemaining, 1));
   const currentDailyAverage = stats?.avgDailySales ?? Math.floor(ticketsSold / Math.max(daysSinceLaunch, 1));
   const paceRatio = currentDailyAverage > 0 ? requiredDailyPace / currentDailyAverage : 1;
-  
+
   // Scenarios calculation
   const scenarios = useMemo(() => {
     const conservativeRate = currentDailyAverage * 0.8;
     const realisticRate = currentDailyAverage;
     const optimisticRate = currentDailyAverage * 1.3;
-    
+
     return {
       conservative: {
         dailyRate: Math.floor(conservativeRate),
@@ -206,18 +218,18 @@ const SalesForecasts = () => {
   }, [currentDailyAverage, daysRemaining, ticketsSold, totalCapacity, targetTickets]);
 
   // Get sales by provider from real data
-  const salesByProvider: { provider: string; tickets: number; revenue: number; percentage: number }[] = 
+  const salesByProvider: { provider: string; tickets: number; revenue: number; percentage: number }[] =
     stats?.salesByProvider?.map(p => ({
       provider: p.provider,
       tickets: p.sold,
       revenue: p.revenue,
       percentage: p.occupancy
-    })) ?? festivalData.ticketingProviders.map(p => ({
+    })) ?? (isDemo ? festivalData.ticketingProviders.map(p => ({
       provider: p.nombre,
       tickets: p.vendidas,
       revenue: p.vendidas * 25,
       percentage: (p.vendidas / p.capacidad) * 100
-    }));
+    })) : []);
 
   // Loading state
   if (loading) {
@@ -246,7 +258,7 @@ const SalesForecasts = () => {
     <div className="min-h-screen bg-background p-3 md:p-4 theme-sales">
       <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Ventas & Previsiones" }]} />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
           <div className="flex items-center gap-3">
@@ -309,7 +321,7 @@ const SalesForecasts = () => {
                   Faltan <span className="font-medium text-foreground">{(85 - occupancy).toFixed(1)}%</span> para alcanzar el objetivo
                 </p>
               </div>
-              
+
               {/* Ingresos */}
               <div className="space-y-3">
                 <div className="flex justify-between items-end">
@@ -327,7 +339,7 @@ const SalesForecasts = () => {
                   <span className="font-medium text-foreground">{revenueProgress.toFixed(1)}%</span> del objetivo de ingresos
                 </p>
               </div>
-              
+
               {/* Entradas */}
               <div className="space-y-3">
                 <div className="flex justify-between items-end">
@@ -407,9 +419,9 @@ const SalesForecasts = () => {
               <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Ritmo Necesario</p>
               <p className="text-2xl font-bold">{requiredDailyPace.toLocaleString('es-ES')}<span className="text-sm font-normal text-muted-foreground">/día</span></p>
               <p className="text-[10px] text-muted-foreground mt-1">
-                {paceRatio <= 1 ? '✓ Alcanzable con ritmo actual' : 
-                 paceRatio <= 1.5 ? `Requiere +${((paceRatio - 1) * 100).toFixed(0)}% más ritmo` :
-                 `⚠ Requiere ${paceRatio.toFixed(1)}x el ritmo actual`}
+                {paceRatio <= 1 ? '✓ Alcanzable con ritmo actual' :
+                  paceRatio <= 1.5 ? `Requiere +${((paceRatio - 1) * 100).toFixed(0)}% más ritmo` :
+                    `⚠ Requiere ${paceRatio.toFixed(1)}x el ritmo actual`}
               </p>
             </CardContent>
           </Card>
@@ -563,7 +575,7 @@ const SalesForecasts = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -580,7 +592,7 @@ const SalesForecasts = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -599,7 +611,7 @@ const SalesForecasts = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -634,37 +646,37 @@ const SalesForecasts = () => {
                   <AreaChart data={dailySalesData}>
                     <defs>
                       <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 11 }} 
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11 }}
                       tickLine={false}
                       interval="preserveStartEnd"
                     />
-                    <YAxis 
-                      tick={{ fontSize: 11 }} 
+                    <YAxis
+                      tick={{ fontSize: 11 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
                       }}
                       formatter={(value: number) => [value.toLocaleString('es-ES'), 'Entradas']}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="ventas" 
-                      stroke="hsl(var(--primary))" 
+                    <Area
+                      type="monotone"
+                      dataKey="ventas"
+                      stroke="hsl(var(--primary))"
                       strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorVentas)" 
+                      fillOpacity={1}
+                      fill="url(#colorVentas)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -683,36 +695,36 @@ const SalesForecasts = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={projectionData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="mes" 
-                      tick={{ fontSize: 11 }} 
+                    <XAxis
+                      dataKey="mes"
+                      tick={{ fontSize: 11 }}
                       tickLine={false}
                     />
-                    <YAxis 
-                      tick={{ fontSize: 11 }} 
+                    <YAxis
+                      tick={{ fontSize: 11 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
                       }}
                       formatter={(value: number) => value ? [value.toLocaleString('es-ES'), ''] : ['—', '']}
                     />
                     <Legend />
-                    <Bar 
-                      dataKey="real" 
-                      name="Real" 
-                      fill="hsl(var(--primary))" 
+                    <Bar
+                      dataKey="real"
+                      name="Real"
+                      fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="proyectado" 
+                    <Line
+                      type="monotone"
+                      dataKey="proyectado"
                       name="Proyectado"
-                      stroke="hsl(var(--muted-foreground))" 
+                      stroke="hsl(var(--muted-foreground))"
                       strokeWidth={2}
                       strokeDasharray="5 5"
                       dot={{ fill: 'hsl(var(--muted-foreground))' }}
@@ -753,42 +765,42 @@ const SalesForecasts = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyComparison} barGap={8}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                  <XAxis 
-                    dataKey="semana" 
-                    tick={{ fontSize: 11 }} 
+                  <XAxis
+                    dataKey="semana"
+                    tick={{ fontSize: 11 }}
                     tickLine={false}
                   />
-                  <YAxis 
-                    tick={{ fontSize: 11 }} 
+                  <YAxis
+                    tick={{ fontSize: 11 }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px'
                     }}
                     formatter={(value: number) => [value.toLocaleString('es-ES') + ' entradas', '']}
                   />
-                  <Bar 
-                    dataKey="actual" 
+                  <Bar
+                    dataKey="actual"
                     name="Actual"
-                    fill="hsl(var(--primary))" 
+                    fill="hsl(var(--primary))"
                     radius={[4, 4, 0, 0]}
                   />
-                  <Bar 
-                    dataKey="anterior" 
+                  <Bar
+                    dataKey="anterior"
                     name="Periodo anterior"
-                    fill="hsl(var(--muted-foreground))" 
+                    fill="hsl(var(--muted-foreground))"
                     opacity={0.4}
                     radius={[4, 4, 0, 0]}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="proyectado" 
+                  <Line
+                    type="monotone"
+                    dataKey="proyectado"
                     name="Proyectado"
-                    stroke="hsl(var(--accent))" 
+                    stroke="hsl(var(--accent))"
                     strokeWidth={2}
                     dot={{ fill: 'hsl(var(--accent))', strokeWidth: 2 }}
                   />

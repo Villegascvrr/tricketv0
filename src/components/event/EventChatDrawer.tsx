@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ChatMessageRenderer from "./ChatMessageRenderer";
-import { festivalData, getAIContext } from "@/data/festivalData";
+import { getAIContext } from "@/data/demoData";
 
 interface Message {
   role: "user" | "assistant";
@@ -78,24 +78,24 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
     if (!input.trim() || isLoading) return;
 
     let userMessage = input.trim();
-    
+
     // Check if it's a command and expand it (except for web research commands)
     if (userMessage.startsWith('/')) {
       const commandKey = userMessage.split(' ')[0].toLowerCase();
       const expandedCommand = commands[commandKey];
-      
+
       // For web research commands, keep the original message
       if (!isWebResearchCommand(userMessage) && expandedCommand) {
         userMessage = expandedCommand;
       }
     }
-    
+
     setInput("");
-    
+
     // Check if this is a web search command
     const isWebSearch = isWebResearchCommand(userMessage);
     setIsWebSearching(isWebSearch);
-    
+
     // Add user message
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
@@ -105,24 +105,24 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
 
     try {
       abortControllerRef.current = new AbortController();
-      
+
       // Build request body - include local context for demo mode
-      const requestBody = isDemo 
+      const requestBody = isDemo
         ? {
-            eventId: "demo-primaverando-2025",
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
-              role: m.role,
-              content: m.content
-            })),
-            localContext: getAIContext(), // Include rich Primaverando context
-          }
+          eventId: "demo-primaverando-2025",
+          messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+          localContext: getAIContext(), // Include rich Primaverando context
+        }
         : {
-            eventId,
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({
-              role: m.role,
-              content: m.content
-            }))
-          };
+          eventId,
+          messages: [...messages, { role: "user", content: userMessage }].map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        };
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-event-analysis`,
@@ -172,7 +172,7 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
 
           // Handle CRLF
           if (line.endsWith('\r')) line = line.slice(0, -1);
-          
+
           // Skip SSE comments and empty lines
           if (line.startsWith(':') || line.trim() === '') continue;
           if (!line.startsWith('data: ')) continue;
@@ -254,8 +254,8 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
+      <SheetContent
+        side="right"
         className="p-0 flex flex-col w-full sm:max-w-none [&>button]:hidden"
       >
         <SheetHeader className="p-6 pb-4 border-b">
@@ -449,8 +449,8 @@ const EventChatDrawer = ({ eventId, eventName, open, onOpenChange, isDemo = fals
               disabled={isLoading}
               className="flex-1"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               size="icon"
               disabled={isLoading || !input.trim()}
               className="flex-shrink-0"

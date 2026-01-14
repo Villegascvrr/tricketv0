@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { 
-  TrendingUp, 
-  Megaphone, 
-  Settings, 
-  Users, 
-  Truck, 
+import {
+  TrendingUp,
+  Megaphone,
+  Settings,
+  Users,
+  Truck,
   AlertTriangle,
   CheckCircle2,
   AlertCircle,
@@ -36,23 +36,23 @@ interface FestivalStatusOverviewProps {
 const getStatusConfig = (status: StatusLevel) => {
   switch (status) {
     case "good":
-      return { 
-        icon: CheckCircle2, 
-        color: "text-success", 
+      return {
+        icon: CheckCircle2,
+        color: "text-success",
         bg: "bg-success/10",
         dot: "bg-success"
       };
     case "warning":
-      return { 
-        icon: AlertCircle, 
-        color: "text-warning", 
+      return {
+        icon: AlertCircle,
+        color: "text-warning",
         bg: "bg-warning/10",
         dot: "bg-warning"
       };
     case "critical":
-      return { 
-        icon: XCircle, 
-        color: "text-danger", 
+      return {
+        icon: XCircle,
+        color: "text-danger",
         bg: "bg-danger/10",
         dot: "bg-danger"
       };
@@ -63,18 +63,22 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
   const navigate = useNavigate();
   const { stats, loading } = useTicketStats(eventId);
   const recommendations = generateAIRecommendations();
-  
+
   // Build status items based on real/demo data
   const getStatusItems = (): StatusItem[] => {
     if (!stats) return [];
-    
+
+    // Core Sales Data - Dynamic for both real and demo
     const ocupacion = stats.targetProgress;
     const ventasStatus: StatusLevel = ocupacion >= 80 ? "good" : ocupacion >= 65 ? "warning" : "critical";
-    
-    // Count critical AI recommendations
+
+    // Count critical AI recommendations - Dynamic for both
     const criticalAlerts = recommendations.filter(r => r.priority === 'high').length;
     const alertStatus: StatusLevel = criticalAlerts >= 2 ? "critical" : criticalAlerts >= 1 ? "warning" : "good";
-    
+
+    // Feature checks for real vs demo
+    const isDemo = stats.isDemo;
+
     return [
       {
         label: "Ventas",
@@ -87,33 +91,33 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
       {
         label: "Marketing",
         icon: Megaphone,
-        status: "good" as StatusLevel,
-        detail: "3 campañas activas",
-        tooltip: "Instagram Ads, Retargeting 2024, Email Newsletter",
+        status: isDemo ? "good" : "warning",
+        detail: isDemo ? "3 campañas activas" : "Sin campañas",
+        tooltip: isDemo ? "Instagram Ads, Retargeting 2024, Email Newsletter" : "No hay campañas activas registradas",
         route: "/marketing",
       },
       {
         label: "Operaciones",
         icon: Settings,
-        status: "good" as StatusLevel,
-        detail: "78% tareas cerradas",
-        tooltip: "28 de 36 tareas pre-festival completadas",
+        status: isDemo ? "good" : "warning",
+        detail: isDemo ? "78% tareas cerradas" : "0% completado",
+        tooltip: isDemo ? "28 de 36 tareas pre-festival completadas" : "Planificación operativa pendiente",
         route: "/operations/pre-festival",
       },
       {
         label: "Personal",
         icon: Users,
-        status: "warning" as StatusLevel,
-        detail: "Faltan 12 roles",
-        tooltip: "8 seguridad, 3 barra, 1 producción por confirmar",
+        status: isDemo ? "warning" : "critical",
+        detail: isDemo ? "Faltan 12 roles" : "Sin personal",
+        tooltip: isDemo ? "8 seguridad, 3 barra, 1 producción por confirmar" : "Cuadrante de personal vacío",
         route: "/team",
       },
       {
         label: "Proveedores",
         icon: Truck,
-        status: "good" as StatusLevel,
-        detail: "100% confirmados",
-        tooltip: "Sonido, catering, seguridad y limpieza OK",
+        status: isDemo ? "good" : "warning",
+        detail: isDemo ? "100% confirmados" : "Pendiente",
+        tooltip: isDemo ? "Sonido, catering, seguridad y limpieza OK" : "Sin proveedores confirmados",
         route: "/integrations",
       },
       {
@@ -121,7 +125,7 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
         icon: AlertTriangle,
         status: alertStatus,
         detail: criticalAlerts > 0 ? `${criticalAlerts} críticas` : "Sin alertas",
-        tooltip: criticalAlerts > 0 
+        tooltip: criticalAlerts > 0
           ? recommendations.filter(r => r.priority === 'high').map(r => r.title).slice(0, 2).join(', ')
           : "No hay alertas críticas pendientes",
         route: "/ai-recommendations",
@@ -147,15 +151,15 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
   }
 
   const statusItems = getStatusItems();
-  
-  const overallStatus: StatusLevel = statusItems.some(i => i.status === "critical") 
-    ? "critical" 
-    : statusItems.some(i => i.status === "warning") 
-      ? "warning" 
+
+  const overallStatus: StatusLevel = statusItems.some(i => i.status === "critical")
+    ? "critical"
+    : statusItems.some(i => i.status === "warning")
+      ? "warning"
       : "good";
 
   const overallConfig = getStatusConfig(overallStatus);
-  
+
   const statusLabels = {
     good: "En buen estado",
     warning: "Requiere atención",
@@ -175,7 +179,7 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
                   <p className="text-xs">
-                    Resumen rápido del estado de cada área. 
+                    Resumen rápido del estado de cada área.
                     {stats?.isDemo && " (Datos de demostración)"}
                     {stats?.hasRealData && " (Datos reales de Supabase)"}
                   </p>
@@ -195,17 +199,16 @@ const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef123456789
             {statusItems.map((item) => {
               const config = getStatusConfig(item.status);
               const ItemIcon = item.icon;
-              
+
               return (
                 <Tooltip key={item.label}>
                   <TooltipTrigger asChild>
-                    <div 
+                    <div
                       onClick={() => navigate(item.route)}
-                      className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm group ${
-                        item.status === "critical" ? "border-danger/40 bg-danger/5 hover:bg-danger/10" :
-                        item.status === "warning" ? "border-warning/40 bg-warning/5 hover:bg-warning/10" :
-                        "border-border/50 bg-card hover:bg-muted/40"
-                      }`}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm group ${item.status === "critical" ? "border-danger/40 bg-danger/5 hover:bg-danger/10" :
+                          item.status === "warning" ? "border-warning/40 bg-warning/5 hover:bg-warning/10" :
+                            "border-border/50 bg-card hover:bg-muted/40"
+                        }`}
                     >
                       <div className={`p-1.5 rounded-lg ${config.bg}`}>
                         <ItemIcon className={`h-4 w-4 ${config.color}`} />

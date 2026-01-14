@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Mail, 
-  Send, 
-  MousePointerClick, 
-  Eye, 
+import {
+  Mail,
+  Send,
+  MousePointerClick,
+  Eye,
   ShoppingCart,
   TrendingUp,
   TrendingDown,
@@ -15,13 +15,13 @@ import {
   BarChart3,
   ArrowUpRight
 } from "lucide-react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -124,7 +124,38 @@ const channelComparison = [
   { channel: "Influencers", conversions: 185, revenue: 11100, cpa: 15.0, roi: 2.2 },
 ];
 
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
+
+const getTrendIcon = (current: number, benchmark: number) => {
+  if (current > benchmark * 1.1) return <TrendingUp className="h-3 w-3 text-success" />;
+  if (current < benchmark * 0.9) return <TrendingDown className="h-3 w-3 text-destructive" />;
+  return <Minus className="h-3 w-3 text-muted-foreground" />;
+};
+
 const EmailMarketingSection = () => {
+  const { isDemo, eventName } = useFestivalConfig();
+
+  if (!isDemo) {
+    return (
+      <Card className="border-2 border-dashed border-muted p-12 text-center">
+        <div className="flex flex-col items-center justify-center">
+          <div className="p-4 mb-4 rounded-full bg-muted/50">
+            <Mail className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium">No hay campañas de email activas</h3>
+          <p className="max-w-md mt-2 text-sm text-muted-foreground">
+            {eventName} aún no tiene historial de campañas de email marketing.
+            Conecta tu cuenta de Mailchimp o inicia tu primera campaña para ver métricas aquí.
+          </p>
+          <Button variant="outline" className="mt-4 gap-2">
+            <ExternalLink className="h-4 w-4" />
+            Conectar Mailchimp
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   const totalSent = emailCampaigns.reduce((acc, c) => acc + c.recipients, 0);
   const totalOpened = emailCampaigns.reduce((acc, c) => acc + c.opened, 0);
   const totalClicked = emailCampaigns.reduce((acc, c) => acc + c.clicked, 0);
@@ -133,12 +164,6 @@ const EmailMarketingSection = () => {
   const avgOpenRate = (totalOpened / totalSent * 100).toFixed(1);
   const avgClickRate = (totalClicked / totalOpened * 100).toFixed(1);
   const avgConversionRate = (totalConversions / totalClicked * 100).toFixed(1);
-
-  const getTrendIcon = (current: number, benchmark: number) => {
-    if (current > benchmark * 1.1) return <TrendingUp className="h-3 w-3 text-success" />;
-    if (current < benchmark * 0.9) return <TrendingDown className="h-3 w-3 text-destructive" />;
-    return <Minus className="h-3 w-3 text-muted-foreground" />;
-  };
 
   return (
     <div className="space-y-4">
@@ -170,7 +195,7 @@ const EmailMarketingSection = () => {
             <p className="text-[10px] text-muted-foreground">Emails enviados</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-3 pb-2">
             <div className="flex items-center justify-between">
@@ -181,7 +206,7 @@ const EmailMarketingSection = () => {
             <p className="text-[10px] text-muted-foreground">Tasa apertura</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-3 pb-2">
             <div className="flex items-center justify-between">
@@ -192,7 +217,7 @@ const EmailMarketingSection = () => {
             <p className="text-[10px] text-muted-foreground">Tasa clics</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-3 pb-2">
             <div className="flex items-center justify-between">
@@ -203,7 +228,7 @@ const EmailMarketingSection = () => {
             <p className="text-[10px] text-muted-foreground">Conversiones</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-3 pb-2">
             <div className="flex items-center justify-between">
@@ -227,8 +252,8 @@ const EmailMarketingSection = () => {
           <CardContent>
             <div className="space-y-2">
               {emailCampaigns.map((campaign) => (
-                <div 
-                  key={campaign.id} 
+                <div
+                  key={campaign.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -238,13 +263,12 @@ const EmailMarketingSection = () => {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium truncate">{campaign.name}</span>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-[10px] px-1.5 py-0 shrink-0 ${
-                            campaign.status === 'completed' 
-                              ? 'border-success/50 text-success' 
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 shrink-0 ${campaign.status === 'completed'
+                              ? 'border-success/50 text-success'
                               : 'border-blue-500/50 text-blue-500'
-                          }`}
+                            }`}
                         >
                           {campaign.status === 'completed' ? 'Completada' : 'Enviada'}
                         </Badge>
@@ -254,7 +278,7 @@ const EmailMarketingSection = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-center">
                       <p className="text-xs font-medium">{campaign.openRate}%</p>
@@ -295,9 +319,9 @@ const EmailMarketingSection = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                   <XAxis dataKey="campaign" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--popover))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '11px'
@@ -312,20 +336,20 @@ const EmailMarketingSection = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: '10px' }} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="openRate" 
+                  <Area
+                    type="monotone"
+                    dataKey="openRate"
                     name="Apertura %"
-                    stroke="hsl(var(--primary))" 
-                    fill="hsl(var(--primary) / 0.2)" 
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary) / 0.2)"
                     strokeWidth={2}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="clickRate" 
+                  <Area
+                    type="monotone"
+                    dataKey="clickRate"
                     name="Clics %"
-                    stroke="#f59e0b" 
-                    fill="rgba(245, 158, 11, 0.2)" 
+                    stroke="#f59e0b"
+                    fill="rgba(245, 158, 11, 0.2)"
                     strokeWidth={2}
                   />
                 </AreaChart>
@@ -349,16 +373,16 @@ const EmailMarketingSection = () => {
                 <BarChart data={channelComparison} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                   <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis 
-                    type="category" 
-                    dataKey="channel" 
-                    tick={{ fontSize: 10 }} 
-                    stroke="hsl(var(--muted-foreground))" 
+                  <YAxis
+                    type="category"
+                    dataKey="channel"
+                    tick={{ fontSize: 10 }}
+                    stroke="hsl(var(--muted-foreground))"
                     width={80}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--popover))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '11px'
@@ -370,16 +394,16 @@ const EmailMarketingSection = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: '10px' }} />
-                  <Bar 
-                    dataKey="conversions" 
+                  <Bar
+                    dataKey="conversions"
                     name="Conversiones"
-                    fill="hsl(var(--primary))" 
+                    fill="hsl(var(--primary))"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            
+
             {/* ROI Comparison */}
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-[10px] text-muted-foreground mb-2">ROI por canal</p>
@@ -408,8 +432,8 @@ const EmailMarketingSection = () => {
             <div>
               <h4 className="text-sm font-medium text-foreground">Email: Tu canal más rentable</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                Con un ROI de <strong className="text-foreground">12.5x</strong>, el email marketing supera significativamente 
-                a otros canales. La campaña <strong className="text-foreground">Black Friday</strong> fue la más exitosa con 
+                Con un ROI de <strong className="text-foreground">12.5x</strong>, el email marketing supera significativamente
+                a otros canales. La campaña <strong className="text-foreground">Black Friday</strong> fue la más exitosa con
                 456 conversiones y €27.3K en ingresos. Considera aumentar la frecuencia de envíos segmentados para maximizar resultados.
               </p>
             </div>

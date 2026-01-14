@@ -1,11 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  History, 
-  TrendingUp, 
-  Calendar, 
-  Users, 
+import {
+  History,
+  TrendingUp,
+  Calendar,
+  Users,
   Euro,
   ArrowUpRight,
   ArrowDownRight,
@@ -17,13 +17,13 @@ import {
   Clock,
   Target
 } from "lucide-react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -37,63 +37,64 @@ import {
   Radar
 } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 // Archivo histórico completo del Primaverando
 const editionArchive = [
-  { 
-    year: 2019, 
-    tickets: 18500, 
-    revenue: 148000, 
-    avgPrice: 8, 
-    occupancy: 62, 
+  {
+    year: 2019,
+    tickets: 18500,
+    revenue: 148000,
+    avgPrice: 8,
+    occupancy: 62,
     satisfaction: 7.2,
     vipPct: 3,
     headline: 'Primera edición oficial',
     keyEvent: 'Nace como alternativa legal a las fiestas universitarias',
     incident: null
   },
-  { 
-    year: 2022, 
-    tickets: 28500, 
-    revenue: 285000, 
-    avgPrice: 10, 
-    occupancy: 71, 
+  {
+    year: 2022,
+    tickets: 28500,
+    revenue: 285000,
+    avgPrice: 10,
+    occupancy: 71,
     satisfaction: 6.2,
     vipPct: 5,
     headline: 'Regreso post-pandemia',
     keyEvent: 'Colapso en accesos (>2h espera)',
     incident: 'Cientos de reclamaciones por esperas'
   },
-  { 
-    year: 2023, 
-    tickets: 35200, 
-    revenue: 422400, 
-    avgPrice: 12, 
-    occupancy: 78, 
+  {
+    year: 2023,
+    tickets: 35200,
+    revenue: 422400,
+    avgPrice: 12,
+    occupancy: 78,
     satisfaction: 5.8,
     vipPct: 8,
     headline: 'Año de la polémica',
     keyEvent: 'Cancelación artista principal sin devoluciones',
     incident: 'Denuncias ante Consumo, daño reputacional severo'
   },
-  { 
-    year: 2024, 
-    tickets: 42800, 
-    revenue: 599200, 
-    avgPrice: 14, 
-    occupancy: 82, 
+  {
+    year: 2024,
+    tickets: 42800,
+    revenue: 599200,
+    avgPrice: 14,
+    occupancy: 82,
     satisfaction: 7.1,
     vipPct: 10,
     headline: 'Edición de la recuperación',
     keyEvent: 'Mejoras operativas parciales',
     incident: 'Fallo sistema Cashless durante 2 horas'
   },
-  { 
-    year: 2025, 
-    tickets: 14850, 
-    revenue: 371250, 
-    avgPrice: 25, 
-    occupancy: 74, 
+  {
+    year: 2025,
+    tickets: 14850,
+    revenue: 371250,
+    avgPrice: 25,
+    occupancy: 74,
     satisfaction: null,
     vipPct: 12,
     headline: 'En curso',
@@ -108,33 +109,33 @@ const sameDateData = {
   currentDate: '15 de enero',
   daysToEvent: 73,
   comparison: [
-    { 
-      year: 2022, 
-      ticketsAtDate: 9200, 
+    {
+      year: 2022,
+      ticketsAtDate: 9200,
       revenueAtDate: 92000,
       occupancyAtDate: 23,
       finalTickets: 28500,
       conversionRate: 32 // % de ventas que ya tenían a esta fecha
     },
-    { 
-      year: 2023, 
-      ticketsAtDate: 12800, 
+    {
+      year: 2023,
+      ticketsAtDate: 12800,
       revenueAtDate: 153600,
       occupancyAtDate: 29,
       finalTickets: 35200,
       conversionRate: 36
     },
-    { 
-      year: 2024, 
-      ticketsAtDate: 16500, 
+    {
+      year: 2024,
+      ticketsAtDate: 16500,
       revenueAtDate: 231000,
       occupancyAtDate: 38,
       finalTickets: 42800,
       conversionRate: 39
     },
-    { 
-      year: 2025, 
-      ticketsAtDate: 14850, 
+    {
+      year: 2025,
+      ticketsAtDate: 14850,
       revenueAtDate: 371250,
       occupancyAtDate: 74,
       finalTickets: null, // En curso
@@ -198,40 +199,40 @@ const keyLearnings2024 = [
 
 // Incidentes históricos documentados
 const historicalIncidents = [
-  { 
-    year: 2019, 
+  {
+    year: 2019,
     severity: 'medium',
     incident: 'Colapso en accesos inicial',
     impact: 'Tiempos de 90 min, primeras quejas en RRSS',
     response: 'Sin comunicación oficial',
     learned: false
   },
-  { 
-    year: 2022, 
+  {
+    year: 2022,
     severity: 'high',
     incident: 'Fallo masivo de accesos',
     impact: '>2h espera, lipotimias, 400+ reclamaciones',
     response: 'Incidencia técnica puntual (excusa)',
     learned: false
   },
-  { 
-    year: 2022, 
+  {
+    year: 2022,
     severity: 'high',
     incident: 'Escasez de agua',
     impact: 'Denuncias FACUA, riesgo sanitario',
     response: 'Ninguna',
     learned: false
   },
-  { 
-    year: 2023, 
+  {
+    year: 2023,
     severity: 'critical',
     incident: 'Cancelación cabeza de cartel sin aviso',
     impact: 'Sustituto menor, negativa a devoluciones',
     response: 'Términos y condiciones (legal pero dañino)',
     learned: false
   },
-  { 
-    year: 2024, 
+  {
+    year: 2024,
     severity: 'medium',
     incident: 'Fallo sistema Cashless 2h',
     impact: 'Colas en barras, frustración',
@@ -272,21 +273,60 @@ const channelDistribution = [
 ];
 
 const Historical = () => {
+  const { isDemo, eventName } = useFestivalConfig();
+
   const current2025 = sameDateData.comparison.find(c => c.year === 2025);
   const last2024 = sameDateData.comparison.find(c => c.year === 2024);
-  
-  const ticketDiff = current2025 && last2024 
-    ? current2025.ticketsAtDate - last2024.ticketsAtDate 
+
+  const ticketDiff = current2025 && last2024
+    ? current2025.ticketsAtDate - last2024.ticketsAtDate
     : 0;
-  const ticketDiffPct = last2024 
-    ? ((ticketDiff / last2024.ticketsAtDate) * 100).toFixed(0) 
+  const ticketDiffPct = last2024
+    ? ((ticketDiff / last2024.ticketsAtDate) * 100).toFixed(0)
     : '0';
+
+  if (!isDemo) {
+    return (
+      <div className="min-h-screen bg-background p-4 theme-historical">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
+
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+                <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                Archivo Histórico
+              </h1>
+              <p className="text-[10px] md:text-sm text-muted-foreground mt-1">
+                {eventName}
+              </p>
+            </div>
+          </div>
+
+          <Card className="border-2 border-dashed border-muted p-12 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="p-4 mb-4 rounded-full bg-muted/50">
+                <History className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium">No hay datos históricos disponibles</h3>
+              <p className="max-w-md mt-2 text-sm text-muted-foreground">
+                Este es el primer año que gestionas este evento con Tricket, por lo que aún no disponemos de datos históricos para generar comparativas y proyecciones.
+              </p>
+              <p className="max-w-md mt-4 text-xs text-muted-foreground">
+                A medida que avancen las ventas de esta edición, el sistema comenzará a registrar datos para futuras comparativas.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 theme-historical">
       <div className="max-w-7xl mx-auto space-y-6">
         <PageBreadcrumb items={[{ label: "Histórico & Comparativas" }]} />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
           <div>
@@ -325,8 +365,8 @@ const Historical = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {sameDateData.comparison.map((year) => (
-                <div 
-                  key={year.year} 
+                <div
+                  key={year.year}
                   className={`p-4 rounded-lg border ${year.projected ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border'}`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -351,12 +391,12 @@ const Historical = () => {
                 </div>
               ))}
             </div>
-            
+
             {/* Insight destacado */}
             <div className="bg-muted/50 rounded-lg p-4 border-l-4 border-l-primary">
               <p className="text-sm">
-                <span className="font-semibold">Insight:</span> A esta fecha en 2024, llevábamos 16.500 entradas (39% del total final). 
-                Este año llevamos {current2025?.ticketsAtDate.toLocaleString('es-ES')} ({ticketDiff < 0 ? '' : '+'}{ticketDiff.toLocaleString('es-ES')} vs 2024), 
+                <span className="font-semibold">Insight:</span> A esta fecha en 2024, llevábamos 16.500 entradas (39% del total final).
+                Este año llevamos {current2025?.ticketsAtDate.toLocaleString('es-ES')} ({ticketDiff < 0 ? '' : '+'}{ticketDiff.toLocaleString('es-ES')} vs 2024),
                 pero con un ticket medio un 78% superior (€25 vs €14).
               </p>
             </div>
@@ -377,15 +417,14 @@ const Historical = () => {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {keyLearnings2024.map((learning) => (
-                <div 
+                <div
                   key={learning.id}
-                  className={`p-4 rounded-lg border-l-4 ${
-                    learning.type === 'success' 
-                      ? 'border-l-success bg-success/5' 
-                      : learning.type === 'warning'
-                        ? 'border-l-warning bg-warning/5'
-                        : 'border-l-destructive bg-destructive/5'
-                  }`}
+                  className={`p-4 rounded-lg border-l-4 ${learning.type === 'success'
+                    ? 'border-l-success bg-success/5'
+                    : learning.type === 'warning'
+                      ? 'border-l-warning bg-warning/5'
+                      : 'border-l-destructive bg-destructive/5'
+                    }`}
                 >
                   <div className="flex items-start gap-2 mb-2">
                     {learning.type === 'success' && <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />}
@@ -442,58 +481,58 @@ const Historical = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesCurvesData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="day" 
-                    tick={{ fontSize: 11 }} 
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fontSize: 11 }}
                     tickLine={false}
                     tickFormatter={(value) => value === 0 ? 'Evento' : `${value}d`}
                   />
-                  <YAxis 
-                    tick={{ fontSize: 11 }} 
+                  <YAxis
+                    tick={{ fontSize: 11 }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px'
                     }}
                     formatter={(value: number | null) => value ? [value.toLocaleString('es-ES'), ''] : ['—', '']}
                     labelFormatter={(label) => label === 0 ? 'Día del evento' : `${label} días antes`}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="y2022" 
+                  <Line
+                    type="monotone"
+                    dataKey="y2022"
                     name="2022"
-                    stroke="hsl(var(--muted-foreground))" 
+                    stroke="hsl(var(--muted-foreground))"
                     strokeWidth={1.5}
                     strokeOpacity={0.4}
                     dot={false}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="y2023" 
+                  <Line
+                    type="monotone"
+                    dataKey="y2023"
                     name="2023"
-                    stroke="hsl(var(--muted-foreground))" 
+                    stroke="hsl(var(--muted-foreground))"
                     strokeWidth={1.5}
                     strokeOpacity={0.6}
                     dot={false}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="y2024" 
+                  <Line
+                    type="monotone"
+                    dataKey="y2024"
                     name="2024"
-                    stroke="hsl(var(--muted-foreground))" 
+                    stroke="hsl(var(--muted-foreground))"
                     strokeWidth={2}
                     dot={false}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="y2025" 
+                  <Line
+                    type="monotone"
+                    dataKey="y2025"
                     name="2025"
-                    stroke="hsl(var(--primary))" 
+                    stroke="hsl(var(--primary))"
                     strokeWidth={3}
                     dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
                     connectNulls={false}
@@ -518,19 +557,19 @@ const Historical = () => {
                     <PolarGrid className="stroke-muted" />
                     <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
                     <PolarRadiusAxis tick={{ fontSize: 10 }} domain={[0, 200]} />
-                    <Radar 
-                      name="2024" 
-                      dataKey="y2024" 
-                      stroke="hsl(var(--muted-foreground))" 
-                      fill="hsl(var(--muted-foreground))" 
-                      fillOpacity={0.2} 
+                    <Radar
+                      name="2024"
+                      dataKey="y2024"
+                      stroke="hsl(var(--muted-foreground))"
+                      fill="hsl(var(--muted-foreground))"
+                      fillOpacity={0.2}
                     />
-                    <Radar 
-                      name="2025" 
-                      dataKey="y2025" 
-                      stroke="hsl(var(--primary))" 
-                      fill="hsl(var(--primary))" 
-                      fillOpacity={0.3} 
+                    <Radar
+                      name="2025"
+                      dataKey="y2025"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.3}
                     />
                     <Legend />
                   </RadarChart>
@@ -550,15 +589,15 @@ const Historical = () => {
                   <BarChart data={channelDistribution}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
                     <XAxis dataKey="channel" tick={{ fontSize: 10 }} tickLine={false} />
-                    <YAxis 
-                      tick={{ fontSize: 11 }} 
+                    <YAxis
+                      tick={{ fontSize: 11 }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => `${value}%`}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
                       }}
@@ -604,15 +643,14 @@ const Historical = () => {
                       <td className="py-3 px-2 font-medium">{incident.year}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Badge 
-                            variant="outline" 
-                            className={`text-[10px] px-1.5 ${
-                              incident.severity === 'critical' 
-                                ? 'bg-destructive/10 text-destructive border-destructive/30' 
-                                : incident.severity === 'high'
-                                  ? 'bg-warning/10 text-warning border-warning/30'
-                                  : 'bg-muted text-muted-foreground'
-                            }`}
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] px-1.5 ${incident.severity === 'critical'
+                              ? 'bg-destructive/10 text-destructive border-destructive/30'
+                              : incident.severity === 'high'
+                                ? 'bg-warning/10 text-warning border-warning/30'
+                                : 'bg-muted text-muted-foreground'
+                              }`}
                           >
                             {incident.severity}
                           </Badge>
@@ -663,13 +701,13 @@ const Historical = () => {
                 <tbody>
                   {editionArchive.map((edition, index) => {
                     const prevEdition = index > 0 ? editionArchive[index - 1] : null;
-                    const growth = prevEdition 
-                      ? ((edition.tickets / prevEdition.tickets) - 1) * 100 
+                    const growth = prevEdition
+                      ? ((edition.tickets / prevEdition.tickets) - 1) * 100
                       : null;
-                    
+
                     return (
-                      <tr 
-                        key={edition.year} 
+                      <tr
+                        key={edition.year}
                         className={`border-b border-border/50 ${edition.projected ? 'bg-primary/5' : ''}`}
                       >
                         <td className="py-3 px-2">

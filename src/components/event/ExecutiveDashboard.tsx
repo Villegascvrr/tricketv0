@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { festivalData } from "@/data/festivalData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  Users, 
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Users,
   Target,
   AlertCircle,
   Calendar,
@@ -42,6 +42,7 @@ interface Forecast {
 }
 
 const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenRecommendations }: ExecutiveDashboardProps) => {
+  const { config: festivalData } = useFestivalConfig();
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [salesTrend, setSalesTrend] = useState<number[]>([]);
@@ -86,9 +87,9 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       // Calculate trends (comparing last 7 days vs previous 7 days)
       const last7DaysTotal = dailySales.reduce((a, b) => a + b, 0);
       const previous7DaysTotal = Math.floor(totalSold * 0.09); // Previous week had slightly more
-      
-      const salesTrendPercent = previous7DaysTotal > 0 
-        ? ((last7DaysTotal - previous7DaysTotal) / previous7DaysTotal) * 100 
+
+      const salesTrendPercent = previous7DaysTotal > 0
+        ? ((last7DaysTotal - previous7DaysTotal) / previous7DaysTotal) * 100
         : 0;
 
       // Average ticket price
@@ -146,14 +147,14 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
         const avgDailySales = last7DaysTotal / 7;
         const projectedSales = totalSold + (avgDailySales * daysUntil);
         const projectedOccupancy = Math.min((projectedSales / capacity) * 100, 100);
-        
+
         forecastsData.push({
           metric: "Ocupación final estimada",
           prediction: `${projectedOccupancy.toFixed(1)}%`,
           confidence: avgDailySales > 300 ? "high" : avgDailySales > 150 ? "medium" : "low",
-          impact: projectedOccupancy >= 90 && projectedOccupancy <= 110 ? "Dentro de objetivo" : 
-                  projectedOccupancy < 90 ? "Por debajo de objetivo (en riesgo)" : 
-                  "Por encima de objetivo (sobre cumplimiento)"
+          impact: projectedOccupancy >= 90 && projectedOccupancy <= 110 ? "Dentro de objetivo" :
+            projectedOccupancy < 90 ? "Por debajo de objetivo (en riesgo)" :
+              "Por encima de objetivo (sobre cumplimiento)"
         });
       }
 
@@ -161,14 +162,14 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       const avgDailySales = last7DaysTotal / 7;
       const projectedRevenue = totalRevenue + (avgDailySales * avgTicketPrice * daysUntil);
       const revenueVsTargetProjected = (projectedRevenue / targetRevenue) * 100;
-      
+
       forecastsData.push({
         metric: "Ingresos finales estimados",
         prediction: `${(projectedRevenue / 1000000).toFixed(1)} M€`,
         confidence: "medium",
         impact: revenueVsTargetProjected >= 90 && revenueVsTargetProjected <= 110 ? "Dentro de objetivo" :
-                revenueVsTargetProjected < 90 ? "Por debajo de objetivo (en riesgo)" :
-                "Por encima de objetivo (sobre cumplimiento)"
+          revenueVsTargetProjected < 90 ? "Por debajo de objetivo (en riesgo)" :
+            "Por encima de objetivo (sobre cumplimiento)"
       });
 
       // Velocity status
@@ -206,7 +207,7 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
       setForecasts(forecastsData);
 
       // Get top 3 high priority recommendations
-      const allRecommendations = generateAIRecommendations();
+      const allRecommendations = generateAIRecommendations(festivalData);
       const topRecs = allRecommendations
         .filter(rec => rec.priority === 'high')
         .slice(0, 3);
@@ -280,8 +281,8 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
           }
 
           return (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className={cn(
                 "p-3 hover:shadow-lg transition-all border-2",
                 kpi.color === "success" && "border-success/30 bg-success/5",
@@ -368,19 +369,19 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
         </h3>
         <div className="space-y-2">
           {forecasts.map((forecast, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="font-semibold text-sm">{forecast.metric}</p>
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={cn("text-xs", getConfidenceBadge(forecast.confidence))}
                   >
-                    {forecast.confidence === "high" ? "Alta confianza" : 
-                     forecast.confidence === "medium" ? "Media confianza" : "Baja confianza"}
+                    {forecast.confidence === "high" ? "Alta confianza" :
+                      forecast.confidence === "medium" ? "Media confianza" : "Baja confianza"}
                   </Badge>
                 </div>
                 <p className="text-xl font-bold text-primary mb-0.5">{forecast.prediction}</p>
@@ -399,8 +400,8 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
             Acciones Recomendadas (IA)
           </h3>
           {onOpenRecommendations && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={onOpenRecommendations}
               className="text-xs h-7"
@@ -412,7 +413,7 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
         <div className="space-y-2">
           {topRecommendations.length > 0 ? (
             topRecommendations.map((rec) => (
-              <div 
+              <div
                 key={rec.id}
                 className="flex items-start gap-2 p-2.5 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
               >
@@ -421,9 +422,9 @@ const ExecutiveDashboard = ({ eventId, totalCapacity, eventStartDate, onOpenReco
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                     <p className="font-semibold text-xs">{rec.title}</p>
                     <Badge variant="outline" className="text-xs border-danger/40 text-danger">
-                      {rec.category === 'marketing' ? 'Marketing' : 
-                       rec.category === 'pricing' ? 'Pricing' : 
-                       rec.category === 'alert' ? 'Alerta' : 'Oportunidad'}
+                      {rec.category === 'marketing' ? 'Marketing' :
+                        rec.category === 'pricing' ? 'Pricing' :
+                          rec.category === 'alert' ? 'Alerta' : 'Oportunidad'}
                     </Badge>
                     <Badge variant="outline" className="text-xs bg-danger/10 text-danger border-danger/20">
                       Prioridad Alta

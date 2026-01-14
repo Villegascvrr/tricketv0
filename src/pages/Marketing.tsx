@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { 
-  Megaphone, 
-  Mail, 
-  Share2, 
+import {
+  Megaphone,
+  Mail,
+  Share2,
   Target,
   TrendingUp,
   ExternalLink,
@@ -45,13 +45,13 @@ import {
 } from "lucide-react";
 import GoogleTrendsSection from "@/components/marketing/GoogleTrendsSection";
 import EmailMarketingSection from "@/components/marketing/EmailMarketingSection";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -59,67 +59,7 @@ import {
 } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 
-// Campaign performance data
-const campaignPerformanceData = [
-  { date: '1 Nov', reach: 45000, clicks: 1200, conversions: 48 },
-  { date: '8 Nov', reach: 62000, clicks: 1850, conversions: 72 },
-  { date: '15 Nov', reach: 78000, clicks: 2400, conversions: 96 },
-  { date: '22 Nov', reach: 125000, clicks: 4200, conversions: 185 },
-  { date: '29 Nov', reach: 98000, clicks: 3100, conversions: 124 },
-  { date: '6 Dic', reach: 85000, clicks: 2800, conversions: 112 },
-];
-
-// Top performing posts
-const topPosts = [
-  {
-    id: 1,
-    platform: 'instagram',
-    type: 'Reel',
-    content: 'Aftermovie Teaser 2024',
-    reach: 125000,
-    likes: 8500,
-    shares: 1200,
-    conversions: 89,
-    thumbnail: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&q=80'
-  },
-  {
-    id: 2,
-    platform: 'instagram',
-    type: 'Carrusel',
-    content: 'Cartel Artistas 2025',
-    reach: 98000,
-    likes: 6200,
-    shares: 850,
-    conversions: 72,
-    thumbnail: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&q=80'
-  },
-  {
-    id: 3,
-    platform: 'facebook',
-    type: 'Video',
-    content: 'Entrevista Henry Méndez',
-    reach: 45000,
-    likes: 2100,
-    shares: 420,
-    conversions: 38,
-    thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=200&q=80'
-  },
-];
-
-// Newsletter data
-const newsletters = [
-  { name: 'Lanzamiento Early Bird', sent: 28500, opened: 9120, clicked: 2850, conversions: 285, date: '15 Nov' },
-  { name: 'Black Friday Special', sent: 28500, opened: 11400, clicked: 4560, conversions: 456, date: '24 Nov' },
-  { name: 'Cartel Reveal', sent: 32000, opened: 12800, clicked: 3840, conversions: 192, date: '5 Dic' },
-];
-
-// UTM Templates
-const utmTemplates = [
-  { name: 'Instagram Bio', utm: 'utm_source=instagram&utm_medium=bio&utm_campaign=primaverando2025' },
-  { name: 'Facebook Ads', utm: 'utm_source=facebook&utm_medium=cpc&utm_campaign=bf_earlybird' },
-  { name: 'Email Newsletter', utm: 'utm_source=email&utm_medium=newsletter&utm_campaign=cartel_reveal' },
-  { name: 'Influencer', utm: 'utm_source=influencer&utm_medium=stories&utm_campaign=collab_[name]' },
-];
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 const getPlatformIcon = (platform: string) => {
   switch (platform) {
@@ -131,9 +71,75 @@ const getPlatformIcon = (platform: string) => {
   }
 };
 
+// Mock data moved inside component or memoized based on isDemo
+const MOCK_DATA = {
+  performance: [
+    { date: '1 Nov', reach: 45000, clicks: 1200, conversions: 48 },
+    { date: '8 Nov', reach: 62000, clicks: 1850, conversions: 72 },
+    { date: '15 Nov', reach: 78000, clicks: 2400, conversions: 96 },
+    { date: '22 Nov', reach: 125000, clicks: 4200, conversions: 185 },
+    { date: '29 Nov', reach: 98000, clicks: 3100, conversions: 124 },
+    { date: '6 Dic', reach: 85000, clicks: 2800, conversions: 112 },
+  ],
+  topPosts: [
+    {
+      id: 1,
+      platform: 'instagram',
+      type: 'Reel',
+      content: 'Aftermovie Teaser 2024',
+      reach: 125000,
+      likes: 8500,
+      shares: 1200,
+      conversions: 89,
+      thumbnail: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&q=80'
+    },
+    {
+      id: 2,
+      platform: 'instagram',
+      type: 'Carrusel',
+      content: 'Cartel Artistas 2025',
+      reach: 98000,
+      likes: 6200,
+      shares: 850,
+      conversions: 72,
+      thumbnail: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&q=80'
+    },
+    {
+      id: 3,
+      platform: 'facebook',
+      type: 'Video',
+      content: 'Entrevista Henry Méndez',
+      reach: 45000,
+      likes: 2100,
+      shares: 420,
+      conversions: 38,
+      thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=200&q=80'
+    },
+  ],
+  newsletters: [
+    { name: 'Lanzamiento Early Bird', sent: 28500, opened: 9120, clicked: 2850, conversions: 285, date: '15 Nov' },
+    { name: 'Black Friday Special', sent: 28500, opened: 11400, clicked: 4560, conversions: 456, date: '24 Nov' },
+    { name: 'Cartel Reveal', sent: 32000, opened: 12800, clicked: 3840, conversions: 192, date: '5 Dic' },
+  ],
+  utmTemplates: [
+    { name: 'Instagram Bio', utm: 'utm_source=instagram&utm_medium=bio&utm_campaign=primaverando2025' },
+    { name: 'Facebook Ads', utm: 'utm_source=facebook&utm_medium=cpc&utm_campaign=bf_earlybird' },
+    { name: 'Email Newsletter', utm: 'utm_source=email&utm_medium=newsletter&utm_campaign=cartel_reveal' },
+    { name: 'Influencer', utm: 'utm_source=influencer&utm_medium=stories&utm_campaign=collab_[name]' },
+  ]
+};
+
 const Marketing = () => {
+  const { isDemo, eventId } = useFestivalConfig();
+
+  // Derived data based on demo mode
+  const campaignPerformanceData = isDemo ? MOCK_DATA.performance : [];
+  const topPosts = isDemo ? MOCK_DATA.topPosts : [];
+  const newsletters = isDemo ? MOCK_DATA.newsletters : [];
+  const utmTemplates = isDemo ? MOCK_DATA.utmTemplates : [];
+
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
-  const { campaigns, isLoading, addCampaign, updateCampaign, deleteCampaign, isAdding, isUpdating, isDeleting } = useMarketingCampaigns();
+  const { campaigns, isLoading, addCampaign, updateCampaign, deleteCampaign, isAdding, isUpdating, isDeleting } = useMarketingCampaigns(eventId, isDemo);
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<MarketingCampaign | null>(null);
   const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
@@ -188,7 +194,7 @@ const Marketing = () => {
 
   const handleUpdateCampaign = async () => {
     if (!editingCampaign) return;
-    
+
     const success = await updateCampaign(editingCampaign.id, {
       name: editFormData.name,
       type: editFormData.type,
@@ -214,11 +220,11 @@ const Marketing = () => {
 
   const handleDeleteCampaign = async () => {
     if (!deletingCampaignId) return;
-    
+
     await deleteCampaign(deletingCampaignId);
     setDeletingCampaignId(null);
   };
-  
+
   const totalReach = campaigns.reduce((acc, c) => acc + (c.reach || 0), 0);
   const totalTicketsSold = campaigns.reduce((acc, c) => acc + (c.tickets_sold || 0), 0);
   const totalSpent = campaigns.reduce((acc, c) => acc + Number(c.spent || 0), 0);
@@ -288,7 +294,7 @@ const Marketing = () => {
     <div className="min-h-screen bg-background p-3 md:p-4 theme-marketing">
       <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Marketing & Campañas" }]} />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
           <div>
@@ -328,7 +334,7 @@ const Marketing = () => {
                     <Label htmlFor="type">Tipo</Label>
                     <Select
                       value={newCampaign.type}
-                      onValueChange={(value: 'paid' | 'organic' | 'email' | 'influencer') => 
+                      onValueChange={(value: 'paid' | 'organic' | 'email' | 'influencer') =>
                         setNewCampaign({ ...newCampaign, type: value })
                       }
                     >
@@ -347,7 +353,7 @@ const Marketing = () => {
                     <Label htmlFor="platform">Plataforma</Label>
                     <Select
                       value={newCampaign.platform}
-                      onValueChange={(value: 'instagram' | 'facebook' | 'twitter' | 'email') => 
+                      onValueChange={(value: 'instagram' | 'facebook' | 'twitter' | 'email') =>
                         setNewCampaign({ ...newCampaign, platform: value })
                       }
                     >
@@ -445,7 +451,7 @@ const Marketing = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -464,7 +470,7 @@ const Marketing = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -481,7 +487,7 @@ const Marketing = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
@@ -557,33 +563,33 @@ const Marketing = () => {
                     <AreaChart data={campaignPerformanceData}>
                       <defs>
                         <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} />
-                      <YAxis 
+                      <YAxis
                         yAxisId="left"
-                        tick={{ fontSize: 11 }} 
+                        tick={{ fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
                       />
-                      <YAxis 
+                      <YAxis
                         yAxisId="right"
                         orientation="right"
-                        tick={{ fontSize: 11 }} 
+                        tick={{ fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px'
                         }}
@@ -592,31 +598,31 @@ const Marketing = () => {
                           return [value.toLocaleString('es-ES'), label];
                         }}
                       />
-                      <Area 
+                      <Area
                         yAxisId="left"
-                        type="monotone" 
-                        dataKey="reach" 
-                        stroke="hsl(var(--primary))" 
+                        type="monotone"
+                        dataKey="reach"
+                        stroke="hsl(var(--primary))"
                         strokeOpacity={0.3}
                         strokeWidth={1}
-                        fillOpacity={1} 
-                        fill="url(#colorReach)" 
+                        fillOpacity={1}
+                        fill="url(#colorReach)"
                       />
-                      <Area 
+                      <Area
                         yAxisId="left"
-                        type="monotone" 
-                        dataKey="clicks" 
-                        stroke="hsl(var(--primary))" 
+                        type="monotone"
+                        dataKey="clicks"
+                        stroke="hsl(var(--primary))"
                         strokeOpacity={0.6}
                         strokeWidth={2}
-                        fillOpacity={1} 
-                        fill="url(#colorClicks)" 
+                        fillOpacity={1}
+                        fill="url(#colorClicks)"
                       />
-                      <Area 
+                      <Area
                         yAxisId="right"
-                        type="monotone" 
-                        dataKey="conversions" 
-                        stroke="hsl(var(--primary))" 
+                        type="monotone"
+                        dataKey="conversions"
+                        stroke="hsl(var(--primary))"
                         strokeWidth={2}
                         fill="none"
                         dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
@@ -646,31 +652,30 @@ const Marketing = () => {
                   const isExpanded = expandedCampaign === campaign.id;
                   const startDateFormatted = new Date(campaign.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
                   const endDateFormatted = campaign.end_date ? new Date(campaign.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 'En curso';
-                  
+
                   return (
-                    <div 
-                      key={campaign.id} 
+                    <div
+                      key={campaign.id}
                       className={`rounded-lg border transition-all ${isExpanded ? 'bg-muted/30 ring-1 ring-primary/20' : 'bg-card hover:bg-accent/5'}`}
                     >
                       {/* Campaign Header - Always Visible */}
-                      <div 
+                      <div
                         className="p-3 cursor-pointer"
                         onClick={() => setExpandedCampaign(isExpanded ? null : campaign.id)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                              campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${campaign.platform === 'instagram' ? 'bg-pink-500/10 text-pink-500' :
                               campaign.platform === 'facebook' ? 'bg-blue-500/10 text-blue-500' :
-                              campaign.platform === 'email' ? 'bg-amber-500/10 text-amber-500' :
-                              'bg-purple-500/10 text-purple-500'
-                            }`}>
+                                campaign.platform === 'email' ? 'bg-amber-500/10 text-amber-500' :
+                                  'bg-purple-500/10 text-purple-500'
+                              }`}>
                               {getPlatformIcon(campaign.platform)}
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="font-medium text-sm">{campaign.name}</p>
-                                <Badge 
+                                <Badge
                                   variant={campaign.status === 'active' ? 'default' : 'secondary'}
                                   className={`text-[10px] ${campaign.status === 'active' ? 'bg-success text-success-foreground' : ''}`}
                                 >
@@ -690,7 +695,7 @@ const Marketing = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-4">
                             {/* Quick Stats */}
                             <div className="hidden md:flex items-center gap-4 text-right">
@@ -707,12 +712,12 @@ const Marketing = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Expanded Details */}
                       {isExpanded && (
                         <div className="px-3 pb-3 space-y-3">
                           <div className="h-px bg-border" />
-                          
+
                           {/* Metrics Grid */}
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                             <div className="p-2 rounded-lg bg-background text-center">
@@ -740,7 +745,7 @@ const Marketing = () => {
                               <p className="text-[10px] text-muted-foreground">CPA</p>
                             </div>
                           </div>
-                          
+
                           {/* Budget Progress (if paid) */}
                           {Number(campaign.budget) > 0 && (
                             <div className="p-2 rounded-lg bg-background">
@@ -751,7 +756,7 @@ const Marketing = () => {
                               <Progress value={(Number(campaign.spent) / Number(campaign.budget)) * 100} className="h-1.5" />
                             </div>
                           )}
-                          
+
                           {/* Observation */}
                           {campaign.observation && (
                             <div className="p-3 rounded-lg border bg-background">
@@ -764,7 +769,7 @@ const Marketing = () => {
                               </div>
                             </div>
                           )}
-                          
+
                           {/* Team Notes */}
                           {campaign.team_notes && (
                             <div className="p-3 rounded-lg border bg-muted/30">
@@ -835,13 +840,13 @@ const Marketing = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {topPosts.map((post, index) => (
-                    <div 
-                      key={post.id} 
+                    <div
+                      key={post.id}
                       className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
                     >
                       <div className="relative">
-                        <img 
-                          src={post.thumbnail} 
+                        <img
+                          src={post.thumbnail}
                           alt={post.content}
                           className="h-16 w-16 rounded-lg object-cover"
                         />
@@ -938,8 +943,8 @@ const Marketing = () => {
                 <div className="p-4 rounded-lg border bg-muted/30 space-y-3">
                   <p className="text-xs font-medium text-muted-foreground">Generador de Links</p>
                   <div className="flex gap-2">
-                    <Input 
-                      placeholder="https://primaverando.com/tickets" 
+                    <Input
+                      placeholder="https://primaverando.com/tickets"
                       className="text-sm"
                     />
                     <Button size="sm" className="gap-1.5 shrink-0">
@@ -959,8 +964,8 @@ const Marketing = () => {
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Plantillas guardadas</p>
                   {utmTemplates.map((template, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-accent/5 transition-colors group"
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -972,9 +977,9 @@ const Marketing = () => {
                           <p className="text-[10px] text-muted-foreground truncate">{template.utm}</p>
                         </div>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Copy className="h-3.5 w-3.5" />
@@ -982,7 +987,7 @@ const Marketing = () => {
                     </div>
                   ))}
                 </div>
-            </CardContent>
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
@@ -1076,10 +1081,10 @@ const Marketing = () => {
                 />
               </div>
             </div>
-            
+
             <div className="h-px bg-border my-2" />
             <p className="text-sm font-medium text-muted-foreground">Presupuesto y gasto</p>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Presupuesto (€)</Label>
@@ -1098,10 +1103,10 @@ const Marketing = () => {
                 />
               </div>
             </div>
-            
+
             <div className="h-px bg-border my-2" />
             <p className="text-sm font-medium text-muted-foreground">Métricas de rendimiento</p>
-            
+
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Alcance</Label>
@@ -1147,9 +1152,9 @@ const Marketing = () => {
                 />
               </div>
             </div>
-            
+
             <div className="h-px bg-border my-2" />
-            
+
             <div className="grid gap-2">
               <Label>Observación</Label>
               <Textarea

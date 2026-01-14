@@ -126,8 +126,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
+
 const GoogleTrendsSection = () => {
+  const { isDemo, eventName } = useFestivalConfig();
   const [isExpanded, setIsExpanded] = useState(true);
+
+  if (!isDemo) {
+    return (
+      <Card className="border-2 border-dashed border-muted p-12 text-center">
+        <div className="flex flex-col items-center justify-center">
+          <div className="p-4 mb-4 rounded-full bg-muted/50">
+            <Search className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium">Sin datos de tendencias de búsqueda</h3>
+          <p className="max-w-md mt-2 text-sm text-muted-foreground">
+            No hay suficiente volumen de búsqueda para "{eventName}" en Google Trends todavía.
+            Los datos aparecerán automáticamente cuando aumente el interés público.
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-primary/20">

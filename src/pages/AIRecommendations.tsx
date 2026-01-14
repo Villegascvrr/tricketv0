@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
 import { AlertDetailModal } from "@/components/event/AlertDetailModal";
-import { festivalData } from "@/data/festivalData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -30,10 +30,11 @@ const AIRecommendations = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
   const [statusFilter, setStatusFilter] = useState<RecommendationStatus | 'all'>('all');
-  
+
+  const { config: festivalData, isDemo } = useFestivalConfig();
   const { getStatus, updateStatus } = useRecommendationStatus();
-  const recommendations = generateAIRecommendations();
-  
+  const recommendations = generateAIRecommendations(festivalData);
+
   // Filter by status
   const filteredRecommendations = recommendations.filter(rec => {
     if (statusFilter === 'all') return true;
@@ -141,22 +142,22 @@ const AIRecommendations = () => {
     const statusConfig = getStatusConfig(status);
     const StatusIcon = statusConfig.icon;
 
-    const borderClass = variant === 'critical' 
-      ? 'border-l-4 border-l-destructive' 
-      : variant === 'important' 
-        ? 'border-l-4 border-l-warning' 
+    const borderClass = variant === 'critical'
+      ? 'border-l-4 border-l-destructive'
+      : variant === 'important'
+        ? 'border-l-4 border-l-warning'
         : 'border-l-4 border-l-blue-400';
 
     // Extraer la acción del final de la descripción
     const actionMatch = rec.description.match(/Acción[^:]*:\s*(.+)$/s);
     const action = actionMatch ? actionMatch[1].trim() : '';
-    
+
     // Extraer contexto (todo antes de la acción)
     const contextMatch = rec.description.match(/^([\s\S]*?)(?:Acción[^:]*:)/);
     const context = contextMatch ? contextMatch[1].trim() : rec.description;
 
     return (
-      <Card 
+      <Card
         className={cn(
           "hover:shadow-md transition-all cursor-pointer group",
           borderClass
@@ -170,21 +171,21 @@ const AIRecommendations = () => {
             </CardTitle>
             <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
           </div>
-          
+
           {/* Rule that triggered this recommendation */}
           {rec.rule && (
             <div className="mt-2 text-xs text-muted-foreground bg-muted/30 rounded px-2 py-1 border-l-2 border-primary/40">
               <span className="font-medium">Regla:</span> {rec.rule}
             </div>
           )}
-          
+
           {/* Data point */}
           {rec.dataPoint && (
             <div className="mt-1.5 text-xs font-medium text-primary">
               📊 {rec.dataPoint}
             </div>
           )}
-          
+
           {/* Tags row */}
           <div className="flex flex-wrap gap-1.5 mt-2">
             {/* Category tag */}
@@ -192,17 +193,17 @@ const AIRecommendations = () => {
               {getCategoryIcon(rec.category)}
               {getCategoryLabel(rec.category)}
             </Badge>
-            
+
             {/* Scope tag */}
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 gap-1 font-normal">
               {getScopeIcon(rec.scope)}
               {getScopeLabel(rec.scope)}
               {rec.targetKey && <span className="font-medium">· {rec.targetKey}</span>}
             </Badge>
-            
+
             {/* Priority tag */}
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
                 "text-[10px] px-1.5 py-0 h-5 font-normal",
                 variant === 'critical' && "bg-destructive/10 text-destructive border-destructive/20",
@@ -212,16 +213,16 @@ const AIRecommendations = () => {
             >
               {getPriorityLabel(rec.priority)}
             </Badge>
-            
+
             {/* Status tag */}
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn("text-[10px] px-1.5 py-0 h-5 gap-1 font-normal", statusConfig.className)}
               onClick={(e) => {
                 e.stopPropagation();
-                const nextStatus: RecommendationStatus = 
-                  status === 'pending' ? 'in_progress' : 
-                  status === 'in_progress' ? 'completed' : 'pending';
+                const nextStatus: RecommendationStatus =
+                  status === 'pending' ? 'in_progress' :
+                    status === 'in_progress' ? 'completed' : 'pending';
                 updateStatus(rec.id, nextStatus);
               }}
             >
@@ -230,13 +231,13 @@ const AIRecommendations = () => {
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-4 pt-0 space-y-2">
           {/* Context / Why this recommendation */}
           <div className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
             {context}
           </div>
-          
+
           {/* Action */}
           {action && (
             <div className="bg-primary/5 border border-primary/20 rounded-md p-3">
@@ -249,29 +250,29 @@ const AIRecommendations = () => {
     );
   };
 
-  const SectionHeader = ({ 
-    title, 
-    count, 
-    icon: Icon, 
-    variant 
-  }: { 
-    title: string; 
-    count: number; 
-    icon: React.ElementType; 
-    variant: 'critical' | 'important' | 'suggestion' 
+  const SectionHeader = ({
+    title,
+    count,
+    icon: Icon,
+    variant
+  }: {
+    title: string;
+    count: number;
+    icon: React.ElementType;
+    variant: 'critical' | 'important' | 'suggestion'
   }) => {
-    const colorClass = variant === 'critical' 
-      ? 'text-destructive' 
-      : variant === 'important' 
-        ? 'text-warning' 
+    const colorClass = variant === 'critical'
+      ? 'text-destructive'
+      : variant === 'important'
+        ? 'text-warning'
         : 'text-blue-500';
 
     return (
       <div className="flex items-center gap-2 mb-4">
         <Icon className={cn("h-5 w-5", colorClass)} />
         <h2 className="text-lg font-bold">{title}</h2>
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant="secondary"
           className={cn(
             "text-xs",
             variant === 'critical' && "bg-destructive/10 text-destructive",
@@ -298,9 +299,9 @@ const AIRecommendations = () => {
               Alertas y sugerencias inteligentes para optimizar el Primaverando 2025
             </p>
           </div>
-          
+
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={() => setChatOpen(true)}
               variant="outline"
               className="gap-2"
@@ -308,7 +309,7 @@ const AIRecommendations = () => {
               <MessageCircle className="h-4 w-4" />
               Chat con IA
             </Button>
-            <Button 
+            <Button
               onClick={() => setDrawerOpen(true)}
               className="gap-2"
             >
@@ -459,7 +460,7 @@ const AIRecommendations = () => {
         isLoading={false}
         eventName={festivalData.nombre}
         eventDate={format(new Date("2025-03-29"), "d 'de' MMMM 'de' yyyy", { locale: es })}
-        onRefresh={() => {}}
+        onRefresh={() => { }}
       />
 
       <EventChatDrawer
@@ -467,10 +468,10 @@ const AIRecommendations = () => {
         eventName={festivalData.nombre}
         open={chatOpen}
         onOpenChange={setChatOpen}
-        isDemo={true}
+        isDemo={isDemo}
       />
 
-      <AlertDetailModal 
+      <AlertDetailModal
         recommendation={selectedRecommendation}
         open={!!selectedRecommendation}
         onOpenChange={(open) => !open && setSelectedRecommendation(null)}

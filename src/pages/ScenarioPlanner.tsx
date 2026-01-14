@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useState, useMemo } from "react";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Euro, 
-  Megaphone, 
-  Calendar, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Euro,
+  Megaphone,
+  Calendar,
   Target,
   ArrowRight,
   Sparkles,
@@ -24,10 +24,11 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
-import { festivalData } from "@/data/festivalData";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 const ScenarioPlanner = () => {
   // Base data from festival
+  const { config: festivalData } = useFestivalConfig();
   const { overview, aforoTotal, precios, zones } = festivalData;
   const currentTickets = overview.entradasVendidas;
   const currentRevenue = overview.ingresosTotales;
@@ -85,13 +86,13 @@ const ScenarioPlanner = () => {
     const generalTicketDelta = Math.round(generalTickets * generalElasticity * (generalPriceChange[0] / 100) * 0.3);
     const vipTicketDelta = Math.round(vipTickets * vipElasticity * (vipPriceChange[0] / 100) * 0.3);
     const earlyBirdTicketDelta = Math.round(earlyBirdTickets * earlyBirdElasticity * (earlyBirdPriceChange[0] / 100) * 0.3);
-    
+
     // Price impact on revenue
     const newGeneralPrice = precios.general * (1 + generalPriceChange[0] / 100);
     const newVipPrice = precios.vip * (1 + vipPriceChange[0] / 100);
     const newEarlyBirdPrice = precios.anticipada * (1 + earlyBirdPriceChange[0] / 100);
 
-    const priceRevenueDelta = 
+    const priceRevenueDelta =
       (generalTickets + generalTicketDelta) * newGeneralPrice - generalTickets * precios.general +
       (vipTickets + vipTicketDelta) * newVipPrice - vipTickets * precios.vip +
       (earlyBirdTickets + earlyBirdTicketDelta) * newEarlyBirdPrice - earlyBirdTickets * precios.anticipada;
@@ -187,11 +188,48 @@ const ScenarioPlanner = () => {
     Object.values(campaigns).some(v => v) || newPhase.active ||
     pistaIncrease[0] > 0 || gradasIncrease[0] > 0 || vipIncrease[0] > 0;
 
+  if (aforoTotal === 0 || precios.general === 0) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <PageBreadcrumb items={[{ label: "Simulador de Escenarios" }]} />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <div className="p-1.5 rounded-md bg-primary/10">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <h1 className="text-xl font-bold text-foreground">
+                  Simulador de Escenarios
+                </h1>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Herramienta de proyección financiera y gestión de aforo.
+              </p>
+            </div>
+          </div>
+
+          <Card className="border-2 border-dashed border-muted p-12 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="p-4 rounded-full bg-muted/50 mb-4">
+                <Sparkles className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium">Configuración incompleta</h3>
+              <p className="max-w-md mt-2 text-sm text-muted-foreground">
+                Para utilizar el simulador de escenarios, el evento debe tener configurado un aforo total y precios base.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-4">
         <PageBreadcrumb items={[{ label: "Simulador de Escenarios" }]} />
-        
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -202,15 +240,15 @@ const ScenarioPlanner = () => {
               <h1 className="text-xl font-bold text-foreground">
                 Simulador de Escenarios
               </h1>
-              <Badge variant="outline" className="ml-1 text-[10px]">Primaverando 2025</Badge>
+              <Badge variant="outline" className="ml-1 text-[10px]">{festivalData.nombre}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               Simula cambios en precios, campañas, fases y aforo. Visualiza el impacto antes de decidir.
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="gap-1.5 h-7 text-xs"
             onClick={resetAll}
             disabled={!hasChanges}
@@ -230,9 +268,9 @@ const ScenarioPlanner = () => {
               </CardTitle>
               {hasChanges && (
                 <Badge variant="default" className="text-[10px]">
-                  {Object.values(campaigns).filter(v => v).length + (newPhase.active ? 1 : 0) + 
-                   (generalPriceChange[0] !== 0 ? 1 : 0) + (vipPriceChange[0] !== 0 ? 1 : 0) + (earlyBirdPriceChange[0] !== 0 ? 1 : 0) +
-                   (pistaIncrease[0] > 0 ? 1 : 0) + (gradasIncrease[0] > 0 ? 1 : 0) + (vipIncrease[0] > 0 ? 1 : 0)} cambios activos
+                  {Object.values(campaigns).filter(v => v).length + (newPhase.active ? 1 : 0) +
+                    (generalPriceChange[0] !== 0 ? 1 : 0) + (vipPriceChange[0] !== 0 ? 1 : 0) + (earlyBirdPriceChange[0] !== 0 ? 1 : 0) +
+                    (pistaIncrease[0] > 0 ? 1 : 0) + (gradasIncrease[0] > 0 ? 1 : 0) + (vipIncrease[0] > 0 ? 1 : 0)} cambios activos
                 </Badge>
               )}
             </div>
@@ -689,16 +727,16 @@ const ScenarioPlanner = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium mb-1">
-                    {impactCalculations.totals.occupancyDelta >= 5 
-                      ? "Escenario positivo" 
-                      : impactCalculations.totals.occupancyDelta >= 0 
+                    {impactCalculations.totals.occupancyDelta >= 5
+                      ? "Escenario positivo"
+                      : impactCalculations.totals.occupancyDelta >= 0
                         ? "Escenario moderado"
                         : "Escenario negativo"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {impactCalculations.totals.occupancyDelta >= 5 
+                    {impactCalculations.totals.occupancyDelta >= 5
                       ? `Este escenario incrementaría la ocupación en ${impactCalculations.totals.occupancyDelta.toFixed(1)}% y generaría €${(impactCalculations.totals.revenueDelta / 1000).toFixed(1)}K adicionales.`
-                      : impactCalculations.totals.occupancyDelta >= 0 
+                      : impactCalculations.totals.occupancyDelta >= 0
                         ? `Los cambios propuestos tendrían un impacto limitado. Considera activar más palancas.`
                         : `Este escenario reduciría ventas. Revisa los ajustes de precio o activa campañas compensatorias.`}
                   </p>

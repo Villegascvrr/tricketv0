@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  Users, 
-  MapPin, 
-  UserCheck, 
-  TrendingUp, 
+import {
+  Users,
+  MapPin,
+  UserCheck,
+  TrendingUp,
   Target,
   Zap,
   Repeat,
@@ -21,22 +21,23 @@ import {
   Sparkles,
   Database
 } from "lucide-react";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  Cell, 
-  PieChart, 
-  Pie 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie
 } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { useTicketStats } from "@/hooks/useTicketStats";
 import { useEvent } from "@/contexts/EventContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 // Actionable segments data - based on festival audience patterns
 const actionableSegments = [
@@ -143,15 +144,15 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 const Audience = () => {
   const { selectedEvent } = useEvent();
   const eventId = selectedEvent?.id || "";
+  const { isDemo, eventName } = useFestivalConfig();
   const { stats, loading } = useTicketStats(eventId);
-  
+
   const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
   const [segmentsOpen, setSegmentsOpen] = useState(false);
-  
-  // Use real data from stats or fallback
+
   const totalAsistentes = stats?.totalSold || 0;
   const hasRealData = stats?.hasRealData || false;
-  
+
   // Transform demographics data for charts
   const provinceData = useMemo(() => {
     if (stats?.demographics?.byProvince && stats.demographics.byProvince.length > 0) {
@@ -161,16 +162,19 @@ const Audience = () => {
         percent: p.percentage.toFixed(1)
       }));
     }
-    // Fallback data
-    return [
-      { name: 'Sevilla', value: 5640, percent: '38.0' },
-      { name: 'Cádiz', value: 1785, percent: '12.0' },
-      { name: 'Málaga', value: 1190, percent: '8.0' },
-      { name: 'Córdoba', value: 595, percent: '4.0' },
-      { name: 'Otros', value: 5640, percent: '38.0' }
-    ];
-  }, [stats?.demographics?.byProvince]);
-  
+    // Fallback data ONLY if demo
+    if (isDemo) {
+      return [
+        { name: 'Sevilla', value: 5640, percent: '38.0' },
+        { name: 'Cádiz', value: 1785, percent: '12.0' },
+        { name: 'Málaga', value: 1190, percent: '8.0' },
+        { name: 'Córdoba', value: 595, percent: '4.0' },
+        { name: 'Otros', value: 5640, percent: '38.0' }
+      ];
+    }
+    return [];
+  }, [stats?.demographics?.byProvince, isDemo]);
+
   const ageData = useMemo(() => {
     if (stats?.demographics?.byAge && stats.demographics.byAge.length > 0) {
       return stats.demographics.byAge.map(a => ({
@@ -182,14 +186,17 @@ const Audience = () => {
       }));
     }
     // Fallback data
-    return [
-      { rango: '18-21', asistentes: 4455, percent: 30, ticketPref: 'Early Bird', avgPrice: 19 },
-      { rango: '22-25', asistentes: 4950, percent: 33, ticketPref: 'General', avgPrice: 24 },
-      { rango: '26-30', asistentes: 3465, percent: 23, ticketPref: 'General + VIP', avgPrice: 38 },
-      { rango: '31+', asistentes: 1980, percent: 14, ticketPref: 'VIP', avgPrice: 65 }
-    ];
-  }, [stats?.demographics?.byAge]);
-  
+    if (isDemo) {
+      return [
+        { rango: '18-21', asistentes: 4455, percent: 30, ticketPref: 'Early Bird', avgPrice: 19 },
+        { rango: '22-25', asistentes: 4950, percent: 33, ticketPref: 'General', avgPrice: 24 },
+        { rango: '26-30', asistentes: 3465, percent: 23, ticketPref: 'General + VIP', avgPrice: 38 },
+        { rango: '31+', asistentes: 1980, percent: 14, ticketPref: 'VIP', avgPrice: 65 }
+      ];
+    }
+    return [];
+  }, [stats?.demographics?.byAge, isDemo]);
+
   const contactStats = useMemo(() => {
     if (stats?.demographics) {
       return {
@@ -202,16 +209,26 @@ const Audience = () => {
       };
     }
     // Fallback
+    if (isDemo) {
+      return {
+        withEmail: 12450,
+        withPhone: 8920,
+        withMarketingConsent: 9800,
+        emailPercent: 84,
+        phonePercent: 60,
+        consentPercent: 66,
+      };
+    }
     return {
-      withEmail: 12450,
-      withPhone: 8920,
-      withMarketingConsent: 9800,
-      emailPercent: 84,
-      phonePercent: 60,
-      consentPercent: 66,
+      withEmail: 0,
+      withPhone: 0,
+      withMarketingConsent: 0,
+      emailPercent: 0,
+      phonePercent: 0,
+      consentPercent: 0,
     };
-  }, [stats?.demographics, totalAsistentes]);
-  
+  }, [stats?.demographics, totalAsistentes, isDemo]);
+
   // Geographic data for detailed view
   const geographicData = useMemo(() => {
     if (stats?.demographics?.byProvince && stats.demographics.byProvince.length > 0) {
@@ -222,14 +239,17 @@ const Audience = () => {
         ticketMedio: 25 + (i * 3) // Estimate
       }));
     }
-    return [
-      { zona: 'Sevilla capital', asistentes: 5640, percent: 38, ticketMedio: 28 },
-      { zona: 'Área metropolitana', asistentes: 2970, percent: 20, ticketMedio: 25 },
-      { zona: 'Resto Andalucía', asistentes: 3570, percent: 24, ticketMedio: 24 },
-      { zona: 'Resto España', asistentes: 1785, percent: 12, ticketMedio: 32 },
-      { zona: 'Internacional', asistentes: 885, percent: 6, ticketMedio: 45 }
-    ];
-  }, [stats?.demographics?.byProvince]);
+    if (isDemo) {
+      return [
+        { zona: 'Sevilla capital', asistentes: 5640, percent: 38, ticketMedio: 28 },
+        { zona: 'Área metropolitana', asistentes: 2970, percent: 20, ticketMedio: 25 },
+        { zona: 'Resto Andalucía', asistentes: 3570, percent: 24, ticketMedio: 24 },
+        { zona: 'Resto España', asistentes: 1785, percent: 12, ticketMedio: 32 },
+        { zona: 'Internacional', asistentes: 885, percent: 6, ticketMedio: 45 }
+      ];
+    }
+    return [];
+  }, [stats?.demographics?.byProvince, isDemo]);
 
   // Calculate total potential from segments
   const totalPotential = useMemo(() => {
@@ -241,6 +261,59 @@ const Audience = () => {
       return acc;
     }, 0);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-3 md:p-4 theme-audience">
+        <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
+          <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+            </div>
+            <Skeleton className="h-[400px] w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state for real events with no data
+  if (!isDemo && totalAsistentes === 0 && !loading) {
+    return (
+      <div className="min-h-screen bg-background p-3 md:p-4 theme-audience">
+        <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
+          <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-base md:text-lg font-bold text-foreground">Público y Audiencia</h1>
+                <p className="text-[10px] md:text-xs text-muted-foreground">{eventName}</p>
+              </div>
+            </div>
+          </div>
+
+          <Card className="border-2 border-dashed border-muted p-12 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="p-4 mb-4 rounded-full bg-muted/50">
+                <Users className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium">No hay datos de audiencia</h3>
+              <p className="max-w-md mt-2 text-sm text-muted-foreground">
+                Aún no se han registrado ventas o asistentes para este evento. Los datos de audiencia aparecerán aquí cuando comience la venta de entradas.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -261,7 +334,7 @@ const Audience = () => {
     <div className="min-h-screen bg-background p-3 md:p-4 theme-audience">
       <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         <PageBreadcrumb items={[{ label: "Público y Audiencia" }]} />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-3">
@@ -293,7 +366,7 @@ const Audience = () => {
               <p className="text-[10px] text-muted-foreground">{actionableSegments.filter(s => s.priority === 'high').length} prioritarios</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-3 pb-2">
               <div className="flex items-center gap-2 mb-1">
@@ -304,7 +377,7 @@ const Audience = () => {
               <p className="text-[10px] text-muted-foreground">entradas estimadas</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-3 pb-2">
               <div className="flex items-center gap-2 mb-1">
@@ -315,7 +388,7 @@ const Audience = () => {
               <p className="text-[10px] text-success">+12% vs 2024</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-3 pb-2">
               <div className="flex items-center gap-2 mb-1">
@@ -326,7 +399,7 @@ const Audience = () => {
               <p className="text-[10px] text-muted-foreground">por asistente</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-3 pb-2">
               <div className="flex items-center gap-2 mb-1">
@@ -366,109 +439,108 @@ const Audience = () => {
             <CollapsibleContent>
               <CardContent>
                 <div className="space-y-2">
-              {actionableSegments.map((segment) => {
-                const IconComponent = segment.icon;
-                const isSelected = selectedSegment === segment.id;
-                
-                return (
-                  <div 
-                    key={segment.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      isSelected 
-                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
-                        : 'border-border hover:border-primary/50 hover:bg-muted/30'
-                    }`}
-                    onClick={() => setSelectedSegment(isSelected ? null : segment.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Icon */}
-                      <div className={`p-2 rounded-lg shrink-0 ${getPriorityColor(segment.priority)}`}>
-                        <IconComponent className="h-4 w-4" />
-                      </div>
-                      
-                      {/* Main Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-sm">{segment.name}</span>
-                          <Badge variant="outline" className={`text-[10px] ${getPriorityColor(segment.priority)}`}>
-                            {segment.priority === 'high' ? 'Prioritario' : segment.priority === 'medium' ? 'Moderado' : 'Bajo'}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-2">{segment.description}</p>
-                        
-                        {/* Key Metrics Row */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3 text-muted-foreground" />
-                            <span className="font-medium">{segment.size.toLocaleString('es-ES')}</span>
-                            <span className="text-muted-foreground">({segment.sizePercent}%)</span>
+                  {actionableSegments.map((segment) => {
+                    const IconComponent = segment.icon;
+                    const isSelected = selectedSegment === segment.id;
+
+                    return (
+                      <div
+                        key={segment.id}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${isSelected
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                          : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                          }`}
+                        onClick={() => setSelectedSegment(isSelected ? null : segment.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Icon */}
+                          <div className={`p-2 rounded-lg shrink-0 ${getPriorityColor(segment.priority)}`}>
+                            <IconComponent className="h-4 w-4" />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Ticket className="h-3 w-3 text-muted-foreground" />
-                            <span>{segment.ticketType}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Euro className="h-3 w-3 text-muted-foreground" />
-                            <span>€{segment.avgTicketPrice} medio</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className={`h-3 w-3 ${getConversionColor(segment.conversionPotential)}`} />
-                            <span className={`font-medium ${getConversionColor(segment.conversionPotential)}`}>
-                              {segment.conversionPotential}% conversión
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Impact Badge */}
-                      <div className="text-right shrink-0">
-                        <div className="text-sm font-bold text-success">{segment.estimatedImpact}</div>
-                        <p className="text-[10px] text-muted-foreground">impacto est.</p>
-                      </div>
-                      
-                      <ChevronRight className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? 'rotate-90' : ''}`} />
-                    </div>
-                    
-                    {/* Expanded Details */}
-                    {isSelected && (
-                      <div className="mt-3 pt-3 border-t space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Características</p>
-                            <div className="flex flex-wrap gap-1">
-                              {segment.characteristics.map((char, i) => (
-                                <Badge key={i} variant="secondary" className="text-[10px]">{char}</Badge>
-                              ))}
+
+                          {/* Main Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-sm">{segment.name}</span>
+                              <Badge variant="outline" className={`text-[10px] ${getPriorityColor(segment.priority)}`}>
+                                {segment.priority === 'high' ? 'Prioritario' : segment.priority === 'medium' ? 'Moderado' : 'Bajo'}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">{segment.description}</p>
+
+                            {/* Key Metrics Row */}
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                              <div className="flex items-center gap-1">
+                                <Users className="h-3 w-3 text-muted-foreground" />
+                                <span className="font-medium">{segment.size.toLocaleString('es-ES')}</span>
+                                <span className="text-muted-foreground">({segment.sizePercent}%)</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Ticket className="h-3 w-3 text-muted-foreground" />
+                                <span>{segment.ticketType}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Euro className="h-3 w-3 text-muted-foreground" />
+                                <span>€{segment.avgTicketPrice} medio</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className={`h-3 w-3 ${getConversionColor(segment.conversionPotential)}`} />
+                                <span className={`font-medium ${getConversionColor(segment.conversionPotential)}`}>
+                                  {segment.conversionPotential}% conversión
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <div>
-                            <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Potencial de Conversión</p>
-                            <div className="flex items-center gap-2">
-                              <Progress value={segment.conversionPotential} className="h-2 flex-1" />
-                              <span className={`text-sm font-medium ${getConversionColor(segment.conversionPotential)}`}>
-                                {segment.conversionLabel}
-                              </span>
+
+                          {/* Impact Badge */}
+                          <div className="text-right shrink-0">
+                            <div className="text-sm font-bold text-success">{segment.estimatedImpact}</div>
+                            <p className="text-[10px] text-muted-foreground">impacto est.</p>
+                          </div>
+
+                          <ChevronRight className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isSelected ? 'rotate-90' : ''}`} />
+                        </div>
+
+                        {/* Expanded Details */}
+                        {isSelected && (
+                          <div className="mt-3 pt-3 border-t space-y-3">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Características</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {segment.characteristics.map((char, i) => (
+                                    <Badge key={i} variant="secondary" className="text-[10px]">{char}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">Potencial de Conversión</p>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={segment.conversionPotential} className="h-2 flex-1" />
+                                  <span className={`text-sm font-medium ${getConversionColor(segment.conversionPotential)}`}>
+                                    {segment.conversionLabel}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Zap className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs font-medium text-primary">Acción Recomendada</span>
+                              </div>
+                              <p className="text-sm">{segment.action}</p>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Zap className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-xs font-medium text-primary">Acción Recomendada</span>
-                          </div>
-                          <p className="text-sm">{segment.action}</p>
-                        </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Charts Row - Province and Age */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -487,7 +559,7 @@ const Audience = () => {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" />
                   <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip 
+                  <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
@@ -538,7 +610,7 @@ const Audience = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           return (
@@ -589,8 +661,8 @@ const Audience = () => {
                   <div key={zona.zona} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-2.5 h-2.5 rounded-full" 
+                        <div
+                          className="w-2.5 h-2.5 rounded-full"
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}
                         />
                         <span className="font-medium">{zona.zona}</span>
@@ -605,7 +677,7 @@ const Audience = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-4 pt-3 border-t">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Oportunidad detectada:</span>
@@ -630,8 +702,8 @@ const Audience = () => {
                   <div key={age.rango} className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-2.5 h-2.5 rounded-full" 
+                        <div
+                          className="w-2.5 h-2.5 rounded-full"
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}
                         />
                         <span className="font-semibold text-sm">{age.rango} años</span>
@@ -654,7 +726,7 @@ const Audience = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-4 pt-3 border-t">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Insight:</span>

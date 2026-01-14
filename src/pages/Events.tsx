@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { format, isBefore, isAfter, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { festivalData } from "@/data/festivalData";
+import { demoFestivalData } from "@/data/demoData";
 
 interface Event {
   id: string;
@@ -27,13 +27,13 @@ type EventFilter = "all" | "active" | "upcoming" | "finished";
 // Demo event from festivalData
 const DEMO_EVENT: Event = {
   id: "demo-primaverando-2025",
-  name: festivalData.nombre,
+  name: demoFestivalData.nombre,
   type: "Festival",
-  venue: festivalData.ubicacion,
+  venue: demoFestivalData.ubicacion,
   start_date: "2025-03-29",
   end_date: "2025-03-29",
-  total_capacity: festivalData.aforoTotal,
-  tickets_count: festivalData.overview.entradasVendidas,
+  total_capacity: demoFestivalData.aforoTotal,
+  tickets_count: demoFestivalData.overview.entradasVendidas,
   isDemo: true,
 };
 
@@ -209,13 +209,12 @@ const Events = () => {
             <h3 className="text-xl font-semibold mb-2">
               {filter === "all"
                 ? "Sin eventos configurados"
-                : `No hay eventos ${
-                    filter === "active"
-                      ? "activos"
-                      : filter === "upcoming"
-                      ? "próximos"
-                      : "finalizados"
-                  }`}
+                : `No hay eventos ${filter === "active"
+                  ? "activos"
+                  : filter === "upcoming"
+                    ? "próximos"
+                    : "finalizados"
+                }`}
             </h3>
             <p className="text-muted-foreground mb-2">
               {filter === "all"

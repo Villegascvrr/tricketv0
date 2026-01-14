@@ -17,7 +17,8 @@ import TicketProviderManager from "@/components/event/TicketProviderManager";
 import AIRecommendationsDrawer from "@/components/event/AIRecommendationsDrawer";
 import ExecutiveDashboard from "@/components/event/ExecutiveDashboard";
 import EventChatDrawer from "@/components/event/EventChatDrawer";
-import { festivalData } from "@/data/festivalData";
+import { demoFestivalData } from "@/data/demoData";
+import { realFestivalData } from "@/data/realData";
 import { generateAIRecommendations } from "@/utils/generateAIRecommendations";
 
 
@@ -35,12 +36,12 @@ interface Event {
 // Demo event from festivalData
 const DEMO_EVENT: Event = {
   id: "demo-primaverando-2025",
-  name: festivalData.nombre,
+  name: demoFestivalData.nombre,
   type: "Festival",
-  venue: festivalData.ubicacion,
+  venue: demoFestivalData.ubicacion,
   start_date: "2025-03-29",
   end_date: "2025-03-29",
-  total_capacity: festivalData.aforoTotal,
+  total_capacity: demoFestivalData.aforoTotal,
   isDemo: true,
 };
 
@@ -51,12 +52,13 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  
+
   // Detect demo mode synchronously from URL to prevent race conditions
   const isDemo = id?.startsWith("demo-") ?? false;
+  const config = isDemo ? demoFestivalData : realFestivalData;
 
   // Generate local recommendations for demo mode
-  const localRecommendations = generateAIRecommendations();
+  const localRecommendations = generateAIRecommendations(config);
 
   // Fetch AI recommendations (only for non-demo events)
   const { data: aiData, isLoading: aiLoading, refetch: refetchRecommendations } = useQuery({
@@ -76,8 +78,8 @@ const EventDetail = () => {
   });
 
   // Use local recommendations for demo, API recommendations for real events
-  const recommendations = isDemo 
-    ? localRecommendations 
+  const recommendations = isDemo
+    ? localRecommendations
     : (aiData?.recommendations || []);
   const criticalCount = recommendations.filter((r: any) => r.priority === 'high').length;
 
@@ -104,7 +106,7 @@ const EventDetail = () => {
         .maybeSingle();
 
       if (error) throw error;
-      
+
       if (data) {
         setEvent(data);
       } else {
@@ -147,7 +149,7 @@ const EventDetail = () => {
       {/* Hero Header with Festival Image */}
       {isDemo && (
         <div className="relative h-48 md:h-64 overflow-hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1920&q=80')`,
@@ -155,7 +157,7 @@ const EventDetail = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           <div className="absolute inset-0 gradient-festival opacity-30" />
-          
+
           <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-8 pb-6">
             <Button
               variant="ghost"
@@ -166,7 +168,7 @@ const EventDetail = () => {
               <ArrowLeft className="h-3 w-3 mr-1" />
               Volver a eventos
             </Button>
-            
+
             <div className="flex justify-between items-end">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -191,9 +193,9 @@ const EventDetail = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <Button 
+                <Button
                   onClick={() => setChatOpen(true)}
                   size="sm"
                   className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-card text-foreground hover:bg-card/90 shadow-lg transition-all"
@@ -201,7 +203,7 @@ const EventDetail = () => {
                   <MessageCircle className="h-4 w-4" />
                   Chat IA
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setDrawerOpen(true)}
                   size="sm"
                   className="h-9 px-4 gap-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all"
@@ -243,7 +245,7 @@ const EventDetail = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button 
+                <Button
                   onClick={() => setChatOpen(true)}
                   size="sm"
                   className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
@@ -251,7 +253,7 @@ const EventDetail = () => {
                   <MessageCircle className="h-3.5 w-3.5" />
                   Chat con IA
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setDrawerOpen(true)}
                   size="sm"
                   className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium relative"
@@ -282,7 +284,7 @@ const EventDetail = () => {
 
               <div className="flex items-center gap-2">
                 <TicketProviderManager eventId={event.id} totalCapacity={event.total_capacity} />
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
@@ -301,7 +303,7 @@ const EventDetail = () => {
         <div className="border-b border-border bg-card/50">
           <div className="max-w-7xl mx-auto px-8 py-3 flex justify-end gap-2">
             <TicketProviderManager eventId={event.id} totalCapacity={event.total_capacity} />
-            <Button 
+            <Button
               variant="outline"
               size="sm"
               className="h-8 px-3 gap-1.5 rounded-full text-xs font-medium"
@@ -324,8 +326,8 @@ const EventDetail = () => {
           </TabsList>
 
           <TabsContent value="summary">
-            <EventSummary 
-              eventId={event.id} 
+            <EventSummary
+              eventId={event.id}
               totalCapacity={event.total_capacity}
               onOpenDrawer={() => setDrawerOpen(true)}
             />
@@ -345,8 +347,8 @@ const EventDetail = () => {
           </TabsContent>
 
           <TabsContent value="recommendations">
-            <EventRecommendations 
-              eventId={event.id} 
+            <EventRecommendations
+              eventId={event.id}
               recommendations={recommendations}
               isLoading={aiLoading}
               onRefresh={() => refetchRecommendations()}

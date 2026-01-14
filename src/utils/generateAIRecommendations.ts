@@ -1,5 +1,5 @@
 // Genera recomendaciones basadas en REGLAS VISIBLES con contexto específico de Primaverando
-import { festivalData } from '@/data/festivalData';
+import { FestivalData } from '@/types/festival';
 
 export interface Recommendation {
   id: string;
@@ -30,10 +30,10 @@ const PRIMAVERANDO_2024 = {
 const SEMANAS_RESTANTES = 12;
 const FECHA_REFERENCIA = '15 de enero 2025';
 
-export function generateAIRecommendations(): Recommendation[] {
+export function generateAIRecommendations(festivalData: FestivalData): Recommendation[] {
   const recs: Recommendation[] = [];
 
-  if (!festivalData.overview.entradasVendidas || festivalData.overview.entradasVendidas === 0) {
+  if (!festivalData?.overview?.entradasVendidas || festivalData.overview.entradasVendidas === 0) {
     return [];
   }
 
