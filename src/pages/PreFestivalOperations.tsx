@@ -11,7 +11,7 @@ import {
   Plus, Search, List, LayoutGrid, Calendar, AlertTriangle,
   ClipboardList, Users, Euro, FileCheck, Settings,
   LucideIcon, Truck, HardHat, Music, Shield, Ticket, MessageSquare, Clapperboard,
-  ArrowRight
+  ArrowRight, AlertCircle, User
 } from "lucide-react";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { usePreFestivalTasksSupabase, ViewMode, PreFestivalTask, TaskFilters } from "@/hooks/usePreFestivalTasksSupabase";
@@ -26,6 +26,13 @@ import { cn } from "@/lib/utils";
 import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
 import { AreaChecklistView } from "@/components/prefestival/AreaChecklistView";
+import { ProviderManager } from "@/components/prefestival/ProviderManager";
+import { ArtistManager } from "@/components/prefestival/ArtistManager";
+import { mockProviders } from "@/data/providerMockData";
+import { mockArtists } from "@/data/artistMockData";
+import { initialNotes } from "@/data/notesMockData";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const PreFestivalOperations = () => {
   const { isDemo, eventId } = useFestivalConfig();
@@ -42,7 +49,7 @@ const PreFestivalOperations = () => {
   const [selectedTask, setSelectedTask] = useState<PreFestivalTask | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // Handlers
   const handleOpenTask = (task: PreFestivalTask) => {
@@ -69,12 +76,23 @@ const PreFestivalOperations = () => {
     setActiveTab(value);
     setFilters(prev => ({
       ...prev,
-      area: value === 'all' ? 'all' : value // Pass ID or 'all'
+      area: (value === 'all' || value === 'dashboard') ? 'all' : value // Pass ID or 'all'
     }));
   };
 
   const currentArea = PRE_FESTIVAL_AREAS.find(a => a.id === activeTab);
-  const activeAreaName = activeTab === 'all' ? 'Vista General' : currentArea?.label || 'Area';
+  const activeAreaName = activeTab === 'all' ? 'Vista General' : activeTab === 'dashboard' ? 'Dashboard Operativo' : currentArea?.label || 'Area';
+
+  // Dashboard Data Calculations
+  const riskyProviders = mockProviders.filter(p => p.status === 'risk' || p.status === 'blocked');
+  const riskyArtists = mockArtists.filter(a => a.status === 'risk' || a.status === 'cancelled'); // Assuming cancelled/risk
+  const allRisks = [
+    ...riskyProviders.map(p => ({ type: 'Proveedor', name: p.name, status: p.status, id: p.id })),
+    ...riskyArtists.map(a => ({ type: 'Artista', name: a.name, status: 'risk', id: a.id })) // Simplified mapping
+  ];
+
+  const highPriorityNotes = initialNotes.filter(n => n.priority === 'high');
+  const upcomingMilestones = milestones.filter(m => !m.completed).slice(0, 3); // Top 3 incomplete
 
   // Stats for cards (Summary)
   // Note: For real environment, we'd ideally calculate these from real data exclusively
@@ -126,14 +144,10 @@ const PreFestivalOperations = () => {
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-2 mb-1">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
-                <span className="text-xs text-muted-foreground">Críticas Abiertas</span>
+                <span className="text-xs text-muted-foreground">Riesgos Operativos</span>
               </div>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16 mb-1" />
-              ) : (
-                <p className="text-2xl font-bold text-destructive">{stats.highPriority}</p>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">Alta prioridad</p>
+              <p className="text-2xl font-bold text-destructive">{allRisks.length}</p>
+              <p className="text-xs text-muted-foreground mt-1">Bloqueos activos</p>
             </CardContent>
           </Card>
 
@@ -169,8 +183,12 @@ const PreFestivalOperations = () => {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3 md:space-y-4">
           <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
             <TabsList className="bg-card border flex-nowrap h-auto gap-1 p-1 w-max md:w-auto">
-              <TabsTrigger value="all" className="gap-2 text-[10px] md:text-xs px-3">
+              <TabsTrigger value="dashboard" className="gap-2 text-[10px] md:text-xs px-3">
                 <LayoutGrid className="h-3.5 w-3.5" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="all" className="gap-2 text-[10px] md:text-xs px-3">
+                <List className="h-3.5 w-3.5" />
                 Vista General
               </TabsTrigger>
               {PRE_FESTIVAL_AREAS.map(area => {
@@ -283,6 +301,118 @@ const PreFestivalOperations = () => {
                     </>
                   )}
                 </>
+              ) : activeTab === 'dashboard' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* RISK PANEL */}
+                  <Card className="md:col-span-1 border-destructive/20 bg-destructive/5">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Shield className="h-4 w-4 text-destructive" />
+                        <h3 className="font-semibold text-sm">Atención Requerida</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {allRisks.length > 0 ? (
+                          allRisks.map((risk, i) => (
+                            <div key={i} className="flex items-center justify-between p-2 rounded bg-background border border-destructive/20">
+                              <div className="flex items-center gap-2">
+                                <AlertCircle className="h-3.5 w-3.5 text-destructive" />
+                                <div>
+                                  <p className="text-sm font-medium">{risk.name}</p>
+                                  <p className="text-[10px] text-muted-foreground">{risk.type}</p>
+                                </div>
+                              </div>
+                              <Badge variant="destructive" className="text-[10px] h-5">{risk.status}</Badge>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-6 text-muted-foreground text-sm">
+                            No hay riesgos activos
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* MILESTONES PANEL */}
+                  <Card className="md:col-span-1">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Próximos Hitos</h3>
+                      </div>
+                      <div className="space-y-3">
+                        {upcomingMilestones.map((milestone) => (
+                          <div key={milestone.id} className="relative pl-4 border-l-2 border-primary/20 pb-1">
+                            <div className="absolute top-0 left-[-5px] h-2.5 w-2.5 rounded-full bg-primary border-2 border-background" />
+                            <p className="text-xs font-semibold">{milestone.title}</p>
+                            <p className="text-[10px] text-muted-foreground">{format(new Date(milestone.target_date), "d MMM yyyy", { locale: es })}</p>
+                          </div>
+                        ))}
+                        {upcomingMilestones.length === 0 && (
+                          <p className="text-sm text-muted-foreground">No hay hitos próximos</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* IMPORTANT NOTES PANEL */}
+                  <Card className="md:col-span-1">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MessageSquare className="h-4 w-4 text-amber-500" />
+                        <h3 className="font-semibold text-sm">Notas Importantes</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {highPriorityNotes.map((note) => (
+                          <div key={note.id} className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                            <div className="flex justify-between items-start mb-1">
+                              <Badge variant="outline" className="text-[9px] border-amber-500/30 text-amber-700 bg-amber-500/5 px-1 py-0 h-4">
+                                {note.entityType.toUpperCase()}
+                              </Badge>
+                              <span className="text-[9px] text-muted-foreground">
+                                {format(new Date(note.createdAt), "d MMM", { locale: es })}
+                              </span>
+                            </div>
+                            <p className="text-xs font-medium line-clamp-2">{note.content}</p>
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <User className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-[10px] text-muted-foreground">Resp: {note.responsible || 'Sin asignar'}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {highPriorityNotes.length === 0 && (
+                          <p className="text-sm text-muted-foreground">No hay notas urgentes</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Quick Shortcuts */}
+                  <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
+                      <Plus className="h-4 w-4 mb-1" />
+                      <span className="text-xs">Nuevo Proveedor</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
+                      <Plus className="h-4 w-4 mb-1" />
+                      <span className="text-xs">Nuevo Artista</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed" onClick={() => setCreateOpen(true)}>
+                      <Plus className="h-4 w-4 mb-1" />
+                      <span className="text-xs">Nueva Tarea</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
+                      <FileCheck className="h-4 w-4 mb-1" />
+                      <span className="text-xs">Ver Contratos</span>
+                    </Button>
+                  </div>
+                </div>
+              ) : activeTab === 'proveedores' ? (
+                /* Dedicated Provider Manager View */
+                <ProviderManager />
+              ) : activeTab === 'artistas' ? (
+                /* Dedicated Artist Manager View */
+                <ArtistManager />
               ) : (
                 /* Area Specific Checklist View */
                 <AreaChecklistView
@@ -311,7 +441,6 @@ const PreFestivalOperations = () => {
         onUpdate={updateTask}
         onAddSubtask={addSubtask}
         onToggleSubtask={toggleSubtask}
-        onAddComment={addComment}
         onAddAttachment={addAttachment}
       />
 

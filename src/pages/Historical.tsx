@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +17,13 @@ import {
   XCircle,
   BookOpen,
   Clock,
-  Target
+  Target,
+  FileCheck,
+  Music,
+  Truck,
+  HardHat,
+  Shield,
+  Activity
 } from "lucide-react";
 import {
   LineChart,
@@ -38,6 +46,7 @@ import {
 } from "recharts";
 import PageBreadcrumb from "@/components/PageBreadcrumb";
 import { useFestivalConfig } from "@/hooks/useFestivalConfig";
+import { demoOperationalHistory, demoDeviations, OperationalLog } from "@/data/operationalHistoryMockData";
 
 // Archivo histórico completo del Primaverando
 const editionArchive = [
@@ -275,6 +284,20 @@ const channelDistribution = [
 const Historical = () => {
   const { isDemo, eventName } = useFestivalConfig();
 
+  const operationalLogs = isDemo ? demoOperationalHistory : [];
+  const deviations = isDemo ? demoDeviations : [];
+
+  const getLogIcon = (type: string) => {
+    switch (type) {
+      case 'artist': return <Music className="h-4 w-4 text-primary" />;
+      case 'permit': return <FileCheck className="h-4 w-4 text-amber-500" />;
+      case 'supplier': return <Truck className="h-4 w-4 text-blue-500" />;
+      case 'infrastructure': return <HardHat className="h-4 w-4 text-slate-500" />;
+      case 'staff': return <Users className="h-4 w-4 text-green-500" />;
+      default: return <Activity className="h-4 w-4" />;
+    }
+  };
+
   const current2025 = sameDateData.comparison.find(c => c.year === 2025);
   const last2024 = sameDateData.comparison.find(c => c.year === 2024);
 
@@ -335,7 +358,7 @@ const Historical = () => {
               Archivo Histórico
             </h1>
             <p className="text-[10px] md:text-sm text-muted-foreground mt-1">
-              Comparativas entre ediciones y aprendizajes
+              Registro centralizado de rendimiento comercial y ejecución operativa
             </p>
           </div>
           <Badge variant="secondary" className="text-[10px] md:text-xs gap-1.5 w-fit">
@@ -344,423 +367,534 @@ const Historical = () => {
           </Badge>
         </div>
 
-        {/* Comparativa por fecha equivalente - Destacado */}
-        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Comparativa a fecha equivalente
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  <span className="font-medium text-foreground">{sameDateData.currentDate}</span> — {sameDateData.daysToEvent} días para el evento
-                </CardDescription>
-              </div>
-              <Badge variant={parseInt(ticketDiffPct) >= 0 ? "default" : "destructive"} className="text-sm px-3 py-1">
-                {parseInt(ticketDiffPct) >= 0 ? '+' : ''}{ticketDiffPct}% vs 2024
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {sameDateData.comparison.map((year) => (
-                <div
-                  key={year.year}
-                  className={`p-4 rounded-lg border ${year.projected ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border'}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`text-lg font-bold ${year.projected ? 'text-primary' : ''}`}>
-                      {year.year}
-                    </span>
-                    {year.projected && <Badge variant="outline" className="text-[10px]">Actual</Badge>}
+        <Tabs defaultValue="comercial" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+            <TabsTrigger value="comercial">Comercial & Ventas</TabsTrigger>
+            <TabsTrigger value="operativo">Bitácora Operativa</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="comercial" className="space-y-6">
+            {/* Comparativa por fecha equivalente - Destacado */}
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      Comparativa a fecha equivalente
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      <span className="font-medium text-foreground">{sameDateData.currentDate}</span> — {sameDateData.daysToEvent} días para el evento
+                    </CardDescription>
                   </div>
-                  <p className="text-2xl font-bold">{year.ticketsAtDate.toLocaleString('es-ES')}</p>
-                  <p className="text-xs text-muted-foreground">entradas vendidas</p>
-                  <div className="mt-2 pt-2 border-t border-border/50">
-                    <p className="text-sm font-medium">€{(year.revenueAtDate / 1000).toFixed(0)}K</p>
-                    <p className="text-xs text-muted-foreground">ingresos</p>
-                  </div>
-                  {year.conversionRate && (
-                    <div className="mt-2">
-                      <p className="text-xs text-muted-foreground">
-                        {year.conversionRate}% del total final
-                      </p>
-                    </div>
-                  )}
+                  <Badge variant={parseInt(ticketDiffPct) >= 0 ? "default" : "destructive"} className="text-sm px-3 py-1">
+                    {parseInt(ticketDiffPct) >= 0 ? '+' : ''}{ticketDiffPct}% vs 2024
+                  </Badge>
                 </div>
-              ))}
-            </div>
-
-            {/* Insight destacado */}
-            <div className="bg-muted/50 rounded-lg p-4 border-l-4 border-l-primary">
-              <p className="text-sm">
-                <span className="font-semibold">Insight:</span> A esta fecha en 2024, llevábamos 16.500 entradas (39% del total final).
-                Este año llevamos {current2025?.ticketsAtDate.toLocaleString('es-ES')} ({ticketDiff < 0 ? '' : '+'}{ticketDiff.toLocaleString('es-ES')} vs 2024),
-                pero con un ticket medio un 78% superior (€25 vs €14).
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Aprendizajes Clave del Año Pasado */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-warning" />
-              <CardTitle className="text-lg">Aprendizajes clave de 2024 a esta altura</CardTitle>
-            </div>
-            <CardDescription>
-              Qué funcionó, qué falló y qué debemos hacer diferente este año
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {keyLearnings2024.map((learning) => (
-                <div
-                  key={learning.id}
-                  className={`p-4 rounded-lg border-l-4 ${learning.type === 'success'
-                    ? 'border-l-success bg-success/5'
-                    : learning.type === 'warning'
-                      ? 'border-l-warning bg-warning/5'
-                      : 'border-l-destructive bg-destructive/5'
-                    }`}
-                >
-                  <div className="flex items-start gap-2 mb-2">
-                    {learning.type === 'success' && <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />}
-                    {learning.type === 'warning' && <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />}
-                    {learning.type === 'failure' && <XCircle className="h-4 w-4 text-destructive mt-0.5" />}
-                    <div>
-                      <h4 className="font-semibold text-sm">{learning.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{learning.description}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-border/50">
-                    <p className="text-xs font-medium text-primary mb-1">{learning.metric}</p>
-                    <div className="flex items-start gap-1">
-                      <Target className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground">{learning.action}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Curvas de Ventas Superpuestas */}
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Curvas de Ventas por Edición</CardTitle>
-                <CardDescription>Evolución de ventas (días antes del evento)</CardDescription>
-              </div>
-              <div className="flex gap-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/40" />
-                  <span>2022</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/60" />
-                  <span>2023</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-                  <span>2024</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                  <span className="font-medium">2025</span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesCurvesData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fontSize: 11 }}
-                    tickLine={false}
-                    tickFormatter={(value) => value === 0 ? 'Evento' : `${value}d`}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number | null) => value ? [value.toLocaleString('es-ES'), ''] : ['—', '']}
-                    labelFormatter={(label) => label === 0 ? 'Día del evento' : `${label} días antes`}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="y2022"
-                    name="2022"
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeWidth={1.5}
-                    strokeOpacity={0.4}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="y2023"
-                    name="2023"
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeWidth={1.5}
-                    strokeOpacity={0.6}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="y2024"
-                    name="2024"
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="y2025"
-                    name="2025"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
-                    connectNulls={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Radar y Canales */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Radar 2025 vs 2024</CardTitle>
-              <CardDescription>Comparativa normalizada (2024 = 100)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid className="stroke-muted" />
-                    <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
-                    <PolarRadiusAxis tick={{ fontSize: 10 }} domain={[0, 200]} />
-                    <Radar
-                      name="2024"
-                      dataKey="y2024"
-                      stroke="hsl(var(--muted-foreground))"
-                      fill="hsl(var(--muted-foreground))"
-                      fillOpacity={0.2}
-                    />
-                    <Radar
-                      name="2025"
-                      dataKey="y2025"
-                      stroke="hsl(var(--primary))"
-                      fill="hsl(var(--primary))"
-                      fillOpacity={0.3}
-                    />
-                    <Legend />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Evolución de Canales</CardTitle>
-              <CardDescription>% de ventas por canal a lo largo de ediciones</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={channelDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                    <XAxis dataKey="channel" tick={{ fontSize: 10 }} tickLine={false} />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value: number) => [`${value}%`, '']}
-                    />
-                    <Bar dataKey="y2022" name="2022" fill="hsl(var(--muted-foreground))" fillOpacity={0.3} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="y2023" name="2023" fill="hsl(var(--muted-foreground))" fillOpacity={0.5} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="y2024" name="2024" fill="hsl(var(--muted-foreground))" fillOpacity={0.7} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="y2025" name="2025" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Historial de Incidentes */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              <CardTitle className="text-base">Historial de Incidentes Documentados</CardTitle>
-            </div>
-            <CardDescription>
-              Registro de problemas operativos para no repetir errores
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Año</th>
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Incidente</th>
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Impacto</th>
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Respuesta</th>
-                    <th className="text-center py-3 px-2 font-medium text-muted-foreground">Aprendido</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historicalIncidents.map((incident, index) => (
-                    <tr key={index} className="border-b border-border/50">
-                      <td className="py-3 px-2 font-medium">{incident.year}</td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className={`text-[10px] px-1.5 ${incident.severity === 'critical'
-                              ? 'bg-destructive/10 text-destructive border-destructive/30'
-                              : incident.severity === 'high'
-                                ? 'bg-warning/10 text-warning border-warning/30'
-                                : 'bg-muted text-muted-foreground'
-                              }`}
-                          >
-                            {incident.severity}
-                          </Badge>
-                          <span>{incident.incident}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {sameDateData.comparison.map((year) => (
+                    <div
+                      key={year.year}
+                      className={`p-4 rounded-lg border ${year.projected ? 'bg-primary/10 border-primary/30' : 'bg-muted/30 border-border'}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-lg font-bold ${year.projected ? 'text-primary' : ''}`}>
+                          {year.year}
+                        </span>
+                        {year.projected && <Badge variant="outline" className="text-[10px]">Actual</Badge>}
+                      </div>
+                      <p className="text-2xl font-bold">{year.ticketsAtDate.toLocaleString('es-ES')}</p>
+                      <p className="text-xs text-muted-foreground">entradas vendidas</p>
+                      <div className="mt-2 pt-2 border-t border-border/50">
+                        <p className="text-sm font-medium">€{(year.revenueAtDate / 1000).toFixed(0)}K</p>
+                        <p className="text-xs text-muted-foreground">ingresos</p>
+                      </div>
+                      {year.conversionRate && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">
+                            {year.conversionRate}% del total final
+                          </p>
                         </div>
-                      </td>
-                      <td className="py-3 px-2 text-muted-foreground text-xs max-w-[200px]">
-                        {incident.impact}
-                      </td>
-                      <td className="py-3 px-2 text-muted-foreground text-xs max-w-[200px]">
-                        {incident.response}
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        {incident.learned ? (
-                          <CheckCircle2 className="h-4 w-4 text-success mx-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-destructive/50 mx-auto" />
-                        )}
-                      </td>
-                    </tr>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+
+                {/* Insight destacado */}
+                <div className="bg-muted/50 rounded-lg p-4 border-l-4 border-l-primary">
+                  <p className="text-sm">
+                    <span className="font-semibold">Insight:</span> A esta fecha en 2024, llevábamos 16.500 entradas (39% del total final).
+                    Este año llevamos {current2025?.ticketsAtDate.toLocaleString('es-ES')} ({ticketDiff < 0 ? '' : '+'}{ticketDiff.toLocaleString('es-ES')} vs 2024),
+                    pero con un ticket medio un 78% superior (€25 vs €14).
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Aprendizajes Clave del Año Pasado */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-warning" />
+                  <CardTitle className="text-lg">Aprendizajes clave de 2024 a esta altura</CardTitle>
+                </div>
+                <CardDescription>
+                  Qué funcionó, qué falló y qué debemos hacer diferente este año
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {keyLearnings2024.map((learning) => (
+                    <div
+                      key={learning.id}
+                      className={`p-4 rounded-lg border-l-4 ${learning.type === 'success'
+                        ? 'border-l-success bg-success/5'
+                        : learning.type === 'warning'
+                          ? 'border-l-warning bg-warning/5'
+                          : 'border-l-destructive bg-destructive/5'
+                        }`}
+                    >
+                      <div className="flex items-start gap-2 mb-2">
+                        {learning.type === 'success' && <CheckCircle2 className="h-4 w-4 text-success mt-0.5" />}
+                        {learning.type === 'warning' && <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />}
+                        {learning.type === 'failure' && <XCircle className="h-4 w-4 text-destructive mt-0.5" />}
+                        <div>
+                          <h4 className="font-semibold text-sm">{learning.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{learning.description}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-border/50">
+                        <p className="text-xs font-medium text-primary mb-1">{learning.metric}</p>
+                        <div className="flex items-start gap-1">
+                          <Target className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-muted-foreground">{learning.action}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Curvas de Ventas Superpuestas */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Curvas de Ventas por Edición</CardTitle>
+                    <CardDescription>Evolución de ventas (días antes del evento)</CardDescription>
+                  </div>
+                  <div className="flex gap-3 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/40" />
+                      <span>2022</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/60" />
+                      <span>2023</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
+                      <span>2024</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                      <span className="font-medium">2025</span>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={salesCurvesData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        tickFormatter={(value) => value === 0 ? 'Evento' : `${value}d`}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                        formatter={(value: number | null) => value ? [value.toLocaleString('es-ES'), ''] : ['—', '']}
+                        labelFormatter={(label) => label === 0 ? 'Día del evento' : `${label} días antes`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="y2022"
+                        name="2022"
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth={1.5}
+                        strokeOpacity={0.4}
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="y2023"
+                        name="2023"
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth={1.5}
+                        strokeOpacity={0.6}
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="y2024"
+                        name="2024"
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="y2025"
+                        name="2025"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={3}
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
+                        connectNulls={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Radar y Canales */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Radar 2025 vs 2024</CardTitle>
+                  <CardDescription>Comparativa normalizada (2024 = 100)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={radarData}>
+                        <PolarGrid className="stroke-muted" />
+                        <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
+                        <PolarRadiusAxis tick={{ fontSize: 10 }} domain={[0, 200]} />
+                        <Radar
+                          name="2024"
+                          dataKey="y2024"
+                          stroke="hsl(var(--muted-foreground))"
+                          fill="hsl(var(--muted-foreground))"
+                          fillOpacity={0.2}
+                        />
+                        <Radar
+                          name="2025"
+                          dataKey="y2025"
+                          stroke="hsl(var(--primary))"
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.3}
+                        />
+                        <Legend />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Evolución de Canales</CardTitle>
+                  <CardDescription>% de ventas por canal a lo largo de ediciones</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={channelDistribution}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                        <XAxis dataKey="channel" tick={{ fontSize: 10 }} tickLine={false} />
+                        <YAxis
+                          tick={{ fontSize: 11 }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value}%`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value: number) => [`${value}%`, '']}
+                        />
+                        <Bar dataKey="y2022" name="2022" fill="hsl(var(--muted-foreground))" fillOpacity={0.3} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="y2023" name="2023" fill="hsl(var(--muted-foreground))" fillOpacity={0.5} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="y2024" name="2024" fill="hsl(var(--muted-foreground))" fillOpacity={0.7} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="y2025" name="2025" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Archivo completo por edición */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Archivo Completo por Edición</CardTitle>
-            <CardDescription>Métricas finales y eventos destacados de cada año</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Edición</th>
-                    <th className="text-right py-3 px-2 font-medium text-muted-foreground">Entradas</th>
-                    <th className="text-right py-3 px-2 font-medium text-muted-foreground">Ingresos</th>
-                    <th className="text-right py-3 px-2 font-medium text-muted-foreground">€ Medio</th>
-                    <th className="text-right py-3 px-2 font-medium text-muted-foreground">Satisf.</th>
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Evento clave</th>
-                    <th className="text-right py-3 px-2 font-medium text-muted-foreground">Δ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {editionArchive.map((edition, index) => {
-                    const prevEdition = index > 0 ? editionArchive[index - 1] : null;
-                    const growth = prevEdition
-                      ? ((edition.tickets / prevEdition.tickets) - 1) * 100
-                      : null;
-
-                    return (
-                      <tr
-                        key={edition.year}
-                        className={`border-b border-border/50 ${edition.projected ? 'bg-primary/5' : ''}`}
-                      >
-                        <td className="py-3 px-2">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold">{edition.year}</span>
-                              {edition.projected && (
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">En curso</Badge>
-                              )}
-                            </div>
-                            <span className="text-xs text-muted-foreground">{edition.headline}</span>
-                          </div>
-                        </td>
-                        <td className="text-right py-3 px-2 font-medium">
-                          {edition.tickets.toLocaleString('es-ES')}
-                        </td>
-                        <td className="text-right py-3 px-2">
-                          €{(edition.revenue / 1000).toFixed(0)}K
-                        </td>
-                        <td className="text-right py-3 px-2">
-                          €{edition.avgPrice}
-                        </td>
-                        <td className="text-right py-3 px-2">
-                          {edition.satisfaction ? (
-                            <span className={edition.satisfaction >= 7 ? 'text-success' : edition.satisfaction < 6 ? 'text-destructive' : ''}>
-                              {edition.satisfaction}/10
-                            </span>
-                          ) : '—'}
-                        </td>
-                        <td className="py-3 px-2 text-xs text-muted-foreground max-w-[200px]">
-                          {edition.keyEvent}
-                        </td>
-                        <td className="text-right py-3 px-2">
-                          {growth !== null ? (
-                            <span className={`flex items-center justify-end gap-0.5 ${growth >= 0 ? 'text-success' : 'text-destructive'}`}>
-                              {growth >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                              {growth >= 0 ? '+' : ''}{growth.toFixed(0)}%
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
+            {/* Historial de Incidentes */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <CardTitle className="text-base">Historial de Incidentes Documentados</CardTitle>
+                </div>
+                <CardDescription>
+                  Registro de problemas operativos para no repetir errores
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Año</th>
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Incidente</th>
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Impacto</th>
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Respuesta</th>
+                        <th className="text-center py-3 px-2 font-medium text-muted-foreground">Aprendido</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {historicalIncidents.map((incident, index) => (
+                        <tr key={index} className="border-b border-border/50">
+                          <td className="py-3 px-2 font-medium">{incident.year}</td>
+                          <td className="py-3 px-2">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] px-1.5 ${incident.severity === 'critical'
+                                  ? 'bg-destructive/10 text-destructive border-destructive/30'
+                                  : incident.severity === 'high'
+                                    ? 'bg-warning/10 text-warning border-warning/30'
+                                    : 'bg-muted text-muted-foreground'
+                                  }`}
+                              >
+                                {incident.severity}
+                              </Badge>
+                              <span>{incident.incident}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-2 text-muted-foreground text-xs max-w-[200px]">
+                            {incident.impact}
+                          </td>
+                          <td className="py-3 px-2 text-muted-foreground text-xs max-w-[200px]">
+                            {incident.response}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            {incident.learned ? (
+                              <CheckCircle2 className="h-4 w-4 text-success mx-auto" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-destructive/50 mx-auto" />
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Archivo completo por edición */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Archivo Completo por Edición</CardTitle>
+                <CardDescription>Métricas finales y eventos destacados de cada año</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Edición</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Entradas</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Ingresos</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">€ Medio</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Satisf.</th>
+                        <th className="text-left py-3 px-2 font-medium text-muted-foreground">Evento clave</th>
+                        <th className="text-right py-3 px-2 font-medium text-muted-foreground">Δ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editionArchive.map((edition, index) => {
+                        const prevEdition = index > 0 ? editionArchive[index - 1] : null;
+                        const growth = prevEdition
+                          ? ((edition.tickets / prevEdition.tickets) - 1) * 100
+                          : null;
+
+                        return (
+                          <tr
+                            key={edition.year}
+                            className={`border-b border-border/50 ${edition.projected ? 'bg-primary/5' : ''}`}
+                          >
+                            <td className="py-3 px-2">
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold">{edition.year}</span>
+                                  {edition.projected && (
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">En curso</Badge>
+                                  )}
+                                </div>
+                                <span className="text-xs text-muted-foreground">{edition.headline}</span>
+                              </div>
+                            </td>
+                            <td className="text-right py-3 px-2 font-medium">
+                              {edition.tickets.toLocaleString('es-ES')}
+                            </td>
+                            <td className="text-right py-3 px-2">
+                              €{(edition.revenue / 1000).toFixed(0)}K
+                            </td>
+                            <td className="text-right py-3 px-2">
+                              €{edition.avgPrice}
+                            </td>
+                            <td className="text-right py-3 px-2">
+                              {edition.satisfaction ? (
+                                <span className={edition.satisfaction >= 7 ? 'text-success' : edition.satisfaction < 6 ? 'text-destructive' : ''}>
+                                  {edition.satisfaction}/10
+                                </span>
+                              ) : '—'}
+                            </td>
+                            <td className="py-3 px-2 text-xs text-muted-foreground max-w-[200px]">
+                              {edition.keyEvent}
+                            </td>
+                            <td className="text-right py-3 px-2">
+                              {growth !== null ? (
+                                <span className={`flex items-center justify-end gap-0.5 ${growth >= 0 ? 'text-success' : 'text-destructive'}`}>
+                                  {growth >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                  {growth >= 0 ? '+' : ''}{growth.toFixed(0)}%
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="operativo" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Master Timeline */}
+              <Card className="md:col-span-1">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" />
+                    Master Timeline (Bitácora)
+                  </CardTitle>
+                  <CardDescription>
+                    Registro cronológico de hitos operativos reales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative border-l border-border ml-3 space-y-6 pb-2">
+                    {operationalLogs.map((log) => (
+                      <div key={log.id} className="ml-6 relative">
+                        <div className="absolute -left-[31px] top-1 bg-background p-1 border rounded-full">
+                          {getLogIcon(log.type)}
+                        </div>
+                        <div>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {format(new Date(log.date), "d MMM yyyy", { locale: es })}
+                          </span>
+                          <h4 className="font-semibold text-sm mt-0.5">{log.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{log.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-[10px] h-5">{log.responsible}</Badge>
+                            {log.status === 'delayed' && <Badge variant="destructive" className="text-[10px] h-5">Retrasado</Badge>}
+                            {log.status === 'incident' && <Badge variant="destructive" className="text-[10px] h-5">Incidente</Badge>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Deviation Analysis */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-warning" />
+                      Análisis de Desviaciones
+                    </CardTitle>
+                    <CardDescription>
+                      Comparativa Planificado vs Real
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {deviations.map((dev) => (
+                        <div key={dev.id} className="bg-muted/30 p-3 rounded-lg border border-border/50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold text-sm">{dev.item}</span>
+                            <Badge variant={dev.impact === 'high' ? 'destructive' : 'secondary'} className="text-[10px]">
+                              Impacto: {dev.impact.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                            <div>
+                              <span className="text-muted-foreground block">Planificado</span>
+                              <span className="font-mono">{format(new Date(dev.plannedDate), "d MMM", { locale: es })}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block">Real</span>
+                              <span className="font-mono text-destructive">{format(new Date(dev.realDate), "d MMM", { locale: es })}</span>
+                            </div>
+                          </div>
+                          <div className="text-xs border-t border-border/50 pt-2 flex justify-between items-center text-muted-foreground">
+                            <span>{dev.reason}</span>
+                            <span className="font-bold text-destructive">+{dev.delayDays} días</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">KPIs de Eficiencia Operativa</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-2 bg-background rounded border">
+                        <div className="text-2xl font-bold text-success">85%</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">Hitos a Tiempo</div>
+                      </div>
+                      <div className="text-center p-2 bg-background rounded border">
+                        <div className="text-2xl font-bold text-destructive">12d</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">Retraso Promedio</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
 };
 
 export default Historical;
+

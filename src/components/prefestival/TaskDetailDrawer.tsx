@@ -45,6 +45,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+import { NotesSystem } from "../common/NotesSystem";
+
 interface TaskDetailDrawerProps {
   task: PreFestivalTask | null;
   open: boolean;
@@ -52,7 +54,6 @@ interface TaskDetailDrawerProps {
   onUpdate: (taskId: string, updates: Partial<PreFestivalTask>) => void;
   onAddSubtask: (taskId: string, title: string) => void;
   onToggleSubtask: (taskId: string, subtaskId: string) => void;
-  onAddComment: (taskId: string, content: string) => void;
   onAddAttachment: (taskId: string, name: string, url: string) => void;
 }
 
@@ -63,11 +64,9 @@ export function TaskDetailDrawer({
   onUpdate,
   onAddSubtask,
   onToggleSubtask,
-  onAddComment,
   onAddAttachment
 }: TaskDetailDrawerProps) {
   const [newSubtask, setNewSubtask] = useState('');
-  const [newComment, setNewComment] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
 
@@ -93,12 +92,6 @@ export function TaskDetailDrawer({
     }
   };
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      onAddComment(task.id, newComment.trim());
-      setNewComment('');
-    }
-  };
 
   const handleAddAttachment = () => {
     if (newAttachmentName.trim() && newAttachmentUrl.trim()) {
@@ -245,12 +238,7 @@ export function TaskDetailDrawer({
                 </TabsTrigger>
                 <TabsTrigger value="comments" className="gap-1 text-xs">
                   <MessageSquare className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Comentarios</span>
-                  {(task.comments?.length || 0) > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
-                      {task.comments?.length}
-                    </Badge>
-                  )}
+                  <span className="hidden sm:inline">Notas</span>
                 </TabsTrigger>
                 <TabsTrigger value="attachments" className="gap-1 text-xs">
                   <Paperclip className="h-3.5 w-3.5" />
@@ -303,44 +291,12 @@ export function TaskDetailDrawer({
                 </div>
               </TabsContent>
 
-              {/* Comments */}
-              <TabsContent value="comments" className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Añadir comentario..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                    className="h-9"
-                  />
-                  <Button size="sm" onClick={handleAddComment}>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {task.comments?.map(comment => (
-                    <div key={comment.id} className="p-3 rounded-lg border bg-muted/30">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Avatar className="h-5 w-5">
-                          <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                            {comment.author_name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs font-medium">{comment.author_name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.created_at), "d MMM, HH:mm", { locale: es })}
-                        </span>
-                      </div>
-                      <p className="text-sm pl-7">{comment.content}</p>
-                    </div>
-                  ))}
-                  {(!task.comments || task.comments.length === 0) && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No hay comentarios
-                    </p>
-                  )}
-                </div>
+              {/* Comments / Notes */}
+              <TabsContent value="comments" className="h-[400px]">
+                <NotesSystem
+                  entityId={task.id}
+                  entityType="task"
+                />
               </TabsContent>
 
               {/* Attachments */}

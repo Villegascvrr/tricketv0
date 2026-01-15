@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import SalesForecasts from "./pages/SalesForecasts";
 import Audience from "./pages/Audience";
 import Marketing from "./pages/Marketing";
+import { InfluencerManager } from "./components/marketing/InfluencerManager";
 import WeatherConditions from "./pages/WeatherConditions";
 import AIRecommendations from "./pages/AIRecommendations";
 import Historical from "./pages/Historical";
@@ -114,6 +115,16 @@ const App = () => (
                     element={
                       <AppLayout>
                         <Marketing />
+                      </AppLayout>
+                    }
+                  />
+
+                  {/* Influencers */}
+                  <Route
+                    path="/marketing/influencers"
+                    element={
+                      <AppLayout>
+                        <InfluencerManager />
                       </AppLayout>
                     }
                   />

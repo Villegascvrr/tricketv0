@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Brain, 
-  Plug, 
-  Users, 
-  ChevronLeft, 
-  Menu, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Settings,
+  Brain,
+  Plug,
+  Users,
+  ChevronLeft,
+  Menu,
+  LogOut,
   Sparkles,
   TrendingUp,
   Users2,
@@ -25,21 +25,21 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem, 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  useSidebar, 
-  SidebarHeader, 
-  SidebarFooter 
+  useSidebar,
+  SidebarHeader,
+  SidebarFooter
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -75,7 +75,17 @@ const mainItemsAfterOps = [
   {
     title: "Marketing & Campañas",
     url: "/marketing",
-    icon: Megaphone
+    icon: Megaphone,
+    items: [
+      {
+        title: "Estrategia & Campañas",
+        url: "/marketing"
+      },
+      {
+        title: "Gestión Influencers",
+        url: "/marketing/influencers"
+      }
+    ]
   },
   {
     title: "Recomendaciones IA",
@@ -126,7 +136,7 @@ const secondaryItems = [
     title: "Equipo & Permisos",
     url: "/team",
     icon: Users
-  }, 
+  },
   {
     title: "Integraciones",
     url: "/integrations",
@@ -200,16 +210,46 @@ export function AppSidebar() {
 
   const isOperationsActive = currentPath.startsWith('/operations');
 
-  const renderMenuItem = (item: typeof mainItems[0]) => {
+  const renderMenuItem = (item: any) => {
     const active = isActive(item.url);
+
+    if (item.items) {
+      return (
+        <Collapsible key={item.title} defaultOpen={isActive(item.url) || item.items.some((sub: any) => isActive(sub.url))} className="group/collapsible">
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.title} className={cn(isActive(item.url) && "bg-sidebar-accent")}>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180 h-4 w-4" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {item.items.map((subItem: any) => (
+                  <SidebarMenuSubItem key={subItem.title}>
+                    <SidebarMenuSubButton asChild isActive={isActive(subItem.url)}>
+                      <NavLink to={subItem.url}>
+                        <span>{subItem.title}</span>
+                      </NavLink>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
+      );
+    }
+
     return (
       <SidebarMenuItem key={item.title}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <SidebarMenuButton asChild className={cn("h-7", active && "bg-sidebar-accent")}>
-              <NavLink 
-                to={item.url} 
-                className="hover:bg-sidebar-accent/50" 
+              <NavLink
+                to={item.url}
+                className="hover:bg-sidebar-accent/50"
                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
               >
                 <item.icon className={cn("h-4 w-4", collapsed ? "mx-auto" : "")} />
@@ -239,10 +279,10 @@ export function AppSidebar() {
               <p className="text-[10px] text-sidebar-foreground/60">Command Center</p>
             </div>
           )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
             className={cn("h-6 w-6 shrink-0", collapsed && "mx-auto")}
           >
             {collapsed ? <Menu className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
@@ -259,11 +299,11 @@ export function AppSidebar() {
         <div className={cn("px-2 py-1.5", collapsed ? "space-y-1" : "flex gap-1")}>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button 
-                onClick={() => setTryModalOpen(true)} 
+              <Button
+                onClick={() => setTryModalOpen(true)}
                 size="sm"
                 className={cn(
-                  "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-sm h-7", 
+                  "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-sm h-7",
                   collapsed ? "w-full p-0" : "flex-1 px-2"
                 )}
               >
@@ -277,15 +317,15 @@ export function AppSidebar() {
               </TooltipContent>
             )}
           </Tooltip>
-          
+
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button 
-                onClick={() => setChatOpen(true)} 
+              <Button
+                onClick={() => setChatOpen(true)}
                 variant="outline"
                 size="sm"
                 className={cn(
-                  "border-primary/30 hover:bg-primary/10 hover:border-primary/50 h-7", 
+                  "border-primary/30 hover:bg-primary/10 hover:border-primary/50 h-7",
                   collapsed ? "w-full p-0" : "flex-1 px-2"
                 )}
               >
@@ -310,7 +350,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-0 px-2">
               {mainItems.map(renderMenuItem)}
-              
+
               {/* Operations Collapsible */}
               {!collapsed ? (
                 <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
@@ -329,7 +369,7 @@ export function AppSidebar() {
                         {operationsItems.map((item) => (
                           <SidebarMenuSubItem key={item.url}>
                             <SidebarMenuSubButton asChild className={cn("h-6", isActive(item.url) && "bg-sidebar-accent")}>
-                              <NavLink 
+                              <NavLink
                                 to={item.url}
                                 className="hover:bg-sidebar-accent/50"
                                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -360,7 +400,7 @@ export function AppSidebar() {
                   </TooltipContent>
                 </Tooltip>
               )}
-              
+
               {mainItemsAfterOps.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -394,12 +434,12 @@ export function AppSidebar() {
                     collapsed && "justify-center px-0"
                   )}
                 >
-                  <div 
+                  <div
                     className={cn(
                       "h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-semibold shrink-0",
                       !collapsed && "mr-2"
                     )}
-                    style={{ 
+                    style={{
                       backgroundColor: festivalRole?.bg_color || 'hsl(var(--primary))',
                       color: festivalRole?.color || 'hsl(var(--primary-foreground))'
                     }}
@@ -444,7 +484,7 @@ export function AppSidebar() {
       </SidebarFooter>
 
       <TryTricketModal open={tryModalOpen} onOpenChange={setTryModalOpen} />
-      
+
       <EventChatDrawer
         eventId={selectedEvent?.id || "demo"}
         eventName={selectedEvent?.name || "Evento"}
