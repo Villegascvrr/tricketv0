@@ -62,7 +62,7 @@ const getStatusConfig = (status: StatusLevel) => {
 const FestivalStatusOverview = ({ eventId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }: FestivalStatusOverviewProps) => {
   const navigate = useNavigate();
   const { stats, loading } = useTicketStats(eventId);
-  const recommendations = generateAIRecommendations();
+  const recommendations: any[] = [];
 
   // Build status items based on real/demo data
   const getStatusItems = (): StatusItem[] => {

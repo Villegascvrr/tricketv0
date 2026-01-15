@@ -69,14 +69,14 @@ export function usePreFestivalTasks() {
       // Overdue filter
       if (filters.showOverdue) {
         const dueDate = new Date(task.due_date);
-        if (dueDate >= today || task.status === 'hecha') return false;
+        if (dueDate >= today || task.status === 'completado') return false;
       }
       
       // Next 7 days filter
       if (filters.showNext7Days) {
         const dueDate = new Date(task.due_date);
         const diff = (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-        if (diff < 0 || diff > 7 || task.status === 'hecha') return false;
+        if (diff < 0 || diff > 7 || task.status === 'completado') return false;
       }
       
       // Search filter
@@ -95,7 +95,7 @@ export function usePreFestivalTasks() {
   // Sort tasks
   const sortedTasks = useMemo(() => {
     const priorityOrder: Record<TaskPriority, number> = { alta: 0, media: 1, baja: 2 };
-    const statusOrder: Record<TaskStatus, number> = { bloqueada: 0, pendiente: 1, en_curso: 2, hecha: 3 };
+    const statusOrder: Record<TaskStatus, number> = { solicitado: 0, pendiente: 1, completado: 2 };
     
     return [...filteredTasks].sort((a, b) => {
       let comparison = 0;
@@ -119,10 +119,9 @@ export function usePreFestivalTasks() {
   // Group tasks by status for Kanban view
   const tasksByStatus = useMemo(() => {
     return {
+      solicitado: sortedTasks.filter(t => t.status === 'solicitado'),
       pendiente: sortedTasks.filter(t => t.status === 'pendiente'),
-      en_curso: sortedTasks.filter(t => t.status === 'en_curso'),
-      bloqueada: sortedTasks.filter(t => t.status === 'bloqueada'),
-      hecha: sortedTasks.filter(t => t.status === 'hecha')
+      completado: sortedTasks.filter(t => t.status === 'completado')
     };
   }, [sortedTasks]);
 

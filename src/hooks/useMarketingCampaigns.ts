@@ -50,24 +50,11 @@ export function useMarketingCampaigns(eventId?: string, isDemo: boolean = false)
         }
       }
 
-      let query = supabase
+      const { data, error } = await supabase
         .from('marketing_campaigns')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!isDemo && eventId) {
-        query = query.eq('event_id', eventId);
-      } else if (isDemo) {
-        // For demo, we ideally only want rows without specific event_id or tagged as demo
-        // For now, let's assume global rows are demo rows to preserve legacy behavior, 
-        // but arguably we should filter. 
-        // If we strictly want isolation: 
-        // query = query.is('event_id', null); 
-        // But doing so might hide existing demo data if column doesn't exist or is ignored.
-        // Let's stick to: if Real event, filter STRICTLY. If Demo, take all (fallback).
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       return (data || []) as MarketingCampaign[];
     },

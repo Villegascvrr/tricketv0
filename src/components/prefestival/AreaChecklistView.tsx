@@ -104,7 +104,7 @@ export function AreaChecklistView({
                             </TableRow>
                         ) : (
                             tasks.map((task) => {
-                                const isOverdue = isPast(new Date(task.due_date)) && task.status !== 'hecha';
+                                const isOverdue = isPast(new Date(task.due_date)) && task.status !== 'completado';
 
                                 return (
                                     <TableRow key={task.id} className="group hover:bg-muted/50">

@@ -14,26 +14,20 @@ interface KanbanViewProps {
 
 const columns: { status: TaskStatus; label: string; icon: React.ReactNode; color: string }[] = [
   { 
+    status: 'solicitado', 
+    label: 'Solicitado', 
+    icon: <CircleDot className="h-4 w-4" />,
+    color: 'border-warning/50'
+  },
+  { 
     status: 'pendiente', 
     label: 'Pendiente', 
-    icon: <CircleDot className="h-4 w-4" />,
+    icon: <Clock className="h-4 w-4" />,
     color: 'border-muted-foreground/30'
   },
   { 
-    status: 'en_curso', 
-    label: 'En curso', 
-    icon: <Clock className="h-4 w-4" />,
-    color: 'border-primary/50'
-  },
-  { 
-    status: 'bloqueada', 
-    label: 'Bloqueada', 
-    icon: <XCircle className="h-4 w-4" />,
-    color: 'border-destructive/50'
-  },
-  { 
-    status: 'hecha', 
-    label: 'Hecha', 
+    status: 'completado', 
+    label: 'Completado', 
     icon: <CheckCircle2 className="h-4 w-4" />,
     color: 'border-success/50'
   }

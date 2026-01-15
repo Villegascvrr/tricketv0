@@ -34,7 +34,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onOpen, onStatusChange, onDelete, compact = false }: TaskCardProps) {
   const dueDate = new Date(task.due_date);
-  const isOverdue = isPast(dueDate) && task.status !== 'hecha';
+  const isOverdue = isPast(dueDate) && task.status !== 'completado';
   const daysUntilDue = differenceInDays(dueDate, new Date());
 
   const getStatusIcon = (status: TaskStatus) => {
