@@ -1,4 +1,5 @@
-import { PreFestivalTask, PreFestivalMilestone, statusLabels } from "@/data/preFestivalMockData";
+import { PreFestivalTask, statusLabels } from "@/data/preFestivalMockData";
+import { PreFestivalMilestone } from "@/hooks/usePreFestivalTasksSupabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -49,11 +50,10 @@ export function TimelineView({ tasks, milestones, onOpenTask }: TimelineViewProp
     });
   };
 
-  // Calculate milestone progress
+  // Calculate milestone progress - simplified since we don't have task associations anymore
   const getMilestoneProgress = (milestone: PreFestivalMilestone) => {
-    const milestoneTasks = tasks.filter(t => milestone.tasks.includes(t.id));
-    const completed = milestoneTasks.filter(t => t.status === 'hecha').length;
-    return milestoneTasks.length > 0 ? Math.round((completed / milestoneTasks.length) * 100) : 0;
+    // Since milestones from Supabase don't have task associations, return 0 or calculate differently
+    return 0;
   };
 
   return (
@@ -136,8 +136,8 @@ export function TimelineView({ tasks, milestones, onOpenTask }: TimelineViewProp
                 const isCurrentWeek = isWithinInterval(today, { start: week.start, end: week.end });
                 const isFestivalWeek = isWithinInterval(festivalDate, { start: week.start, end: week.end });
                 
-                const completedTasks = weekTasks.filter(t => t.status === 'hecha').length;
-                const blockedTasks = weekTasks.filter(t => t.status === 'bloqueada').length;
+                const completedTasks = weekTasks.filter(t => t.status === 'completado').length;
+                const blockedTasks = weekTasks.filter(t => t.status === 'solicitado').length;
                 
                 return (
                   <div 
@@ -207,9 +207,8 @@ export function TimelineView({ tasks, milestones, onOpenTask }: TimelineViewProp
                               onClick={() => onOpenTask(task)}
                               className={cn(
                                 "text-xs px-2 py-1 rounded-full border transition-colors hover:bg-accent",
-                                task.status === 'hecha' && "bg-success/10 border-success/30 text-success",
-                                task.status === 'bloqueada' && "bg-destructive/10 border-destructive/30 text-destructive",
-                                task.status === 'en_curso' && "bg-primary/10 border-primary/30 text-primary",
+                                task.status === 'completado' && "bg-success/10 border-success/30 text-success",
+                                task.status === 'solicitado' && "bg-warning/10 border-warning/30 text-warning",
                                 task.status === 'pendiente' && "bg-muted border-border"
                               )}
                             >

@@ -21,7 +21,7 @@ import { PreFestivalTask } from '@/hooks/usePreFestivalTasksSupabase';
 import { TaskCard } from './TaskCard';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Clock, CheckCircle2, XCircle, CircleDot, GripVertical } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface KanbanViewDndProps {

@@ -92,7 +92,7 @@ export function TodayQuickView({
   });
 
   const { stats, loading } = useTicketStats(eventId);
-  const recommendations = generateAIRecommendations();
+  const recommendations: Recommendation[] = [];
   const topAlerts = getTopAlerts(recommendations);
   const suggestedActions = getSuggestedActions(recommendations, stats);
 
