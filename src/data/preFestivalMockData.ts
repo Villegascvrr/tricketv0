@@ -1,8 +1,8 @@
 // Mock data for Pre-Festival Operations
 // This data simulates realistic tasks for Primaverando Festival 2025 (29 Mar 2025)
 
-export type TaskArea = 'produccion' | 'logistica' | 'proveedores' | 'rrhh' | 'seguridad' | 'licencias' | 'ticketing' | 'comunicacion';
-export type TaskStatus = 'pendiente' | 'en_curso' | 'bloqueada' | 'hecha';
+export type TaskArea = string;
+export type TaskStatus = 'solicitado' | 'pendiente' | 'completado';
 export type TaskPriority = 'baja' | 'media' | 'alta';
 
 export interface PreFestivalTask {
@@ -29,22 +29,85 @@ export interface PreFestivalMilestone {
   tasks: string[]; // task IDs
 }
 
-export const areaLabels: Record<TaskArea, string> = {
-  produccion: 'Producción',
-  logistica: 'Logística',
-  proveedores: 'Proveedores',
-  rrhh: 'RRHH',
-  seguridad: 'Seguridad',
-  licencias: 'Licencias/Permisos',
-  ticketing: 'Ticketing/Accesos',
-  comunicacion: 'Comunicación interna'
-};
+import {
+  Clapperboard,
+  Truck,
+  FileCheck,
+  Users,
+  Music,
+  Briefcase,
+  Megaphone,
+  Ticket
+} from "lucide-react";
+
+export interface PreFestivalAreaDefinition {
+  id: string;
+  label: string;
+  icon: any;
+  color: string;
+  description: string;
+  stats?: {
+    solicitado: number;
+    pendiente: number;
+    completado: number;
+  };
+}
+
+export const PRE_FESTIVAL_AREAS: PreFestivalAreaDefinition[] = [
+  {
+    id: 'produccion',
+    label: 'Producción',
+    icon: Clapperboard,
+    color: 'blue',
+    description: 'Montaje, técnica, riders y logística escénica'
+  },
+  {
+    id: 'proveedores',
+    label: 'Proveedores',
+    icon: Truck,
+    color: 'orange',
+    description: 'Gestión de contratos, suministros y servicios externos'
+  },
+  {
+    id: 'licencias',
+    label: 'Permisos y licencias',
+    icon: FileCheck,
+    color: 'red',
+    description: 'Trámites legales, autorizaciones y seguros'
+  },
+  {
+    id: 'rrhh',
+    label: 'RRHH',
+    icon: Users,
+    color: 'green',
+    description: 'Contratación de personal, staff y coordinación'
+  },
+  {
+    id: 'artistas',
+    label: 'Artistas',
+    icon: Music,
+    color: 'purple',
+    description: 'Booking, hospitalidad y logística de artistas'
+  },
+  {
+    id: 'patrocinadores',
+    label: 'Patrocinadores',
+    icon: Briefcase,
+    color: 'yellow',
+    description: 'Acuerdos comerciales, activaciones y marcas'
+  }
+];
+
+// Keep for backward compatibility with existing components
+export const areaLabels: Record<string, string> = PRE_FESTIVAL_AREAS.reduce((acc, area) => {
+  acc[area.id] = area.label;
+  return acc;
+}, {} as Record<string, string>);
 
 export const statusLabels: Record<TaskStatus, string> = {
+  solicitado: 'Solicitado',
   pendiente: 'Pendiente',
-  en_curso: 'En curso',
-  bloqueada: 'Bloqueada',
-  hecha: 'Hecha'
+  completado: 'Completado'
 };
 
 export const priorityLabels: Record<TaskPriority, string> = {
@@ -118,7 +181,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Permiso Ayuntamiento Sevilla',
     description: 'Obtener la autorización del Ayuntamiento para celebrar el evento en La Cartuja',
     area: 'licencias',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'María García',
     due_date: '2025-01-15',
@@ -129,7 +192,7 @@ export const mockTasks: PreFestivalTask[] = [
       { id: 's3', title: 'Reunión con Urbanismo', completed: true },
     ],
     history: [
-      { id: 'h1', action: 'Estado cambiado', old_value: 'pendiente', new_value: 'hecha', changed_by: 'María García', created_at: '2025-01-15T10:00:00Z' }
+      { id: 'h1', action: 'Estado cambiado', old_value: 'pendiente', new_value: 'completado', changed_by: 'María García', created_at: '2025-01-15T10:00:00Z' }
     ]
   },
   {
@@ -137,7 +200,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Licencia Espectáculos Públicos',
     description: 'Tramitar la licencia de espectáculos públicos con la Junta de Andalucía',
     area: 'licencias',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'María García',
     due_date: '2025-01-28',
@@ -152,7 +215,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Plan de Evacuación',
     description: 'Elaborar y aprobar el plan de evacuación del recinto',
     area: 'licencias',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Miguel Rodríguez',
     due_date: '2025-02-10',
@@ -168,20 +231,20 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Seguro Responsabilidad Civil',
     description: 'Contratar seguro de RC para el evento (mínimo 3M€)',
     area: 'licencias',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'María García',
     due_date: '2025-01-20',
     tags: ['legal', 'financiero']
   },
-  
+
   // Proveedores
   {
     id: 't5',
     title: 'Contrato SoundPro Audio',
     description: 'Firmar contrato con SoundPro para sistema de sonido principal',
     area: 'proveedores',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'Carlos López',
     due_date: '2025-01-25',
@@ -195,7 +258,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Contrato LightStage Productions',
     description: 'Cerrar contrato de iluminación para todos los escenarios',
     area: 'proveedores',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'Carlos López',
     due_date: '2025-01-30',
@@ -206,7 +269,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Contrato SecurEvent Andalucía',
     description: 'Contratación empresa de seguridad privada',
     area: 'proveedores',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Miguel Rodríguez',
     due_date: '2025-02-05',
@@ -222,7 +285,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Selección Food Trucks',
     description: 'Seleccionar y contratar los food trucks para el evento',
     area: 'proveedores',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'media',
     assignee_name: 'Elena Torres',
     due_date: '2025-02-15',
@@ -245,14 +308,14 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-02-20',
     tags: ['logística']
   },
-  
+
   // RRHH
   {
     id: 't10',
     title: 'Contratación personal seguridad',
     description: 'Confirmar los 85 efectivos de seguridad necesarios',
     area: 'rrhh',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Sara Fernández',
     due_date: '2025-02-28',
@@ -269,7 +332,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Contratación personal accesos',
     description: 'Confirmar los 45 controladores de acceso',
     area: 'rrhh',
-    status: 'bloqueada',
+    status: 'solicitado',
     priority: 'alta',
     assignee_name: 'Sara Fernández',
     due_date: '2025-02-25',
@@ -294,13 +357,13 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Contratación personal barras',
     description: 'Confirmar los 65 camareros y personal de barras',
     area: 'rrhh',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'media',
     assignee_name: 'Sara Fernández',
     due_date: '2025-03-01',
     tags: ['barras', 'staff']
   },
-  
+
   // Producción
   {
     id: 't14',
@@ -318,7 +381,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Rider técnico Villalobos',
     description: 'Completar y validar el rider técnico de Villalobos',
     area: 'produccion',
-    status: 'bloqueada',
+    status: 'solicitado',
     priority: 'alta',
     assignee_name: 'Carlos López',
     due_date: '2025-02-20',
@@ -332,7 +395,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Rider técnico Henry Méndez',
     description: 'Completar y validar el rider de Henry Méndez',
     area: 'produccion',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'Carlos López',
     due_date: '2025-02-10',
@@ -360,14 +423,14 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-24',
     tags: ['iluminación', 'VIP']
   },
-  
+
   // Ticketing/Accesos
   {
     id: 't19',
     title: 'Configurar sistema ticketing',
     description: 'Configurar See Tickets y Fever para la venta del evento',
     area: 'ticketing',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'Juan Pérez',
     due_date: '2025-01-10',
@@ -378,7 +441,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Diseñar flujo de accesos',
     description: 'Diseñar el flujo de entrada y salida del recinto',
     area: 'ticketing',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Laura Sánchez',
     due_date: '2025-02-28',
@@ -411,14 +474,14 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-25',
     tags: ['ticketing', 'hardware']
   },
-  
+
   // Logística
   {
     id: 't23',
     title: 'Plan de tráfico',
     description: 'Coordinar el plan de tráfico con Policía Local',
     area: 'logistica',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'David Moreno',
     due_date: '2025-03-10',
@@ -446,14 +509,14 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-28',
     tags: ['pruebas', 'técnico']
   },
-  
+
   // Seguridad
   {
     id: 't26',
     title: 'Coordinación Policía Local',
     description: 'Reuniones de coordinación con Policía Local de Sevilla',
     area: 'seguridad',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Miguel Rodríguez',
     due_date: '2025-03-15',
@@ -464,7 +527,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Plan de emergencias',
     description: 'Elaborar plan de emergencias y protocolo de actuación',
     area: 'seguridad',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'Miguel Rodríguez',
     due_date: '2025-02-28',
@@ -481,20 +544,20 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Coordinación sanitarios',
     description: 'Coordinar servicio de ambulancias y punto médico',
     area: 'seguridad',
-    status: 'hecha',
+    status: 'completado',
     priority: 'alta',
     assignee_name: 'Miguel Rodríguez',
     due_date: '2025-02-01',
     tags: ['sanitarios', 'emergencias']
   },
-  
+
   // Comunicación interna
   {
     id: 't29',
     title: 'Protocolo comunicación staff',
     description: 'Definir canales y protocolos de comunicación entre equipos',
     area: 'comunicacion',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'media',
     assignee_name: 'María García',
     due_date: '2025-03-01',
@@ -522,7 +585,7 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-15',
     tags: ['documentación', 'formación']
   },
-  
+
   // Más tareas de logística
   {
     id: 't32',
@@ -540,7 +603,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Contrato generadores',
     description: 'Contratar generadores de respaldo para todo el recinto',
     area: 'logistica',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'David Moreno',
     due_date: '2025-02-15',
@@ -557,7 +620,7 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-10',
     tags: ['servicios']
   },
-  
+
   // RRHH adicional
   {
     id: 't35',
@@ -581,14 +644,14 @@ export const mockTasks: PreFestivalTask[] = [
     due_date: '2025-03-18',
     tags: ['uniformes', 'staff']
   },
-  
+
   // Proveedores adicional
   {
     id: 't37',
     title: 'Contrato bebidas sponsor',
     description: 'Cerrar acuerdo con Heineken como proveedor exclusivo de cerveza',
     area: 'proveedores',
-    status: 'en_curso',
+    status: 'pendiente',
     priority: 'alta',
     assignee_name: 'María García',
     due_date: '2025-02-10',
@@ -599,7 +662,7 @@ export const mockTasks: PreFestivalTask[] = [
     title: 'Alquiler vallas',
     description: 'Contratar empresa de alquiler de vallas y vallado',
     area: 'proveedores',
-    status: 'hecha',
+    status: 'completado',
     priority: 'media',
     assignee_name: 'David Moreno',
     due_date: '2025-02-01',
@@ -610,36 +673,40 @@ export const mockTasks: PreFestivalTask[] = [
 // Function to calculate task statistics
 export const calculateTaskStats = (tasks: PreFestivalTask[]) => {
   const total = tasks.length;
-  const completed = tasks.filter(t => t.status === 'hecha').length;
-  const critical = tasks.filter(t => t.priority === 'alta' && t.status !== 'hecha').length;
-  const blocked = tasks.filter(t => t.status === 'bloqueada').length;
-  
+  const completed = tasks.filter(t => t.status === 'completado').length;
+  const critical = tasks.filter(t => t.priority === 'alta' && t.status !== 'completado').length;
+  const solicited = tasks.filter(t => t.status === 'solicitado').length;
+
   const today = new Date();
   const overdue = tasks.filter(t => {
     const dueDate = new Date(t.due_date);
-    return dueDate < today && t.status !== 'hecha';
+    return dueDate < today && t.status !== 'completado';
   }).length;
-  
+
   const next7Days = tasks.filter(t => {
     const dueDate = new Date(t.due_date);
     const diff = (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    return diff >= 0 && diff <= 7 && t.status !== 'hecha';
+    return diff >= 0 && diff <= 7 && t.status !== 'completado';
   }).length;
-  
+
   // Risk calculation
   let riskLevel: 'bajo' | 'medio' | 'alto' = 'bajo';
-  if (overdue > 3 || blocked > 2 || (critical > 5 && completed / total < 0.5)) {
+  if (overdue > 3 || (critical > 5 && completed / total < 0.5)) {
     riskLevel = 'alto';
-  } else if (overdue > 0 || blocked > 0 || critical > 3) {
+  } else if (overdue > 0 || critical > 3) {
     riskLevel = 'medio';
   }
-  
+
   return {
     total,
     completed,
-    completedPercent: Math.round((completed / total) * 100),
+    completedPercent: total === 0 ? 0 : Math.round((completed / total) * 100),
     critical,
-    blocked,
+    blocked: solicited, // Reusing blocked field for solicited or just removing it? UI expects 'blocked'? I should check types.
+    // If UI uses 'blocked', I should probably return 'solicited' as 'blocked' or update UI types. 
+    // The previous return type had 'blocked'. I'll check if I can change the return type.
+    // PreFestivalOps uses 'stats'. I'll update the return object to match new reality.
+    solicitado: solicited,
     overdue,
     next7Days,
     riskLevel
@@ -649,7 +716,7 @@ export const calculateTaskStats = (tasks: PreFestivalTask[]) => {
 // Generate alerts based on tasks
 export interface TaskAlert {
   id: string;
-  type: 'overdue' | 'high_priority_soon' | 'blocked';
+  type: 'overdue' | 'urgent';
   task: PreFestivalTask;
   message: string;
 }
@@ -657,44 +724,38 @@ export interface TaskAlert {
 export const generateTaskAlerts = (tasks: PreFestivalTask[]): TaskAlert[] => {
   const alerts: TaskAlert[] = [];
   const today = new Date();
-  
+
   tasks.forEach(task => {
     const dueDate = new Date(task.due_date);
     const daysUntilDue = (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    
+
     // Overdue tasks
-    if (dueDate < today && task.status !== 'hecha') {
+    if (dueDate < today && task.status !== 'completado') {
       alerts.push({
         id: `alert-overdue-${task.id}`,
         type: 'overdue',
         task,
-        message: `Tarea vencida hace ${Math.abs(Math.floor(daysUntilDue))} días`
+        message: `Vencida hace ${Math.abs(Math.floor(daysUntilDue))} días`
       });
     }
-    
-    // High priority tasks due within 7 days
-    if (task.priority === 'alta' && daysUntilDue >= 0 && daysUntilDue <= 7 && task.status !== 'hecha') {
+
+    // Urgent tasks (High priority AND incomplete)
+    // Note: We avoid duplicating if it's already caught as overdue, or maybe we want both?
+    // User said "Requires attention if: Overdue OR High Priority & Incomplete".
+    // Usually overdue is worse. So if overdue, it's overdue. If not overdue but high priority, it's urgent.
+    else if (task.priority === 'alta' && task.status !== 'completado') {
+      const daysLabel = daysUntilDue < 0 ? 'Vencida' : `Vence en ${Math.ceil(daysUntilDue)} días`;
       alerts.push({
         id: `alert-urgent-${task.id}`,
-        type: 'high_priority_soon',
+        type: 'urgent',
         task,
-        message: `Tarea alta prioridad vence en ${Math.ceil(daysUntilDue)} días`
-      });
-    }
-    
-    // Blocked tasks
-    if (task.status === 'bloqueada') {
-      alerts.push({
-        id: `alert-blocked-${task.id}`,
-        type: 'blocked',
-        task,
-        message: 'Tarea bloqueada - requiere atención'
+        message: `Alta prioridad - ${daysLabel}`
       });
     }
   });
-  
+
   return alerts.sort((a, b) => {
-    const priority = { overdue: 0, blocked: 1, high_priority_soon: 2 };
+    const priority = { overdue: 0, urgent: 1 };
     return priority[a.type] - priority[b.type];
   });
 };

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
   SheetTitle,
-  SheetDescription 
+  SheetDescription
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  MessageSquare, 
-  Paperclip, 
-  History, 
+import {
+  Calendar,
+  Clock,
+  User,
+  MessageSquare,
+  Paperclip,
+  History,
   Plus,
   CheckCircle2,
   XCircle,
@@ -31,15 +31,15 @@ import {
   Send,
   ListChecks
 } from "lucide-react";
-import { 
-  PreFestivalTask, 
-  areaLabels, 
-  statusLabels, 
-  priorityLabels, 
+import {
+  PreFestivalTask,
+  statusLabels,
+  priorityLabels,
   TaskStatus,
   TaskPriority,
-  TaskArea,
-  teamMembers
+  teamMembers,
+  PRE_FESTIVAL_AREAS,
+  TaskArea
 } from "@/data/preFestivalMockData";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -56,9 +56,9 @@ interface TaskDetailDrawerProps {
   onAddAttachment: (taskId: string, name: string, url: string) => void;
 }
 
-export function TaskDetailDrawer({ 
-  task, 
-  open, 
+export function TaskDetailDrawer({
+  task,
+  open,
   onOpenChange,
   onUpdate,
   onAddSubtask,
@@ -75,11 +75,15 @@ export function TaskDetailDrawer({
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
-      case 'hecha': return <CheckCircle2 className="h-5 w-5 text-success" />;
-      case 'en_curso': return <Clock className="h-5 w-5 text-primary" />;
-      case 'bloqueada': return <XCircle className="h-5 w-5 text-destructive" />;
-      default: return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
+      case 'completado': return <CheckCircle2 className="h-5 w-5 text-success" />;
+      case 'pendiente': return <Clock className="h-5 w-5 text-primary" />;
+      case 'solicitado': return <AlertCircle className="h-5 w-5 text-warning" />;
+      default: return <Clock className="h-5 w-5 text-muted-foreground" />;
     }
+  };
+
+  const getAreaLabel = (areaId: string) => {
+    return PRE_FESTIVAL_AREAS.find(a => a.id === areaId)?.label || areaId;
   };
 
   const handleAddSubtask = () => {
@@ -116,7 +120,7 @@ export function TaskDetailDrawer({
             <div className="flex-1 min-w-0">
               <SheetTitle className="text-lg leading-tight">{task.title}</SheetTitle>
               <SheetDescription className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">{areaLabels[task.area]}</Badge>
+                <Badge variant="secondary">{getAreaLabel(task.area)}</Badge>
               </SheetDescription>
             </div>
           </div>
@@ -128,8 +132,8 @@ export function TaskDetailDrawer({
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Estado</label>
-                <Select 
-                  value={task.status} 
+                <Select
+                  value={task.status}
                   onValueChange={(value) => onUpdate(task.id, { status: value as TaskStatus })}
                 >
                   <SelectTrigger className="h-9">
@@ -142,11 +146,11 @@ export function TaskDetailDrawer({
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Prioridad</label>
-                <Select 
-                  value={task.priority} 
+                <Select
+                  value={task.priority}
                   onValueChange={(value) => onUpdate(task.id, { priority: value as TaskPriority })}
                 >
                   <SelectTrigger className="h-9">
@@ -159,19 +163,19 @@ export function TaskDetailDrawer({
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Área</label>
-                <Select 
-                  value={task.area} 
+                <Select
+                  value={task.area}
                   onValueChange={(value) => onUpdate(task.id, { area: value as TaskArea })}
                 >
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(areaLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    {PRE_FESTIVAL_AREAS.map((area) => (
+                      <SelectItem key={area.id} value={area.id}>{area.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -184,8 +188,8 @@ export function TaskDetailDrawer({
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
                   <User className="h-3 w-3" /> Responsable
                 </label>
-                <Select 
-                  value={task.assignee_name} 
+                <Select
+                  value={task.assignee_name}
                   onValueChange={(value) => onUpdate(task.id, { assignee_name: value })}
                 >
                   <SelectTrigger className="h-9">
@@ -200,12 +204,12 @@ export function TaskDetailDrawer({
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" /> Fecha límite
                 </label>
-                <Input 
+                <Input
                   type="date"
                   value={task.due_date}
                   onChange={(e) => onUpdate(task.id, { due_date: e.target.value })}
@@ -217,7 +221,7 @@ export function TaskDetailDrawer({
             {/* Description */}
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">Descripción</label>
-              <Textarea 
+              <Textarea
                 value={task.description || ''}
                 onChange={(e) => onUpdate(task.id, { description: e.target.value })}
                 placeholder="Añadir descripción..."
@@ -261,7 +265,7 @@ export function TaskDetailDrawer({
               {/* Subtasks */}
               <TabsContent value="subtasks" className="space-y-3">
                 <div className="flex gap-2">
-                  <Input 
+                  <Input
                     placeholder="Nueva subtarea..."
                     value={newSubtask}
                     onChange={(e) => setNewSubtask(e.target.value)}
@@ -272,14 +276,14 @@ export function TaskDetailDrawer({
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 <div className="space-y-2">
                   {task.subtasks?.map(subtask => (
-                    <div 
+                    <div
                       key={subtask.id}
                       className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30"
                     >
-                      <Checkbox 
+                      <Checkbox
                         checked={subtask.completed}
                         onCheckedChange={() => onToggleSubtask(task.id, subtask.id)}
                       />
@@ -302,7 +306,7 @@ export function TaskDetailDrawer({
               {/* Comments */}
               <TabsContent value="comments" className="space-y-3">
                 <div className="flex gap-2">
-                  <Input 
+                  <Input
                     placeholder="Añadir comentario..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
@@ -313,7 +317,7 @@ export function TaskDetailDrawer({
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {task.comments?.map(comment => (
                     <div key={comment.id} className="p-3 rounded-lg border bg-muted/30">
@@ -343,13 +347,13 @@ export function TaskDetailDrawer({
               <TabsContent value="attachments" className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <Input 
+                    <Input
                       placeholder="Nombre del enlace..."
                       value={newAttachmentName}
                       onChange={(e) => setNewAttachmentName(e.target.value)}
                       className="h-9"
                     />
-                    <Input 
+                    <Input
                       placeholder="URL..."
                       value={newAttachmentUrl}
                       onChange={(e) => setNewAttachmentUrl(e.target.value)}
@@ -360,10 +364,10 @@ export function TaskDetailDrawer({
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   {task.attachments?.map(attachment => (
-                    <a 
+                    <a
                       key={attachment.id}
                       href={attachment.url}
                       target="_blank"

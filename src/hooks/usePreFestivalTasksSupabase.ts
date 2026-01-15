@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  TaskArea,
   TaskStatus,
   TaskPriority,
   teamMembers,
@@ -13,7 +12,7 @@ import { toast } from 'sonner';
 export type ViewMode = 'list' | 'kanban' | 'timeline';
 
 export interface TaskFilters {
-  area: TaskArea | 'all';
+  area: string | 'all';
   status: TaskStatus | 'all';
   priority: TaskPriority | 'all';
   assignee: string | 'all';
@@ -31,10 +30,11 @@ export interface PreFestivalTask {
   id: string;
   title: string;
   description?: string | null;
-  area: TaskArea;
+  area: string;
   status: TaskStatus;
   priority: TaskPriority;
   assignee_name: string;
+  assignee_id?: string | null;
   due_date: string;
   tags: string[];
   subtasks?: { id: string; title: string; completed: boolean }[];
@@ -48,79 +48,6 @@ export interface PreFestivalMilestone {
   title: string;
   description?: string | null;
   target_date: string;
-}
-
-// Fetch tasks with related data
-async function fetchTasks(): Promise<PreFestivalTask[]> {
-  const { data: tasks, error } = await supabase
-    .from('pre_festival_tasks')
-    .select('*')
-    .order('due_date', { ascending: true });
-
-  if (error) throw error;
-
-  // Fetch subtasks, comments, attachments, and history for all tasks
-  const taskIds = tasks.map(t => t.id);
-
-  const [subtasksResult, commentsResult, attachmentsResult, historyResult] = await Promise.all([
-    supabase.from('pre_festival_subtasks').select('*').in('task_id', taskIds),
-    supabase.from('pre_festival_comments').select('*').in('task_id', taskIds).order('created_at', { ascending: false }),
-    supabase.from('pre_festival_attachments').select('*').in('task_id', taskIds),
-    supabase.from('pre_festival_task_history').select('*').in('task_id', taskIds).order('created_at', { ascending: false })
-  ]);
-
-  // Map related data to tasks
-  return tasks.map(task => ({
-    id: task.id,
-    title: task.title,
-    description: task.description,
-    area: task.area as TaskArea,
-    status: task.status as TaskStatus,
-    priority: task.priority as TaskPriority,
-    assignee_name: task.assignee_name || 'Sin asignar',
-    due_date: task.due_date,
-    tags: task.tags || [],
-    subtasks: subtasksResult.data?.filter(s => s.task_id === task.id).map(s => ({
-      id: s.id,
-      title: s.title,
-      completed: s.completed
-    })) || [],
-    comments: commentsResult.data?.filter(c => c.task_id === task.id).map(c => ({
-      id: c.id,
-      author_name: c.author_name,
-      content: c.content,
-      created_at: c.created_at
-    })) || [],
-    attachments: attachmentsResult.data?.filter(a => a.task_id === task.id).map(a => ({
-      id: a.id,
-      name: a.name,
-      url: a.url
-    })) || [],
-    history: historyResult.data?.filter(h => h.task_id === task.id).map(h => ({
-      id: h.id,
-      action: h.action,
-      old_value: h.old_value,
-      new_value: h.new_value,
-      changed_by: h.changed_by,
-      created_at: h.created_at
-    })) || []
-  }));
-}
-
-async function fetchMilestones(): Promise<PreFestivalMilestone[]> {
-  const { data, error } = await supabase
-    .from('pre_festival_milestones')
-    .select('*')
-    .order('target_date', { ascending: true });
-
-  if (error) throw error;
-
-  return data.map(m => ({
-    id: m.id,
-    title: m.title,
-    description: m.description,
-    target_date: m.target_date
-  }));
 }
 
 export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = false) {
@@ -174,10 +101,11 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
         id: task.id,
         title: task.title,
         description: task.description,
-        area: task.area as TaskArea,
+        area: task.area,
         status: task.status as TaskStatus,
         priority: task.priority as TaskPriority,
         assignee_name: task.assignee_name || 'Sin asignar',
+        assignee_id: task.assignee_id,
         due_date: task.due_date,
         tags: task.tags || [],
         subtasks: subtasksResult.data?.filter(s => s.task_id === task.id).map(s => ({
@@ -246,6 +174,7 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
           status: task.status || 'pendiente',
           priority: task.priority || 'media',
           assignee_name: task.assignee_name,
+          assignee_id: task.assignee_id,
           due_date: task.due_date,
           tags: task.tags || [],
           event_id: !isDemo ? eventId : null
@@ -288,6 +217,7 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
           status: updates.status,
           priority: updates.priority,
           assignee_name: updates.assignee_name,
+          assignee_id: updates.assignee_id,
           due_date: updates.due_date,
           tags: updates.tags
         })
@@ -295,37 +225,23 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
 
       if (error) throw error;
 
-      // Track status changes in history
-      if (updates.status && currentTask && updates.status !== currentTask.status) {
-        await supabase.from('pre_festival_task_history').insert({
-          task_id: taskId,
-          action: 'Estado cambiado',
-          old_value: currentTask.status,
-          new_value: updates.status,
-          changed_by: 'Usuario actual'
-        });
-      }
+      // History tracking...
+      const trackChange = async (action: string, oldVal: any, newVal: any) => {
+        if (oldVal !== newVal) {
+          await supabase.from('pre_festival_task_history').insert({
+            task_id: taskId,
+            action,
+            old_value: String(oldVal || ''),
+            new_value: String(newVal || ''),
+            changed_by: 'Usuario actual'
+          });
+        }
+      };
 
-      // Track assignee changes
-      if (updates.assignee_name && currentTask && updates.assignee_name !== currentTask.assignee_name) {
-        await supabase.from('pre_festival_task_history').insert({
-          task_id: taskId,
-          action: 'Responsable cambiado',
-          old_value: currentTask.assignee_name,
-          new_value: updates.assignee_name,
-          changed_by: 'Usuario actual'
-        });
-      }
-
-      // Track priority changes
-      if (updates.priority && currentTask && updates.priority !== currentTask.priority) {
-        await supabase.from('pre_festival_task_history').insert({
-          task_id: taskId,
-          action: 'Prioridad cambiada',
-          old_value: currentTask.priority,
-          new_value: updates.priority,
-          changed_by: 'Usuario actual'
-        });
+      if (currentTask) {
+        if (updates.status) await trackChange('Estado cambiado', currentTask.status, updates.status);
+        if (updates.assignee_name) await trackChange('Responsable cambiado', currentTask.assignee_name, updates.assignee_name);
+        if (updates.priority) await trackChange('Prioridad cambiada', currentTask.priority, updates.priority);
       }
     },
     onSuccess: () => {
@@ -438,6 +354,7 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
     const today = new Date();
 
     return allTasks.filter(task => {
+      // Dynamic area filter: check against area name (no more area_id)
       if (filters.area !== 'all' && task.area !== filters.area) return false;
       if (filters.status !== 'all' && task.status !== filters.status) return false;
       if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
@@ -445,13 +362,13 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
 
       if (filters.showOverdue) {
         const dueDate = new Date(task.due_date);
-        if (dueDate >= today || task.status === 'hecha') return false;
+        if (dueDate >= today || task.status === 'completado') return false;
       }
 
       if (filters.showNext7Days) {
         const dueDate = new Date(task.due_date);
         const diff = (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-        if (diff < 0 || diff > 7 || task.status === 'hecha') return false;
+        if (diff < 0 || diff > 7 || task.status === 'completado') return false;
       }
 
       if (filters.search) {
@@ -469,7 +386,7 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
   // Sort tasks
   const sortedTasks = useMemo(() => {
     const priorityOrder: Record<TaskPriority, number> = { alta: 0, media: 1, baja: 2 };
-    const statusOrder: Record<TaskStatus, number> = { bloqueada: 0, pendiente: 1, en_curso: 2, hecha: 3 };
+    const statusOrder: Record<TaskStatus, number> = { solicitado: 0, pendiente: 1, completado: 2 };
 
     return [...filteredTasks].sort((a, b) => {
       let comparison = 0;
@@ -493,42 +410,39 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
   // Group tasks by status for Kanban view
   const tasksByStatus = useMemo(() => {
     return {
+      solicitado: sortedTasks.filter(t => t.status === 'solicitado'),
       pendiente: sortedTasks.filter(t => t.status === 'pendiente'),
-      en_curso: sortedTasks.filter(t => t.status === 'en_curso'),
-      bloqueada: sortedTasks.filter(t => t.status === 'bloqueada'),
-      hecha: sortedTasks.filter(t => t.status === 'hecha')
+      completado: sortedTasks.filter(t => t.status === 'completado')
     };
   }, [sortedTasks]);
 
   // Statistics
   const stats = useMemo(() => {
     const total = allTasks.length;
-    const completed = allTasks.filter(t => t.status === 'hecha').length;
-    const inProgress = allTasks.filter(t => t.status === 'en_curso').length;
-    const blocked = allTasks.filter(t => t.status === 'bloqueada').length;
+    const completed = allTasks.filter(t => t.status === 'completado').length;
     const pending = allTasks.filter(t => t.status === 'pendiente').length;
+    const solicited = allTasks.filter(t => t.status === 'solicitado').length;
 
     const today = new Date();
     const overdue = allTasks.filter(t => {
       const dueDate = new Date(t.due_date);
-      return dueDate < today && t.status !== 'hecha';
-    }).length;
+      return dueDate < today && t.status !== 'completado';
+    });
 
-    const highPriority = allTasks.filter(t => t.priority === 'alta' && t.status !== 'hecha').length;
+    const highPriority = allTasks.filter(t => t.priority === 'alta' && t.status !== 'completado').length;
 
     return {
       total,
       completed,
-      inProgress,
-      blocked,
       pending,
-      overdue,
+      solicited,
+      overdue: overdue.length,
       highPriority,
       completionRate: total > 0 ? Math.round((completed / total) * 100) : 0
     };
   }, [allTasks]);
 
-  // Alerts - matches TaskAlert type from preFestivalMockData
+  // Alerts - based on logic
   const alerts = useMemo((): TaskAlert[] => {
     const result: TaskAlert[] = [];
     const today = new Date();
@@ -537,41 +451,39 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
       const dueDate = new Date(task.due_date);
       const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (task.status !== 'hecha') {
+      if (task.status !== 'completado') {
         // Overdue tasks
         if (daysUntilDue < 0) {
           result.push({
             id: `alert-overdue-${task.id}`,
             type: 'overdue',
             task: task as any,
-            message: `Tarea vencida hace ${Math.abs(daysUntilDue)} días`
+            message: `Vencida hace ${Math.abs(daysUntilDue)} días`
           });
         }
 
-        // Blocked tasks
-        if (task.status === 'bloqueada') {
-          result.push({
-            id: `alert-blocked-${task.id}`,
-            type: 'blocked',
-            task: task as any,
-            message: 'Tarea bloqueada - requiere atención'
-          });
-        }
-
-        // High priority tasks due soon
-        if (daysUntilDue >= 0 && daysUntilDue <= 7 && task.priority === 'alta') {
+        // Urgent tasks (High Priority & Not Completed)
+        // Note: Using else if to avoid double alert for same task if both overdue and high priority?
+        // User request: "Una tarea se marca como 'requiere atención' si: Está vencida ... Tiene prioridad alta y no está completada"
+        // If I make it else if, an overdue high priority task is just "Overdue". 
+        // I will keep them separate or merge? 
+        // If I use "else if", I prioritize "Overdue". 
+        // If I use "if", I might get two alerts for same task.
+        // Let's use "else if" logic similar to mock data to keep it clean.
+        else if (task.priority === 'alta') {
+          const daysLabel = daysUntilDue < 0 ? 'Vencida' : `Vence en ${Math.ceil(daysUntilDue)} días`;
           result.push({
             id: `alert-urgent-${task.id}`,
-            type: 'high_priority_soon',
+            type: 'urgent',
             task: task as any,
-            message: `Tarea alta prioridad vence en ${daysUntilDue} días`
+            message: `Alta prioridad - ${daysLabel}`
           });
         }
       }
     });
 
     return result.sort((a, b) => {
-      const priority = { overdue: 0, blocked: 1, high_priority_soon: 2 };
+      const priority = { overdue: 0, urgent: 1 };
       return priority[a.type] - priority[b.type];
     });
   }, [allTasks]);

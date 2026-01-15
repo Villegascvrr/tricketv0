@@ -32,27 +32,21 @@ interface KanbanViewDndProps {
 }
 
 const columns: { status: TaskStatus; label: string; icon: React.ReactNode; color: string }[] = [
-  { 
-    status: 'pendiente', 
-    label: 'Pendiente', 
-    icon: <CircleDot className="h-4 w-4" />,
+  {
+    status: 'solicitado',
+    label: 'Solicitado',
+    icon: <AlertCircle className="h-4 w-4" />,
+    color: 'border-warning/50 bg-warning/5'
+  },
+  {
+    status: 'pendiente',
+    label: 'Pendiente',
+    icon: <Clock className="h-4 w-4" />,
     color: 'border-muted-foreground/30 bg-muted/10'
   },
-  { 
-    status: 'en_curso', 
-    label: 'En curso', 
-    icon: <Clock className="h-4 w-4" />,
-    color: 'border-primary/50 bg-primary/5'
-  },
-  { 
-    status: 'bloqueada', 
-    label: 'Bloqueada', 
-    icon: <XCircle className="h-4 w-4" />,
-    color: 'border-destructive/50 bg-destructive/5'
-  },
-  { 
-    status: 'hecha', 
-    label: 'Hecha', 
+  {
+    status: 'completado',
+    label: 'Completado',
     icon: <CheckCircle2 className="h-4 w-4" />,
     color: 'border-success/50 bg-success/5'
   }
@@ -120,18 +114,18 @@ interface DroppableColumnProps {
   onDeleteTask: (taskId: string) => void;
 }
 
-function DroppableColumn({ 
-  status, 
-  label, 
-  icon, 
-  color, 
+function DroppableColumn({
+  status,
+  label,
+  icon,
+  color,
   tasks,
   onOpenTask,
   onStatusChange,
   onDeleteTask
 }: DroppableColumnProps) {
   return (
-    <div 
+    <div
       className={cn(
         "w-72 shrink-0 rounded-lg border-2",
         color
@@ -149,10 +143,10 @@ function DroppableColumn({
           </Badge>
         </div>
       </div>
-      
+
       {/* Column Content */}
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <div 
+        <div
           className="p-2 space-y-2 min-h-[200px] max-h-[calc(100vh-300px)] overflow-y-auto"
           data-status={status}
         >
@@ -229,7 +223,7 @@ export function KanbanViewDnd({ tasksByStatus, onOpenTask, onStatusChange, onDel
     let targetStatus: TaskStatus | null = null;
 
     // Check if dropped on a column directly
-    if (['pendiente', 'en_curso', 'bloqueada', 'hecha'].includes(overId)) {
+    if (['solicitado', 'pendiente', 'completado'].includes(overId)) {
       targetStatus = overId as TaskStatus;
     } else {
       // Dropped on another task - find that task's column
@@ -276,9 +270,9 @@ export function KanbanViewDnd({ tasksByStatus, onOpenTask, onStatusChange, onDel
           <div className="opacity-90 rotate-2 scale-105">
             <TaskCard
               task={activeTask}
-              onOpen={() => {}}
-              onStatusChange={() => {}}
-              onDelete={() => {}}
+              onOpen={() => { }}
+              onStatusChange={() => { }}
+              onDelete={() => { }}
               compact
             />
           </div>

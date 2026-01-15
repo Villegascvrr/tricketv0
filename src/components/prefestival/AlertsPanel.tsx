@@ -15,24 +15,21 @@ export function AlertsPanel({ alerts, onOpenTask }: AlertsPanelProps) {
   const getAlertIcon = (type: TaskAlert['type']) => {
     switch (type) {
       case 'overdue': return <AlertTriangle className="h-4 w-4 text-destructive" />;
-      case 'blocked': return <XCircle className="h-4 w-4 text-destructive" />;
-      case 'high_priority_soon': return <Clock className="h-4 w-4 text-warning" />;
+      case 'urgent': return <AlertTriangle className="h-4 w-4 text-warning" />;
     }
   };
 
   const getAlertColor = (type: TaskAlert['type']) => {
     switch (type) {
       case 'overdue': return 'border-destructive/30 bg-destructive/5';
-      case 'blocked': return 'border-destructive/30 bg-destructive/5';
-      case 'high_priority_soon': return 'border-warning/30 bg-warning/5';
+      case 'urgent': return 'border-warning/30 bg-warning/5';
     }
   };
 
   const getAlertLabel = (type: TaskAlert['type']) => {
     switch (type) {
       case 'overdue': return 'Vencida';
-      case 'blocked': return 'Bloqueada';
-      case 'high_priority_soon': return 'Urgente';
+      case 'urgent': return 'Requiere Atención';
     }
   };
 
@@ -77,7 +74,7 @@ export function AlertsPanel({ alerts, onOpenTask }: AlertsPanelProps) {
         <ScrollArea className="h-[calc(100vh-400px)] min-h-[200px]">
           <div className="space-y-2 p-4 pt-0">
             {alerts.map(alert => (
-              <div 
+              <div
                 key={alert.id}
                 className={cn(
                   "p-3 rounded-lg border",
@@ -103,9 +100,9 @@ export function AlertsPanel({ alerts, onOpenTask }: AlertsPanelProps) {
                     </p>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="w-full h-7 text-xs"
                   onClick={() => onOpenTask(alert.task.id)}
                 >
