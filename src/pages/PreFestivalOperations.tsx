@@ -84,14 +84,15 @@ const PreFestivalOperations = () => {
   const activeAreaName = activeTab === 'all' ? 'Vista General' : activeTab === 'dashboard' ? 'Dashboard Operativo' : currentArea?.label || 'Area';
 
   // Dashboard Data Calculations
-  const riskyProviders = mockProviders.filter(p => p.status === 'risk' || p.status === 'blocked');
-  const riskyArtists = mockArtists.filter(a => a.status === 'risk' || a.status === 'cancelled'); // Assuming cancelled/risk
+  // Dashboard Data Calculations
+  const riskyProviders = isDemo ? mockProviders.filter(p => p.status === 'risk' || p.status === 'blocked') : [];
+  const riskyArtists = isDemo ? mockArtists.filter(a => a.status === 'risk' || a.status === 'cancelled') : []; // Assuming cancelled/risk
   const allRisks = [
     ...riskyProviders.map(p => ({ type: 'Proveedor', name: p.name, status: p.status, id: p.id })),
     ...riskyArtists.map(a => ({ type: 'Artista', name: a.name, status: 'risk', id: a.id })) // Simplified mapping
   ];
 
-  const highPriorityNotes = initialNotes.filter(n => n.priority === 'high');
+  const highPriorityNotes = isDemo ? initialNotes.filter(n => n.priority === 'high') : [];
   const upcomingMilestones = milestones.filter(m => !m.completed).slice(0, 3); // Top 3 incomplete
 
   // Stats for cards (Summary)
@@ -293,7 +294,7 @@ const PreFestivalOperations = () => {
                         </div>
                       )}
                       {viewMode === 'kanban' && (
-                        <KanbanViewDnd tasksByStatus={tasksByStatus} onOpenTask={handleOpenTask} onStatusChange={handleStatusChange} onDeleteTask={deleteTask} />
+                        <KanbanViewDnd tasksByStatus={tasksByStatus} onOpenTask={handleOpenTask} onStatusChange={handleStatusChange} onDeleteTask={deleteTask} onCreateTask={() => setCreateOpen(true)} />
                       )}
                       {viewMode === 'timeline' && (
                         <TimelineView tasks={allTasks} milestones={milestones} onOpenTask={handleOpenTask} />
@@ -389,11 +390,11 @@ const PreFestivalOperations = () => {
 
                   {/* Quick Shortcuts */}
                   <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed" onClick={() => { handleTabChange('proveedores'); setCreateOpen(true); }}>
                       <Plus className="h-4 w-4 mb-1" />
                       <span className="text-xs">Nuevo Proveedor</span>
                     </Button>
-                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed" onClick={() => { handleTabChange('artistas'); setCreateOpen(true); }}>
                       <Plus className="h-4 w-4 mb-1" />
                       <span className="text-xs">Nuevo Artista</span>
                     </Button>
@@ -409,10 +410,10 @@ const PreFestivalOperations = () => {
                 </div>
               ) : activeTab === 'proveedores' ? (
                 /* Dedicated Provider Manager View */
-                <ProviderManager />
+                <ProviderManager onCreateTask={() => setCreateOpen(true)} />
               ) : activeTab === 'artistas' ? (
                 /* Dedicated Artist Manager View */
-                <ArtistManager />
+                <ArtistManager onCreateTask={() => setCreateOpen(true)} />
               ) : (
                 /* Area Specific Checklist View */
                 <AreaChecklistView

@@ -20,8 +20,9 @@ import { TaskStatus } from '@/data/preFestivalMockData';
 import { PreFestivalTask } from '@/hooks/usePreFestivalTasksSupabase';
 import { TaskCard } from './TaskCard';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Clock, CheckCircle2, AlertCircle, GripVertical } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, GripVertical, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface KanbanViewDndProps {
@@ -29,6 +30,7 @@ interface KanbanViewDndProps {
   onOpenTask: (task: PreFestivalTask) => void;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
   onDeleteTask: (taskId: string) => void;
+  onCreateTask?: (status?: TaskStatus) => void;
 }
 
 const columns: { status: TaskStatus; label: string; icon: React.ReactNode; color: string }[] = [
@@ -112,6 +114,7 @@ interface DroppableColumnProps {
   onOpenTask: (task: PreFestivalTask) => void;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
   onDeleteTask: (taskId: string) => void;
+  onCreateTask?: (status?: TaskStatus) => void;
 }
 
 function DroppableColumn({
@@ -122,7 +125,8 @@ function DroppableColumn({
   tasks,
   onOpenTask,
   onStatusChange,
-  onDeleteTask
+  onDeleteTask,
+  onCreateTask
 }: DroppableColumnProps) {
   return (
     <div
@@ -137,10 +141,18 @@ function DroppableColumn({
           <div className="flex items-center gap-2">
             {icon}
             <span className="font-medium text-sm">{label}</span>
+            <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-1">
+              {tasks.length}
+            </Badge>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {tasks.length}
-          </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-muted"
+            onClick={() => onCreateTask?.(status)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -170,7 +182,7 @@ function DroppableColumn({
   );
 }
 
-export function KanbanViewDnd({ tasksByStatus, onOpenTask, onStatusChange, onDeleteTask }: KanbanViewDndProps) {
+export function KanbanViewDnd({ tasksByStatus, onOpenTask, onStatusChange, onDeleteTask, onCreateTask }: KanbanViewDndProps) {
   const [activeTask, setActiveTask] = useState<PreFestivalTask | null>(null);
 
   const sensors = useSensors(
@@ -259,6 +271,7 @@ export function KanbanViewDnd({ tasksByStatus, onOpenTask, onStatusChange, onDel
               onOpenTask={onOpenTask}
               onStatusChange={onStatusChange}
               onDeleteTask={onDeleteTask}
+              onCreateTask={onCreateTask}
             />
           ))}
         </div>

@@ -40,9 +40,15 @@ import {
     LogisticsStatus
 } from "@/data/artistMockData";
 import { cn } from "@/lib/utils";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
-export function ArtistManager() {
-    const [artists, setArtists] = useState<Artist[]>(mockArtists);
+interface ArtistManagerProps {
+    onCreateTask?: () => void;
+}
+
+export function ArtistManager({ onCreateTask }: ArtistManagerProps) {
+    const { isDemo } = useFestivalConfig();
+    const [artists, setArtists] = useState<Artist[]>(isDemo ? mockArtists : []);
     const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
     const [notesOpen, setNotesOpen] = useState(false);
 
@@ -319,9 +325,9 @@ export function ArtistManager() {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             <div className="flex justify-end">
-                <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" onClick={onCreateTask}>
                     <Plus className="h-4 w-4" />
-                    Nuevo Artista
+                    Nueva Tarea de Artista
                 </Button>
             </div>
 

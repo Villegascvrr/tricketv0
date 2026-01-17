@@ -47,12 +47,19 @@ import { NotesSheet } from "../common/NotesSheet";
 import {
     Provider,
     ProviderStatus,
+    ProviderStatus,
     mockProviders
 } from "@/data/providerMockData";
 import { cn } from "@/lib/utils";
+import { useFestivalConfig } from "@/hooks/useFestivalConfig";
 
-export function ProviderManager() {
-    const [providers, setProviders] = useState<Provider[]>(mockProviders);
+interface ProviderManagerProps {
+    onCreateTask?: () => void;
+}
+
+export function ProviderManager({ onCreateTask }: ProviderManagerProps) {
+    const { isDemo } = useFestivalConfig();
+    const [providers, setProviders] = useState<Provider[]>(isDemo ? mockProviders : []);
     const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
     const [notesOpen, setNotesOpen] = useState(false);
 
@@ -318,9 +325,9 @@ export function ProviderManager() {
     return (
         <div className="space-y-4 animate-in fade-in duration-300">
             <div className="flex justify-end">
-                <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" onClick={onCreateTask}>
                     <Plus className="h-4 w-4" />
-                    Nuevo Proveedor
+                    Nueva Tarea de Proveedor
                 </Button>
             </div>
 

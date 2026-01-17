@@ -528,7 +528,7 @@ export function usePreFestivalTasksSupabase(eventId?: string, isDemo: boolean = 
     tasksByStatus,
     stats,
     alerts,
-    teamMembers,
+    teamMembers: isDemo ? teamMembers : [],
     viewMode,
     setViewMode,
     filters,
