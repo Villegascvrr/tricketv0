@@ -22,15 +22,15 @@ All colors MUST be HSL.
     --primary: 270 85% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 270 85% 42%;
-    
+
     /* Cyan for success/positive */
     --success: 185 85% 55%;
     --success-foreground: 270 50% 10%;
-    
+
     /* Warm amber warning */
     --warning: 38 92% 50%;
     --warning-foreground: 270 50% 10%;
-    
+
     /* Rose for danger */
     --danger: 350 80% 55%;
     --danger-foreground: 0 0% 100%;
@@ -64,7 +64,7 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 185 85% 85%;
     --sidebar-border: 270 50% 22%;
     --sidebar-ring: 185 85% 65%;
-    
+
     /* Festival secondary colors - for sections and charts */
     /* Pink/Coral palette */
     --festival-pink: 340 80% 80%;
@@ -75,7 +75,7 @@ All colors MUST be HSL.
     /* Yellow/Orange palette */
     --festival-yellow: 50 95% 70%;
     --festival-orange: 25 75% 48%;
-    
+
     /* Chart colors - festival multi-color palette */
     --chart-1: 270 85% 50%;
     --chart-2: 185 85% 55%;
@@ -83,12 +83,12 @@ All colors MUST be HSL.
     --chart-4: 155 75% 65%;
     --chart-5: 50 95% 70%;
     --chart-6: 25 75% 48%;
-    
+
     /* Custom shadows with purple tones */
     --shadow-sm: 0 1px 2px 0 hsl(270 50% 10% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(270 50% 10% / 0.08);
     --shadow-lg: 0 10px 15px -3px hsl(270 50% 10% / 0.1);
-    
+
     /* Festival gradient - purple to cyan */
     --gradient-festival: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(300 70% 55%) 50%, hsl(185 85% 55%) 100%);
   }
@@ -106,13 +106,13 @@ All colors MUST be HSL.
     --primary: 270 85% 60%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 270 85% 68%;
-    
+
     --success: 185 85% 50%;
     --success-foreground: 270 50% 8%;
-    
+
     --warning: 38 92% 55%;
     --warning-foreground: 270 50% 8%;
-    
+
     --danger: 350 80% 60%;
     --danger-foreground: 0 0% 100%;
 
@@ -131,7 +131,7 @@ All colors MUST be HSL.
     --border: 270 30% 22%;
     --input: 270 30% 22%;
     --ring: 270 85% 60%;
-    
+
     --sidebar-background: 270 55% 6%;
     --sidebar-foreground: 185 85% 85%;
     --sidebar-primary: 185 85% 65%;
@@ -140,7 +140,7 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 185 85% 85%;
     --sidebar-border: 270 45% 14%;
     --sidebar-ring: 185 85% 65%;
-    
+
     /* Festival secondary colors - dark mode */
     --festival-pink: 340 75% 75%;
     --festival-coral: 4 75% 55%;
@@ -148,7 +148,7 @@ All colors MUST be HSL.
     --festival-teal: 185 50% 35%;
     --festival-yellow: 50 90% 65%;
     --festival-orange: 25 70% 52%;
-    
+
     --chart-1: 270 85% 60%;
     --chart-2: 185 85% 50%;
     --chart-3: 4 75% 55%;
@@ -167,10 +167,34 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'DM Sans', system-ui, sans-serif;
     font-weight: 600;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 20px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
   }
 }
 
@@ -178,7 +202,7 @@ All colors MUST be HSL.
   .gradient-festival {
     background: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(300 70% 55%) 50%, hsl(185 85% 55%) 100%);
   }
-  
+
   .text-gradient-festival {
     background: linear-gradient(135deg, hsl(270 85% 50%) 0%, hsl(185 85% 55%) 100%);
     -webkit-background-clip: text;
@@ -189,6 +213,7 @@ All colors MUST be HSL.
 
 /* Section-specific themes - override primary colors per section */
 @layer components {
+
   /* Operations theme - Pink/Coral */
   .theme-operations {
     --primary: 340 80% 55%;
@@ -207,7 +232,7 @@ All colors MUST be HSL.
     --sidebar-border: 340 45% 20%;
     --sidebar-ring: 340 80% 55%;
   }
-  
+
   .dark .theme-operations {
     --primary: 340 75% 65%;
     --primary-foreground: 0 0% 100%;
@@ -224,7 +249,7 @@ All colors MUST be HSL.
     --sidebar-border: 340 40% 15%;
     --sidebar-ring: 340 75% 65%;
   }
-  
+
   /* Marketing theme - Green/Teal */
   .theme-marketing {
     --primary: 155 75% 40%;
@@ -243,7 +268,7 @@ All colors MUST be HSL.
     --sidebar-border: 155 40% 20%;
     --sidebar-ring: 155 75% 40%;
   }
-  
+
   .dark .theme-marketing {
     --primary: 155 70% 55%;
     --primary-foreground: 0 0% 10%;
@@ -260,7 +285,7 @@ All colors MUST be HSL.
     --sidebar-border: 155 35% 15%;
     --sidebar-ring: 155 70% 55%;
   }
-  
+
   /* Audience theme - Yellow/Orange */
   .theme-audience {
     --primary: 38 92% 50%;
@@ -279,7 +304,7 @@ All colors MUST be HSL.
     --sidebar-border: 30 40% 20%;
     --sidebar-ring: 38 92% 50%;
   }
-  
+
   .dark .theme-audience {
     --primary: 38 90% 55%;
     --primary-foreground: 0 0% 10%;
@@ -296,7 +321,7 @@ All colors MUST be HSL.
     --sidebar-border: 30 35% 15%;
     --sidebar-ring: 38 90% 55%;
   }
-  
+
   /* Sales theme - Purple (main) */
   .theme-sales {
     --primary: 270 85% 50%;
@@ -315,7 +340,7 @@ All colors MUST be HSL.
     --sidebar-border: 270 50% 22%;
     --sidebar-ring: 270 85% 50%;
   }
-  
+
   .dark .theme-sales {
     --primary: 270 85% 60%;
     --primary-foreground: 0 0% 100%;
@@ -332,7 +357,7 @@ All colors MUST be HSL.
     --sidebar-border: 270 45% 14%;
     --sidebar-ring: 270 85% 60%;
   }
-  
+
   /* Historical theme - Teal/Cyan */
   .theme-historical {
     --primary: 185 85% 40%;
@@ -351,7 +376,7 @@ All colors MUST be HSL.
     --sidebar-border: 185 45% 20%;
     --sidebar-ring: 185 85% 40%;
   }
-  
+
   .dark .theme-historical {
     --primary: 185 85% 50%;
     --primary-foreground: 0 0% 10%;
@@ -375,15 +400,15 @@ All colors MUST be HSL.
   .compact-card {
     @apply p-3;
   }
-  
+
   .compact-section {
     @apply space-y-4;
   }
-  
+
   .compact-grid {
     @apply gap-3;
   }
-  
+
   .compact-chart {
     @apply h-[200px];
   }

@@ -30,7 +30,8 @@ import { ProviderManager } from "@/components/prefestival/ProviderManager";
 import { ArtistManager } from "@/components/prefestival/ArtistManager";
 import { mockProviders } from "@/data/providerMockData";
 import { mockArtists } from "@/data/artistMockData";
-import { initialNotes } from "@/data/notesMockData";
+import { initialNotes, Note } from "@/data/notesMockData";
+import { NoteCreateDialog } from "@/components/prefestival/NoteCreateDialog";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -49,6 +50,8 @@ const PreFestivalOperations = () => {
   const [selectedTask, setSelectedTask] = useState<PreFestivalTask | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [noteCreateOpen, setNoteCreateOpen] = useState(false);
+  const [notes, setNotes] = useState<Note[]>(isDemo ? initialNotes : []);
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Handlers
@@ -68,6 +71,16 @@ const PreFestivalOperations = () => {
 
   const handleCreateTask = (taskData: any) => {
     addTask({ ...taskData, status: 'pendiente' });
+  };
+
+  const handleCreateNote = (noteData: Omit<Note, "id" | "createdAt" | "author">) => {
+    const newNote: Note = {
+      id: `new-${Date.now()}`,
+      author: "Usuario Actual",
+      createdAt: new Date().toISOString(),
+      ...noteData
+    };
+    setNotes(prev => [newNote, ...prev]);
   };
 
   // Filter tasks locally by the active tab (Project Area)
@@ -92,7 +105,8 @@ const PreFestivalOperations = () => {
     ...riskyArtists.map(a => ({ type: 'Artista', name: a.name, status: 'risk', id: a.id })) // Simplified mapping
   ];
 
-  const highPriorityNotes = isDemo ? initialNotes.filter(n => n.priority === 'high') : [];
+  // Show High and Medium priority notes in the dashboard
+  const visibleNotes = notes.filter(n => n.priority === 'high' || n.priority === 'medium');
   const upcomingMilestones = milestones.filter(m => !m.completed).slice(0, 3); // Top 3 incomplete
 
   // Stats for cards (Summary)
@@ -359,12 +373,17 @@ const PreFestivalOperations = () => {
                   {/* IMPORTANT NOTES PANEL */}
                   <Card className="md:col-span-1">
                     <CardContent className="pt-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MessageSquare className="h-4 w-4 text-amber-500" />
-                        <h3 className="font-semibold text-sm">Notas Importantes</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-amber-500" />
+                          <h3 className="font-semibold text-sm">Notas Importantes</h3>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setNoteCreateOpen(true)}>
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                       <div className="space-y-2">
-                        {highPriorityNotes.map((note) => (
+                        {visibleNotes.map((note) => (
                           <div key={note.id} className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
                             <div className="flex justify-between items-start mb-1">
                               <Badge variant="outline" className="text-[9px] border-amber-500/30 text-amber-700 bg-amber-500/5 px-1 py-0 h-4">
@@ -381,7 +400,7 @@ const PreFestivalOperations = () => {
                             </div>
                           </div>
                         ))}
-                        {highPriorityNotes.length === 0 && (
+                        {visibleNotes.length === 0 && (
                           <p className="text-sm text-muted-foreground">No hay notas urgentes</p>
                         )}
                       </div>
@@ -405,6 +424,10 @@ const PreFestivalOperations = () => {
                     <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed">
                       <FileCheck className="h-4 w-4 mb-1" />
                       <span className="text-xs">Ver Contratos</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto py-3 flex flex-col gap-1 items-center justify-center border-dashed" onClick={() => setNoteCreateOpen(true)}>
+                      <MessageSquare className="h-4 w-4 mb-1" />
+                      <span className="text-xs">Nueva Nota</span>
                     </Button>
                   </div>
                 </div>
@@ -450,6 +473,12 @@ const PreFestivalOperations = () => {
         onOpenChange={setCreateOpen}
         onSubmit={handleCreateTask}
         defaultArea={activeTab !== 'all' ? activeTab : undefined}
+      />
+
+      <NoteCreateDialog
+        open={noteCreateOpen}
+        onOpenChange={setNoteCreateOpen}
+        onSubmit={handleCreateNote}
       />
     </div>
   );

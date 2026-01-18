@@ -73,9 +73,10 @@ const mainItemsAfterOps = [
     icon: Users2
   },
   {
-    title: "Marketing & Campañas",
+    title: "Marketing",
     url: "/marketing",
     icon: Megaphone,
+    defaultOpen: true,
     items: [
       {
         title: "Estrategia & Campañas",
@@ -215,7 +216,7 @@ export function AppSidebar() {
 
     if (item.items) {
       return (
-        <Collapsible key={item.title} defaultOpen={isActive(item.url) || item.items.some((sub: any) => isActive(sub.url))} className="group/collapsible">
+        <Collapsible key={item.title} defaultOpen={item.defaultOpen || isActive(item.url) || item.items.some((sub: any) => isActive(sub.url))} className="group/collapsible">
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton tooltip={item.title} className={cn(isActive(item.url) && "bg-sidebar-accent")}>

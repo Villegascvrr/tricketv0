@@ -109,7 +109,7 @@ const App = () => (
                     }
                   />
 
-                  {/* Marketing & Campañas */}
+                  {/* Marketing */}
                   <Route
                     path="/marketing"
                     element={

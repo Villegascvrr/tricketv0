@@ -74,7 +74,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const fetchedEvents = data || [];
         // Inject Demo event for Admins if not already present (virtual event)
-        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025')];
+        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
         setEvents(allEvents);
         selectInitialEvent(allEvents);
       } else if (user) {
@@ -99,7 +99,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (eventsError) throw eventsError;
 
         const fetchedEvents = eventsData || [];
-        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025')];
+        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
 
         setEvents(allEvents);
         selectInitialEvent(allEvents);

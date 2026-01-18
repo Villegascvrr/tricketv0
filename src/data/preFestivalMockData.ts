@@ -89,13 +89,6 @@ export const PRE_FESTIVAL_AREAS: PreFestivalAreaDefinition[] = [
     color: 'purple',
     description: 'Booking, hospitalidad y logística de artistas'
   },
-  {
-    id: 'patrocinadores',
-    label: 'Patrocinadores',
-    icon: Briefcase,
-    color: 'yellow',
-    description: 'Acuerdos comerciales, activaciones y marcas'
-  }
 ];
 
 // Keep for backward compatibility with existing components

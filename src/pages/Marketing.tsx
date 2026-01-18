@@ -41,8 +41,10 @@ import {
   ChevronUp,
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  Handshake
 } from "lucide-react";
+import SponsorList from "@/components/marketing/SponsorList";
 import GoogleTrendsSection from "@/components/marketing/GoogleTrendsSection";
 import EmailMarketingSection from "@/components/marketing/EmailMarketingSection";
 import {
@@ -293,13 +295,13 @@ const Marketing = () => {
   return (
     <div className="min-h-screen bg-background p-3 md:p-4 theme-marketing">
       <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
-        <PageBreadcrumb items={[{ label: "Marketing & Campañas" }]} />
+        <PageBreadcrumb items={[{ label: "Marketing" }]} />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-foreground mb-0.5">
-              Marketing & Campañas
+              Marketing
             </h1>
             <p className="text-xs text-muted-foreground">
               Gestión de campañas y análisis de rendimiento
@@ -432,20 +434,20 @@ const Marketing = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card>
-            <CardContent className="pt-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Alcance Total</p>
-                  <p className="text-2xl font-bold">{(totalReach / 1000).toFixed(0)}K</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wide">Alcance Total</p>
+                  <p className="text-lg md:text-xl font-bold mt-0.5">{(totalReach / 1000).toFixed(0)}K</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Eye className="h-5 w-5 text-primary" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Eye className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-xs">
-                <ArrowUpRight className="h-3 w-3 text-success" />
+              <div className="flex items-center gap-1 mt-1.5 text-[10px]">
+                <ArrowUpRight className="h-2.5 w-2.5 text-success" />
                 <span className="text-success font-medium">+45%</span>
                 <span className="text-muted-foreground">vs mes anterior</span>
               </div>
@@ -453,18 +455,18 @@ const Marketing = () => {
           </Card>
 
           <Card>
-            <CardContent className="pt-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">CTR Medio</p>
-                  <p className="text-2xl font-bold">{avgCtr.toFixed(1)}%</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wide">CTR Medio</p>
+                  <p className="text-lg md:text-xl font-bold mt-0.5">{avgCtr.toFixed(1)}%</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
-                  <MousePointerClick className="h-5 w-5 text-secondary-foreground" />
+                <div className="h-8 w-8 rounded-full bg-secondary/50 flex items-center justify-center">
+                  <MousePointerClick className="h-4 w-4 text-secondary-foreground" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-xs">
-                <ArrowUpRight className="h-3 w-3 text-success" />
+              <div className="flex items-center gap-1 mt-1.5 text-[10px]">
+                <ArrowUpRight className="h-2.5 w-2.5 text-success" />
                 <span className="text-success font-medium">+0.4%</span>
                 <span className="text-muted-foreground">vs benchmark</span>
               </div>
@@ -472,34 +474,34 @@ const Marketing = () => {
           </Card>
 
           <Card>
-            <CardContent className="pt-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Entradas Vendidas</p>
-                  <p className="text-2xl font-bold">{totalTicketsSold}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wide">Entradas Vendidas</p>
+                  <p className="text-lg md:text-xl font-bold mt-0.5">{totalTicketsSold}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <ShoppingCart className="h-5 w-5 text-success" />
+                <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4 text-success" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-xs">
+              <div className="flex items-center gap-1 mt-1.5 text-[10px]">
                 <span className="text-muted-foreground">€{totalSpent > 0 ? (totalSpent / totalTicketsSold).toFixed(2) : '0'} CPA</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="pt-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Inversión Activa</p>
-                  <p className="text-2xl font-bold">€{totalSpent.toLocaleString('es-ES')}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wide">Inversión Activa</p>
+                  <p className="text-lg md:text-xl font-bold mt-0.5">€{totalSpent.toLocaleString('es-ES')}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-accent/50 flex items-center justify-center">
-                  <Target className="h-5 w-5 text-accent-foreground" />
+                <div className="h-8 w-8 rounded-full bg-accent/50 flex items-center justify-center">
+                  <Target className="h-4 w-4 text-accent-foreground" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-xs">
+              <div className="flex items-center gap-1 mt-1.5 text-[10px]">
                 <span className="text-muted-foreground">De €4.000 presupuesto</span>
               </div>
             </CardContent>
@@ -508,10 +510,14 @@ const Marketing = () => {
 
         {/* Main Tabs for Marketing Sections */}
         <Tabs defaultValue="campaigns" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="campaigns" className="gap-1.5 text-xs">
               <Megaphone className="h-3.5 w-3.5" />
               Campañas
+            </TabsTrigger>
+            <TabsTrigger value="sponsors" className="gap-1.5 text-xs">
+              <Handshake className="h-3.5 w-3.5" />
+              Patrocinios
             </TabsTrigger>
             <TabsTrigger value="email" className="gap-1.5 text-xs">
               <Mail className="h-3.5 w-3.5" />
@@ -530,6 +536,17 @@ const Marketing = () => {
               Tracking
             </TabsTrigger>
           </TabsList>
+
+          {/* Tab: Patrocinios */}
+          <TabsContent value="sponsors" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">Patrocinios & Marcas</h2>
+                <p className="text-sm text-muted-foreground">Gestión de relaciones comerciales y acuerdos de marca</p>
+              </div>
+            </div>
+            <SponsorList />
+          </TabsContent>
 
           {/* Tab: Campañas */}
           <TabsContent value="campaigns" className="space-y-6">
