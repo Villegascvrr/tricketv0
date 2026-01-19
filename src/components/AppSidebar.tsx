@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   LayoutDashboard,
   Settings,
@@ -166,14 +166,32 @@ export function AppSidebar() {
   const { signOut, user, isAdmin } = useAuth();
   const { selectedEvent } = useEvent();
   const { profile, teamMemberInfo } = useUserProfile();
+  const [simulatedRole, setSimulatedRole] = useState<string | null>(null);
 
-  // Filter secondary items - only show admin link to global admins
-  const filteredSecondaryItems = secondaryItems.filter(item => {
-    if (item.url === "/admin") {
-      return isAdmin;
-    }
-    return true;
-  });
+  const realRoleName = teamMemberInfo?.festival_role?.name;
+  const effectiveRoleName = simulatedRole || realRoleName;
+  const isInfluencerManager = effectiveRoleName === "Gestión Influencers";
+
+  // Filter secondary items
+  const filteredSecondaryItems = useMemo(() => {
+    return secondaryItems.filter(item => {
+      if (item.url === "/admin") return isAdmin;
+      if (isInfluencerManager) {
+        return item.title === "Configuración";
+      }
+      return true;
+    });
+  }, [isAdmin, isInfluencerManager]);
+
+  // Filter main items after ops
+  const filteredMainItemsAfterOps = useMemo(() => {
+    return mainItemsAfterOps.filter(item => {
+      if (isInfluencerManager) {
+        return ["Marketing", "Condiciones Externas"].includes(item.title);
+      }
+      return true;
+    });
+  }, [isInfluencerManager]);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return user?.email?.charAt(0).toUpperCase() || 'U';
@@ -352,8 +370,8 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-0 px-2">
               {mainItems.map(renderMenuItem)}
 
-              {/* Operations Collapsible */}
-              {!collapsed ? (
+              {/* Operations Collapsible - Hide if Influencer Manager */}
+              {!collapsed && !isInfluencerManager ? (
                 <Collapsible open={operationsOpen} onOpenChange={setOperationsOpen}>
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
@@ -385,7 +403,7 @@ export function AppSidebar() {
                     </CollapsibleContent>
                   </SidebarMenuItem>
                 </Collapsible>
-              ) : (
+              ) : !isInfluencerManager ? (
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <SidebarMenuItem>
@@ -400,9 +418,9 @@ export function AppSidebar() {
                     Operaciones
                   </TooltipContent>
                 </Tooltip>
-              )}
+              ) : null}
 
-              {mainItemsAfterOps.map(renderMenuItem)}
+              {filteredMainItemsAfterOps.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -441,8 +459,8 @@ export function AppSidebar() {
                       !collapsed && "mr-2"
                     )}
                     style={{
-                      backgroundColor: festivalRole?.bg_color || 'hsl(var(--primary))',
-                      color: festivalRole?.color || 'hsl(var(--primary-foreground))'
+                      backgroundColor: isInfluencerManager ? '#9333ea' : (festivalRole?.bg_color || 'hsl(var(--primary))'),
+                      color: isInfluencerManager ? '#ffffff' : (festivalRole?.color || 'hsl(var(--primary-foreground))')
                     }}
                   >
                     {getInitials(profile?.full_name || (user ? null : 'Demo User'))}
@@ -453,7 +471,7 @@ export function AppSidebar() {
                         {profile?.full_name || (user ? 'Usuario' : 'Demo User')}
                       </p>
                       <p className="text-[9px] text-sidebar-foreground/60 truncate leading-tight">
-                        {festivalRole?.name || user?.email || 'Director Festival'}
+                        {effectiveRoleName || user?.email || 'Director Festival'}
                       </p>
                     </div>
                   )}
@@ -470,6 +488,14 @@ export function AppSidebar() {
             <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
               <User className="h-4 w-4 mr-2" />
               Ver mi perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => setSimulatedRole(prev => prev === "Gestión Influencers" ? null : "Gestión Influencers")}
+              className="cursor-pointer text-xs"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              {simulatedRole === "Gestión Influencers" ? "Desactivar Rol Influencers" : "Simular Rol Influencers"}
             </DropdownMenuItem>
             {user && (
               <>

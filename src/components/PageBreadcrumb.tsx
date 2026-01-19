@@ -12,6 +12,7 @@ import {
 export interface BreadcrumbItemType {
   label: string;
   href?: string;
+  onClick?: () => void;
 }
 
 interface PageBreadcrumbProps {
@@ -30,9 +31,9 @@ const PageBreadcrumb = ({ items }: PageBreadcrumbProps) => {
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        
+
         <BreadcrumbSeparator className="text-muted-foreground/50" />
-        
+
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -51,9 +52,22 @@ const PageBreadcrumb = ({ items }: PageBreadcrumbProps) => {
                 </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link to={item.href || "#"} className="text-muted-foreground hover:text-foreground transition-colors">
-                    {item.label}
-                  </Link>
+                  {item.href ? (
+                    <Link
+                      to={item.href}
+                      onClick={item.onClick}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span
+                      onClick={item.onClick}
+                      className={`text-muted-foreground hover:text-foreground transition-colors ${item.onClick ? 'cursor-pointer' : ''}`}
+                    >
+                      {item.label}
+                    </span>
+                  )}
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>

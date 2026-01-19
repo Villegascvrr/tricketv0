@@ -1,221 +1,277 @@
-import { useState } from "react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
-    ChevronRight,
-    ArrowLeft,
-    Plus,
-    Instagram,
-    Youtube,
-    Twitter,
-    Video,
-    Share2,
-    Users,
-    Search,
-    Filter,
-    CheckCircle2,
-    Clock
-} from "lucide-react";
-
-import {
-    Influencer,
-    demoInfluencers,
-    ContentType,
-    PostStatus
-} from "@/data/influencerMockData";
-import { cn } from "@/lib/utils";
-import { useFestivalConfig } from "@/hooks/useFestivalConfig";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import PageBreadcrumb from "../PageBreadcrumb";
+import { Influencer, demoInfluencers, InfluencerPlatform, InfluencerStatus, InfluencerCampaign, PostDeliverable, AdminDeliverable } from "@/data/influencerMockData";
+import { InfluencerList } from "./influencers/InfluencerList";
+import { InfluencerDialog } from "./influencers/InfluencerDialog";
+import { InfluencerDetail } from "./influencers/InfluencerDetail";
+import { InfluencerDashboard } from "./influencers/InfluencerDashboard";
+import { useToast } from "@/hooks/use-toast";
+import { useEvent } from "@/contexts/EventContext";
 
 export function InfluencerManager() {
-    const { isDemo } = useFestivalConfig();
-    const initialData = isDemo ? demoInfluencers : [];
+    const { toast } = useToast();
+    const { selectedEvent } = useEvent();
+    const [influencers, setInfluencers] = useState<Influencer[]>([]);
 
-    const [influencers, setInfluencers] = useState<Influencer[]>(initialData);
-    const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
+    useEffect(() => {
+        const isDemo = !selectedEvent?.id ||
+            selectedEvent.id === 'demo' ||
+            selectedEvent.id === 'demo-event-id';
+
+        if (isDemo) {
+            setInfluencers(demoInfluencers);
+        } else {
+            setInfluencers([]);
+        }
+
+        // Reset detail view selection when switching events
+        setSelectedInfluencer(null);
+    }, [selectedEvent?.id]);
+
     const [searchTerm, setSearchTerm] = useState("");
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
+    const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
+    const [platformFilter, setPlatformFilter] = useState<InfluencerPlatform | "All">("All");
+    const [statusFilter, setStatusFilter] = useState<InfluencerStatus | "All">("All");
 
-    const filteredInfluencers = influencers.filter(inf =>
-        inf.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inf.niche.some(n => n.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredInfluencers = useMemo(() => {
+        return influencers.filter(inf => {
+            const matchesSearch = inf.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                inf.contact.socialHandle?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesPlatform = platformFilter === "All" || inf.primaryPlatform === platformFilter;
+            const matchesStatus = statusFilter === "All" || inf.status === statusFilter;
+            return matchesSearch && matchesPlatform && matchesStatus;
+        });
+    }, [influencers, searchTerm, platformFilter, statusFilter]);
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'active': return 'success';
-            case 'contacted': return 'secondary';
-            case 'negotiating': return 'warning';
-            case 'rejected': return 'destructive';
-            default: return 'outline';
+    const handleCreate = () => {
+        setEditingInfluencer(null);
+        setIsDialogOpen(true);
+    };
+
+    const handleEdit = (influencer: Influencer) => {
+        setEditingInfluencer(influencer);
+        setIsDialogOpen(true);
+    };
+
+    const handleDelete = (id: string) => {
+        if (window.confirm("¿Estás seguro de que deseas eliminar este influencer?")) {
+            setInfluencers(prev => prev.filter(inf => inf.id !== id));
+            toast({
+                title: "Influencer eliminado",
+                description: "El influencer ha sido eliminado correctamente.",
+            });
+            if (selectedInfluencer?.id === id) {
+                setSelectedInfluencer(null);
+            }
         }
     };
 
-    const getPlatformIcon = (platform: string) => {
-        switch (platform) {
-            case 'instagram': return <Instagram className="h-3 w-3" />;
-            case 'tiktok': return <Video className="h-3 w-3" />; // Using Video as close proxy for TikTok
-            case 'youtube': return <Youtube className="h-3 w-3" />;
-            default: return <Share2 className="h-3 w-3" />;
+    const handleSave = (data: Partial<Influencer>) => {
+        if (editingInfluencer) {
+            setInfluencers(prev => prev.map(inf =>
+                inf.id === editingInfluencer.id
+                    ? { ...inf, ...data, updatedAt: new Date().toISOString() } as Influencer
+                    : inf
+            ));
+            toast({ title: "Actualizado", description: "Influencer actualizado correctamente." });
+            if (selectedInfluencer?.id === editingInfluencer.id) {
+                setSelectedInfluencer(prev => prev ? { ...prev, ...data, updatedAt: new Date().toISOString() } as Influencer : null);
+            }
+        } else {
+            const newInfluencer: Influencer = {
+                id: `inf-${Date.now()}`,
+                name: data.name || "Nuevo Influencer",
+                primaryPlatform: data.primaryPlatform || "Instagram",
+                category: data.category || "nicho",
+                status: data.status || "Pendiente",
+                assignedTo: data.assignedTo || "Sin asignar",
+                contact: data.contact || {},
+                notes: data.notes || "",
+                socials: [],
+                campaigns: [],
+                totalReach: 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                ...data
+            } as Influencer;
+
+            setInfluencers(prev => [newInfluencer, ...prev]);
+            toast({ title: "Creado", description: "Nuevo influencer añadido a la lista." });
         }
     };
 
-    const formatNumber = (num: number) => {
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-        return num.toString();
+    const handleUpdateInfluencer = (id: string, updates: Partial<Influencer>) => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== id) return inf;
+            return { ...inf, ...updates, updatedAt: new Date().toISOString() };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === id) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+    };
+
+    const handleUpdateStatus = (id: string, status: InfluencerStatus) => {
+        handleUpdateInfluencer(id, { status });
+        toast({ title: "Estado Actualizado", description: `El estado ha cambiado a ${status}.` });
+    };
+
+    const handleAddCampaign = (influencerId: string, campaign: InfluencerCampaign) => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            return {
+                ...inf,
+                campaigns: [campaign, ...inf.campaigns]
+            };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Campaña Creada", description: `La campaña "${campaign.name}" ha sido añadida.` });
+    };
+
+    const handleEditCampaign = (influencerId: string, updatedCampaign: InfluencerCampaign) => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            return {
+                ...inf,
+                campaigns: inf.campaigns.map(c => c.id === updatedCampaign.id ? updatedCampaign : c)
+            };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Campaña Actualizada", description: `Los cambios en "${updatedCampaign.name}" se han guardado.` });
+    };
+
+    const handleDeleteCampaign = (influencerId: string, campaignId: string) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            return {
+                ...inf,
+                campaigns: inf.campaigns.filter(c => c.id !== campaignId)
+            };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Campaña Eliminada", description: "La campaña ha sido eliminada correctamente." });
+    };
+
+    const handleAddPost = (influencerId: string, post: PostDeliverable) => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            const updatedCampaigns = inf.campaigns.map(c => {
+                if (c.id !== post.campaignId) return c;
+                return {
+                    ...c,
+                    deliverables: [...c.deliverables, post]
+                };
+            });
+            return { ...inf, campaigns: updatedCampaigns };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Publicación Añadida", description: "La publicación se ha registrado correctamente." });
+    };
+
+    const handleAddDeliverable = (influencerId: string, deliverable: AdminDeliverable) => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            const updatedCampaigns = inf.campaigns.map(c => {
+                if (c.id !== deliverable.campaignId) return c;
+                return {
+                    ...c,
+                    adminDeliverables: [...c.adminDeliverables, deliverable]
+                };
+            });
+            return { ...inf, campaigns: updatedCampaigns };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Entregable Registrado", description: "El entregable se ha guardado correctamente." });
+    };
+
+    const handleUpdateDeliverableStatus = (influencerId: string, deliverableId: string, newStatus: 'Pendiente' | 'Entregado') => {
+        const update = (inf: Influencer) => {
+            if (inf.id !== influencerId) return inf;
+            const updatedCampaigns = inf.campaigns.map(c => ({
+                ...c,
+                adminDeliverables: c.adminDeliverables.map(d =>
+                    d.id === deliverableId ? { ...d, status: newStatus } : d
+                )
+            }));
+            return { ...inf, campaigns: updatedCampaigns };
+        };
+        setInfluencers(prev => prev.map(update));
+        if (selectedInfluencer?.id === influencerId) {
+            setSelectedInfluencer(prev => prev ? update(prev) : null);
+        }
+        toast({ title: "Estado Actualizado", description: `Entregable marcado como ${newStatus}.` });
     };
 
     if (selectedInfluencer) {
         return (
-            <div className="min-h-screen bg-background p-4 md:p-6 space-y-4">
+            <div className="min-h-screen bg-background p-4 md:p-6 space-y-6">
                 <PageBreadcrumb items={[
                     { label: "Marketing", href: "/marketing" },
-                    { label: "Influencers", href: "/marketing/influencers" },
+                    { label: "Influencers", href: "/marketing/influencers", onClick: () => setSelectedInfluencer(null) },
                     { label: selectedInfluencer.name }
                 ]} />
 
-                <div className="flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-right-4 duration-300">
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedInfluencer(null)} className="h-8 gap-1 pl-1">
-                        <ArrowLeft className="h-4 w-4" />
-                        Volver
-                    </Button>
-                    <Separator orientation="vertical" className="h-6" />
-                    <div className="flex flex-col">
-                        <h2 className="text-xl font-bold leading-none flex items-center gap-2">
-                            {selectedInfluencer.name}
-                            <Badge variant={getStatusVariant(selectedInfluencer.status)} className="text-[10px] font-normal">
-                                {selectedInfluencer.status.toUpperCase()}
-                            </Badge>
-                        </h2>
-                        <span className="text-xs text-muted-foreground mt-1">
-                            Responsable: {selectedInfluencer.assignedTo}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
-                    {/* Column 1: Profile & Stats */}
-                    <div className="space-y-4">
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium uppercase tracking-wide">Perfil Social</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <h4 className="text-xs text-muted-foreground font-semibold">Nichos</h4>
-                                    <div className="flex flex-wrap gap-1">
-                                        {selectedInfluencer.niche.map(n => (
-                                            <Badge key={n} variant="secondary" className="text-[10px]">{n}</Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                                <Separator />
-                                <div className="space-y-3">
-                                    <h4 className="text-xs text-muted-foreground font-semibold">Métricas</h4>
-                                    {selectedInfluencer.socials.map((social, idx) => (
-                                        <div key={idx} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-background p-1.5 rounded-full border">
-                                                    {getPlatformIcon(social.platform)}
-                                                </div>
-                                                <span className="font-medium">{social.handle}</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-bold">{formatNumber(social.followers)}</div>
-                                                <div className="text-[10px] text-muted-foreground">{social.engagementRate}% Eng.</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div className="flex justify-between items-center pt-2">
-                                        <span className="text-sm font-semibold">Alcance Total</span>
-                                        <span className="text-lg font-bold text-primary">{formatNumber(selectedInfluencer.totalReach)}</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Column 2: Campaigns & Deliverables */}
-                    <div className="col-span-1 md:col-span-2 space-y-4">
-                        <Card className="h-full">
-                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                                <CardTitle className="text-sm font-medium uppercase tracking-wide">Campañas Activas & Entregables</CardTitle>
-                                <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-                                    <Plus className="h-3 w-3" /> Nueva Campaña
-                                </Button>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                {selectedInfluencer.campaigns.length > 0 ? (
-                                    selectedInfluencer.campaigns.map(campaign => (
-                                        <div key={campaign.id} className="border rounded-lg p-4 space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h4 className="font-bold text-base flex items-center gap-2">
-                                                        {campaign.name}
-                                                        <Badge variant="outline" className="text-[10px]">{campaign.role}</Badge>
-                                                    </h4>
-                                                    <p className="text-xs text-muted-foreground">Fee: {campaign.fee ? `${campaign.fee} €` : 'N/A'}</p>
-                                                </div>
-                                                <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
-                                            </div>
-
-                                            <div className="space-y-2 mt-2">
-                                                <h5 className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" /> Checklist de Publicaciones
-                                                </h5>
-                                                <div className="grid gap-2">
-                                                    {campaign.deliverables.map(post => (
-                                                        <div key={post.id} className="flex items-center gap-3 p-2 bg-muted/20 rounded hover:bg-muted/40 transition-colors">
-                                                            <Checkbox checked={post.status === 'posted'} id={post.id} />
-                                                            <div className="flex-1">
-                                                                <div className="flex justify-between">
-                                                                    <label htmlFor={post.id} className={cn("text-sm font-medium cursor-pointer", post.status === 'posted' && "line-through text-muted-foreground")}>
-                                                                        {post.concept}
-                                                                    </label>
-                                                                    <Badge variant="secondary" className="text-[9px] uppercase h-5">{post.type}</Badge>
-                                                                </div>
-                                                                <div className="flex justify-between mt-0.5">
-                                                                    <span className="text-[10px] text-muted-foreground">
-                                                                        Fecha límite: {format(new Date(post.dueDate), "d MMM yyyy", { locale: es })}
-                                                                    </span>
-                                                                    {post.status === 'posted' && (
-                                                                        <span className="text-[10px] text-success font-medium flex items-center gap-1">
-                                                                            <CheckCircle2 className="h-3 w-3" /> Publicado ({formatNumber(post.views || 0)} views)
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
-                                        No hay campañas asignadas
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
+                <InfluencerDetail
+                    key={selectedInfluencer.id}
+                    influencer={selectedInfluencer}
+                    onBack={() => setSelectedInfluencer(null)}
+                    onUpdateStatus={handleUpdateStatus}
+                    onUpdateInfluencer={handleUpdateInfluencer}
+                    onUpdatePostStatus={(influencerId, postId, newStatus) => {
+                        const updateInfluencer = (inf: Influencer) => {
+                            if (inf.id !== influencerId) return inf;
+                            const updatedCampaigns = inf.campaigns.map(campaign => ({
+                                ...campaign,
+                                deliverables: campaign.deliverables.map(post =>
+                                    post.id === postId ? { ...post, status: newStatus } : post
+                                )
+                            }));
+                            return { ...inf, campaigns: updatedCampaigns };
+                        };
+                        setInfluencers(prev => prev.map(updateInfluencer));
+                        if (selectedInfluencer?.id === influencerId) {
+                            setSelectedInfluencer(prev => prev ? updateInfluencer(prev) : null);
+                        }
+                        toast({ title: "Estado Actualizado", description: `Publicación marcada como ${newStatus}.` });
+                    }}
+                    onAddCampaign={handleAddCampaign}
+                    onEditCampaign={handleEditCampaign}
+                    onDeleteCampaign={handleDeleteCampaign}
+                    onAddPost={handleAddPost}
+                    onAddDeliverable={handleAddDeliverable}
+                    onUpdateDeliverableStatus={handleUpdateDeliverableStatus}
+                />
             </div>
-        );
+        )
     }
 
     return (
@@ -227,151 +283,68 @@ export function InfluencerManager() {
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Gestión de Influencers</h1>
-                    <p className="text-muted-foreground">Coordina campañas, asignaciones y entregables de contenido.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">Influencers</h1>
+                    <p className="text-muted-foreground">Listado de influencers y creadores de contenido.</p>
                 </div>
-                <Button className="gap-2">
+                <Button onClick={handleCreate} className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Nuevo Perfil
+                    Nuevo Influencer
                 </Button>
             </div>
 
-            {/* Filters Bar */}
-            <div className="flex gap-2">
-                <div className="relative flex-1 max-w-sm">
+            <InfluencerDashboard
+                influencers={influencers}
+                onSelect={setSelectedInfluencer}
+            />
+
+            <div className="flex flex-col md:flex-row gap-4 p-4 bg-card border rounded-lg shadow-sm">
+                <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Buscar por nombre o nicho..."
+                        placeholder="Buscar por nombre o usuario..."
                         className="pl-8"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                </Button>
+                <Select value={platformFilter} onValueChange={(val) => setPlatformFilter(val as any)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Plataforma" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">Todas</SelectItem>
+                        <SelectItem value="Instagram">Instagram</SelectItem>
+                        <SelectItem value="TikTok">TikTok</SelectItem>
+                        <SelectItem value="YouTube">YouTube</SelectItem>
+                        <SelectItem value="Otros">Otros</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">Todos</SelectItem>
+                        <SelectItem value="Pendiente">Pendiente</SelectItem>
+                        <SelectItem value="Activo">Activo</SelectItem>
+                        <SelectItem value="Finalizado">Finalizado</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
-            {/* Global Status Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="py-3">
-                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Alcance Potencial</CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-0 pb-3">
-                        <div className="text-2xl font-bold flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            {formatNumber(influencers.reduce((acc, curr) => acc + curr.totalReach, 0))}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="py-3">
-                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Campañas Activas</CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-0 pb-3">
-                        <div className="text-2xl font-bold">
-                            {influencers.reduce((acc, curr) => acc + curr.campaigns.filter(c => c.status === 'active').length, 0)}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="py-3">
-                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Acciones Pendientes</CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-0 pb-3">
-                        <div className="text-2xl font-bold text-amber-600">
-                            {influencers.reduce((acc, curr) => acc + curr.campaigns.flatMap(c => c.deliverables).filter(d => d.status === 'pending').length, 0)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Por subir/aprobar</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="py-3">
-                        <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Posts Publicados</CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-0 pb-3">
-                        <div className="text-2xl font-bold text-success">
-                            {influencers.reduce((acc, curr) => acc + curr.campaigns.flatMap(c => c.deliverables).filter(d => d.status === 'posted').length, 0)}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <InfluencerList
+                influencers={filteredInfluencers}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onSelect={setSelectedInfluencer}
+            />
 
-            <div className="rounded-md border bg-card">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px]">Estado</TableHead>
-                            <TableHead>Perfil</TableHead>
-                            <TableHead className="hidden md:table-cell">Nichos</TableHead>
-                            <TableHead className="hidden md:table-cell">Alcance Total</TableHead>
-                            <TableHead className="hidden md:table-cell">Responsable</TableHead>
-                            <TableHead className="hidden md:table-cell text-center">Campañas</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredInfluencers.length > 0 ? (
-                            filteredInfluencers.map((inf) => (
-                                <TableRow
-                                    key={inf.id}
-                                    className="group cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => setSelectedInfluencer(inf)}
-                                >
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(inf.status)} className="scale-90 origin-left">
-                                            {inf.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-semibold">{inf.name}</div>
-                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                            {inf.socials.slice(0, 2).map((s, i) => (
-                                                <span key={i} className="flex items-center gap-0.5">
-                                                    {getPlatformIcon(s.platform)} {formatNumber(s.followers)}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell">
-                                        <div className="flex flex-wrap gap-1">
-                                            {inf.niche.slice(0, 2).map(n => (
-                                                <Badge key={n} variant="secondary" className="text-[10px] border-none bg-muted h-5">{n}</Badge>
-                                            ))}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell font-mono text-sm">
-                                        {formatNumber(inf.totalReach)}
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                                        {inf.assignedTo}
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell text-center">
-                                        {inf.campaigns.length > 0 ? (
-                                            <Badge variant="outline">{inf.campaigns.length}</Badge>
-                                        ) : (
-                                            <span className="text-muted-foreground text-xs">—</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                        <Users className="h-8 w-8 text-muted-foreground/30" />
-                                        <p>No se encontraron influencers</p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <InfluencerDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                influencer={editingInfluencer}
+                onSave={handleSave}
+            />
         </div>
     );
 }
