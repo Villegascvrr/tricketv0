@@ -97,17 +97,18 @@ const PreFestivalOperations = () => {
   const activeAreaName = activeTab === 'all' ? 'Vista General' : activeTab === 'dashboard' ? 'Dashboard Operativo' : currentArea?.label || 'Area';
 
   // Dashboard Data Calculations
-  // Dashboard Data Calculations
   const riskyProviders = isDemo ? mockProviders.filter(p => p.status === 'risk' || p.status === 'blocked') : [];
-  const riskyArtists = isDemo ? mockArtists.filter(a => a.status === 'risk' || a.status === 'cancelled') : []; // Assuming cancelled/risk
+  const riskyArtists: { id: string; name: string; genre: string }[] = []; // Artists don't have status field
   const allRisks = [
     ...riskyProviders.map(p => ({ type: 'Proveedor', name: p.name, status: p.status, id: p.id })),
-    ...riskyArtists.map(a => ({ type: 'Artista', name: a.name, status: 'risk', id: a.id })) // Simplified mapping
+    ...riskyArtists.map(a => ({ type: 'Artista', name: a.name, status: 'risk', id: a.id }))
   ];
 
   // Show High and Medium priority notes in the dashboard
   const visibleNotes = notes.filter(n => n.priority === 'high' || n.priority === 'medium');
-  const upcomingMilestones = milestones.filter(m => !m.completed).slice(0, 3); // Top 3 incomplete
+  // Milestones from Supabase don't have 'completed' field - filter by target_date instead
+  const today = new Date().toISOString().split('T')[0];
+  const upcomingMilestones = milestones.filter(m => m.target_date >= today).slice(0, 3);
 
   // Stats for cards (Summary)
   // Note: For real environment, we'd ideally calculate these from real data exclusively
