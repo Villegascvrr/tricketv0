@@ -74,7 +74,8 @@ export function CreateCampaignDialog({ open, onOpenChange, onSave, initialData }
             startDate,
             endDate,
             fee: fee ? Number(fee) : undefined,
-            deliverables: initialData ? initialData.deliverables : [] // Keep deliverables if editing
+            deliverables: initialData ? initialData.deliverables : [], // Keep deliverables if editing
+            adminDeliverables: initialData ? initialData.adminDeliverables : [] // Keep admin deliverables if editing
         };
         onSave(newCampaign);
         onOpenChange(false);

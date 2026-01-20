@@ -47,7 +47,6 @@ import { NotesSheet } from "../common/NotesSheet";
 import {
     Provider,
     ProviderStatus,
-    ProviderStatus,
     mockProviders
 } from "@/data/providerMockData";
 import { cn } from "@/lib/utils";
