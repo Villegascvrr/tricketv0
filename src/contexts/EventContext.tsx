@@ -74,7 +74,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const fetchedEvents = data || [];
         // Inject Demo event for Admins if not already present (virtual event)
-        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
+        const allEvents = [DEMO_EVENT, PRIMAVERANDO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
         setEvents(allEvents);
         selectInitialEvent(allEvents);
       } else if (user) {
@@ -99,15 +99,15 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (eventsError) throw eventsError;
 
         const fetchedEvents = eventsData || [];
-        const allEvents = [PRIMAVERANDO_EVENT, DEMO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
+        const allEvents = [DEMO_EVENT, PRIMAVERANDO_EVENT, ...fetchedEvents.filter(e => e.id !== 'demo-event-id' && e.id !== 'primaverando-2025' && e.id !== 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')];
 
         setEvents(allEvents);
         selectInitialEvent(allEvents);
       } else {
         // Usuario no autenticado - mostrar eventos públicos (en este caso solo Demo)
         // PROVISIONAL: Solo mostrar demo event si no hay usuario
-        setEvents([PRIMAVERANDO_EVENT, DEMO_EVENT]);
-        selectInitialEvent([PRIMAVERANDO_EVENT, DEMO_EVENT]);
+        setEvents([DEMO_EVENT, PRIMAVERANDO_EVENT]);
+        selectInitialEvent([DEMO_EVENT, PRIMAVERANDO_EVENT]);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
