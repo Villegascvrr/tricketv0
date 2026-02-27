@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo } from "react";
 import {
   TrendingUp,
+  TrendingDown,
   Euro,
   Megaphone,
   Target,
