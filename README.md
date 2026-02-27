@@ -1,75 +1,75 @@
-# 🎟️ TRICKET - Dashboard Inteligente para Gestión de Festivales y Eventos
+# 🎟️ TRICKET - Intelligent Dashboard for Festival and Event Management
 
-**TRICKET** es una plataforma integral (dashboard/SaaS) diseñada específicamente para la gestión eficiente y modernizada de festivales y eventos en vivo. Gracias a sus avanzadas capacidades de análisis de asistentes, previsiones de ventas, herramientas de marketing, gestor de operaciones y recomendaciones mediante Inteligencia Artificial, TRICKET empodera a los promotores de eventos a tomar decisiones basadas en datos y maximizar el éxito de sus espectáculos.
+**TRICKET** is a comprehensive platform (dashboard/SaaS) specifically designed for the efficient and modernized management of live festivals and events. Through its advanced attendee analytics capabilities, sales forecasting, marketing tools, operations manager, and Artificial Intelligence recommendations, TRICKET empowers event promoters to make data-driven decisions and maximize the success of their shows.
 
-## ✨ Características Principales
+## ✨ Key Features
 
-- 📊 **Panel de Control (Dashboard):** Vista panorámica de los indicadores clave de rendimiento (KPIs), ventas y demografía en tiempo real.
-- 📈 **Ventas y Previsiones:** Análisis preciso sobre el ritmo de ventas para anticiparse a la demanda y ajustar estrategias logísticas.
-- 👥 **Público y Audiencia:** Estudios detallados de demografía, comportamiento de los usuarios e interacciones.
-- 🎯 **Marketing e Influencers:** Gestión completa de campañas y programa de afiliación con influencers.
-- ☁️ **Condiciones Externas (Clima):** Monitoreo meteorológico para ajustar operaciones pre-festival y el mismo día.
-- 🤖 **Recomendaciones IA:** Motor de recomendaciones automáticas que sugieren acciones para optimizar ventas, marketing o tareas logísticas.
-- 📅 **Planificador de Escenarios:** Simulación de múltiples escenarios para mitigar y prever riesgos.
-- 🛠️ **Operaciones Integrales:** Módulos de gestión logística y tareas para "Pre-Festival" y "Día del Evento".
-- 🤝 **Gestión de Equipo:** Sistema de roles, permisos y colaboración en grupo.
-- 🛡️ **Panel de Administración:** Control centralizado sobre los eventos, usuarios y auditorías del sistema.
+- 📊 **Control Panel (Dashboard):** Panoramic view of Key Performance Indicators (KPIs), sales, and real-time demographics.
+- 📈 **Sales & Forecasts:** Accurate analysis of sales pacing to anticipate demand and adjust logistical strategies.
+- 👥 **Audience & Demographics:** Detailed studies of demographics, user behavior, and interactions.
+- 🎯 **Marketing & Influencers:** Comprehensive management of campaigns and influencer affiliation programs.
+- ☁️ **External Conditions (Weather):** Meteorological monitoring to adjust pre-festival and day-of-event operations.
+- 🤖 **AI Recommendations:** Automated recommendation engine suggesting actions to optimize sales, marketing, or logistical tasks.
+- 📅 **Scenario Planner:** Simulation of multiple scenarios to mitigate and foresee risks.
+- 🛠️ **Comprehensive Operations:** Logistics and task management modules for "Pre-Festival" and "Day of Event".
+- 🤝 **Team Management:** Roles, permissions, and group collaboration system.
+- 🛡️ **Admin Panel:** Centralized control over events, users, and system audits.
 
-## 💻 Tecnologías Utilizadas
+## 💻 Technologies Used
 
-Este proyecto utiliza tecnologías web modernas y eficientes para garantizar una experiencia óptima y responsiva:
+This project utilizes modern and efficient web technologies to ensure an optimal and responsive experience:
 
 - **Frontend/UI:** [React](https://reactjs.org/) (v18)
 - **Tooling/Build:** [Vite](https://vitejs.dev/)
-- **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
-- **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
-- **Componentes Base:** [shadcn/ui](https://ui.shadcn.com/) y Radix UI
-- **Backend/Auth/BD:** [Supabase](https://supabase.com/)
-- **Gráficos e Interfaz:** [Recharts](https://recharts.org/), Framer Motion (vía Tailwind Animate), Lucide React
-- **Datos y Enrutamiento:** [@tanstack/react-query](https://tanstack.com/query/latest) y [React Router](https://reactrouter.com/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Base Components:** [shadcn/ui](https://ui.shadcn.com/) and Radix UI
+- **Backend/Auth/DB:** [Supabase](https://supabase.com/)
+- **Charts and Interface:** [Recharts](https://recharts.org/), Framer Motion (via Tailwind Animate), Lucide React
+- **Data & Routing:** [@tanstack/react-query](https://tanstack.com/query/latest) and [React Router](https://reactrouter.com/)
 
-## 🚀 Empezar en Entorno Local (Desarrollo)
+## 🚀 Getting Started Locally (Development)
 
-Sigue estos pasos para arrancar el proyecto en tu máquina local:
+Follow these steps to run the project on your local machine:
 
-1. **Clona el repositorio:**
+1. **Clone the repository:**
    ```bash
-   git clone <URI_DEL_REPOSITORIO>
+   git clone <REPOSITORY_URL>
    cd tricketv0
    ```
 
-2. **Instala las dependencias:**
-   _(Se requiere NodeJS instalado)_
+2. **Install dependencies:**
+   *(NodeJS installation is required)*
    ```bash
    npm install
    ```
 
-3. **Variables de Entorno (Opcional pero recomendado):**
-   Asegúrate de configurar tu archivo `.env` basándote en un archivo `.env.example` en caso de requerir conexión local con Supabase u otros servicios en la nube.
+3. **Environment Variables (Optional but recommended):**
+   Make sure to configure your `.env` file based on a `.env.example` file if a local connection to Supabase or other cloud services is required.
 
-4. **Inicia el servidor de desarrollo:**
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-5. **Accede a la app:**
-   Abre [http://localhost:5173](http://localhost:5173) en tu navegador para ver la interfaz.
+5. **Access the application:**
+   Open [http://localhost:5173](http://localhost:5173) in your browser to view the interface.
 
-## 🏗️ Estructura del Proyecto
+## 🏗️ Project Structure
 
-- `/src/pages`: Las vistas y pantallas principales (Dashboard, Auth, Módulo de IA, etc).
-- `/src/components`: Componentes reutilizables y de interfaces complejas (layouts, tablas, modales).
-- `/src/contexts`: Proveedores de Context para Estado Compartido y Autenticación.
-- `/src/hooks`: Custom hooks para el encapsulamiento lógico.
-- `/src/lib` y `/utils`: Utilidades de formato, inicialización de clientes (Supabase) y helpers misceláneos.
+- `/src/pages`: Main views and screens (Dashboard, Auth, AI Module, etc).
+- `/src/components`: Reusable and complex interface components (layouts, tables, modals).
+- `/src/contexts`: Context providers for Shared State and Authentication.
+- `/src/hooks`: Custom hooks for logic encapsulation.
+- `/src/lib` and `/utils`: Formatting utilities, client initialization (Supabase), and miscellaneous helpers.
 
-## 📄 Comandos Útiles
+## 📄 Useful Commands
 
-- `npm run dev` - Arranca Vite en modo _development_
-- `npm run build` - Transpila TypeScript y Vite empaqueta los assets para _production_
-- `npm run lint` - Chequea posibles vulnerabilidades o errores de formato de código
-- `npm run preview` - Previsualiza los estáticos generados en `/dist`
+- `npm run dev` - Starts Vite in _development_ mode
+- `npm run build` - Transpiles TypeScript and Vite bundles the assets for _production_
+- `npm run lint` - Checks for styling or format vulnerabilities
+- `npm run preview` - Previews the generated static files in `/dist`
 
-## 🤝 Contribuir y Soporte
+## 🤝 Contributing and Support
 
-Si deseas mejorar el proyecto o reportar algún inconveniente, puedes abrir un _issue_ directamente en GitHub detallando el caso, o crear un _pull request_ bajo una rama de *feature* independiente.
+If you want to improve the project or report an issue, you can open an _issue_ directly on GitHub detailing the case, or create a _pull request_ under an independent *feature* branch.
