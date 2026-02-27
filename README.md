@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
+# 🎟️ TRICKET - Dashboard Inteligente para Gestión de Festivales y Eventos
 
-## Project info
+**TRICKET** es una plataforma integral (dashboard/SaaS) diseñada específicamente para la gestión eficiente y modernizada de festivales y eventos en vivo. Gracias a sus avanzadas capacidades de análisis de asistentes, previsiones de ventas, herramientas de marketing, gestor de operaciones y recomendaciones mediante Inteligencia Artificial, TRICKET empodera a los promotores de eventos a tomar decisiones basadas en datos y maximizar el éxito de sus espectáculos.
 
-**URL**: https://lovable.dev/projects/8c2e3f93-0608-4d63-9572-14d006f7d67e
+## ✨ Características Principales
 
-## How can I edit this code?
+- 📊 **Panel de Control (Dashboard):** Vista panorámica de los indicadores clave de rendimiento (KPIs), ventas y demografía en tiempo real.
+- 📈 **Ventas y Previsiones:** Análisis preciso sobre el ritmo de ventas para anticiparse a la demanda y ajustar estrategias logísticas.
+- 👥 **Público y Audiencia:** Estudios detallados de demografía, comportamiento de los usuarios e interacciones.
+- 🎯 **Marketing e Influencers:** Gestión completa de campañas y programa de afiliación con influencers.
+- ☁️ **Condiciones Externas (Clima):** Monitoreo meteorológico para ajustar operaciones pre-festival y el mismo día.
+- 🤖 **Recomendaciones IA:** Motor de recomendaciones automáticas que sugieren acciones para optimizar ventas, marketing o tareas logísticas.
+- 📅 **Planificador de Escenarios:** Simulación de múltiples escenarios para mitigar y prever riesgos.
+- 🛠️ **Operaciones Integrales:** Módulos de gestión logística y tareas para "Pre-Festival" y "Día del Evento".
+- 🤝 **Gestión de Equipo:** Sistema de roles, permisos y colaboración en grupo.
+- 🛡️ **Panel de Administración:** Control centralizado sobre los eventos, usuarios y auditorías del sistema.
 
-There are several ways of editing your application.
+## 💻 Tecnologías Utilizadas
 
-**Use Lovable**
+Este proyecto utiliza tecnologías web modernas y eficientes para garantizar una experiencia óptima y responsiva:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8c2e3f93-0608-4d63-9572-14d006f7d67e) and start prompting.
+- **Frontend/UI:** [React](https://reactjs.org/) (v18)
+- **Tooling/Build:** [Vite](https://vitejs.dev/)
+- **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+- **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
+- **Componentes Base:** [shadcn/ui](https://ui.shadcn.com/) y Radix UI
+- **Backend/Auth/BD:** [Supabase](https://supabase.com/)
+- **Gráficos e Interfaz:** [Recharts](https://recharts.org/), Framer Motion (vía Tailwind Animate), Lucide React
+- **Datos y Enrutamiento:** [@tanstack/react-query](https://tanstack.com/query/latest) y [React Router](https://reactrouter.com/)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Empezar en Entorno Local (Desarrollo)
 
-**Use your preferred IDE**
+Sigue estos pasos para arrancar el proyecto en tu máquina local:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Clona el repositorio:**
+   ```bash
+   git clone <URI_DEL_REPOSITORIO>
+   cd tricketv0
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. **Instala las dependencias:**
+   _(Se requiere NodeJS instalado)_
+   ```bash
+   npm install
+   ```
 
-Follow these steps:
+3. **Variables de Entorno (Opcional pero recomendado):**
+   Asegúrate de configurar tu archivo `.env` basándote en un archivo `.env.example` en caso de requerir conexión local con Supabase u otros servicios en la nube.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+4. **Inicia el servidor de desarrollo:**
+   ```bash
+   npm run dev
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+5. **Accede a la app:**
+   Abre [http://localhost:5173](http://localhost:5173) en tu navegador para ver la interfaz.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🏗️ Estructura del Proyecto
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- `/src/pages`: Las vistas y pantallas principales (Dashboard, Auth, Módulo de IA, etc).
+- `/src/components`: Componentes reutilizables y de interfaces complejas (layouts, tablas, modales).
+- `/src/contexts`: Proveedores de Context para Estado Compartido y Autenticación.
+- `/src/hooks`: Custom hooks para el encapsulamiento lógico.
+- `/src/lib` y `/utils`: Utilidades de formato, inicialización de clientes (Supabase) y helpers misceláneos.
 
-**Edit a file directly in GitHub**
+## 📄 Comandos Útiles
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `npm run dev` - Arranca Vite en modo _development_
+- `npm run build` - Transpila TypeScript y Vite empaqueta los assets para _production_
+- `npm run lint` - Chequea posibles vulnerabilidades o errores de formato de código
+- `npm run preview` - Previsualiza los estáticos generados en `/dist`
 
-**Use GitHub Codespaces**
+## 🤝 Contribuir y Soporte
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8c2e3f93-0608-4d63-9572-14d006f7d67e) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Si deseas mejorar el proyecto o reportar algún inconveniente, puedes abrir un _issue_ directamente en GitHub detallando el caso, o crear un _pull request_ bajo una rama de *feature* independiente.
